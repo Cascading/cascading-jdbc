@@ -1,0 +1,61 @@
+group = 'cascading'
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'eclipse'
+
+buildscript {
+  repositories {
+    mavenLocal()
+    mavenCentral()
+        maven { url 'http://repo.springsource.org/plugins-release' }
+  }
+  dependencies {
+    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.3'
+  }
+}
+
+// gives 'provided' scope for hadoop
+configure(allprojects) {
+    apply plugin: 'propdeps'
+    apply plugin: 'propdeps-maven'
+    apply plugin: 'propdeps-idea'
+    apply plugin: 'propdeps-eclipse'
+}
+
+// the version of hadoop used for compiling and testing
+ext.hadoopVersion = "1.1.2"
+
+ext.cascadingVersion = '2.2.0-+'
+
+// set property to use locally installed cascading builds
+// otherwise wip releases will be pulled from conjars
+if( System.properties[ 'multitool.release.local' ] ) 
+      cascadingVersion = '2.2.0-wip-dev'
+
+repositories{
+    mavenLocal()
+    mavenCentral()
+    mavenRepo name: 'conjars', url: 'http://conjars.org/repo/'
+}
+
+dependencies{
+    compile group: 'cascading', name: 'cascading-core', version: cascadingVersion
+    compile group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion
+
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
+    testCompile group: 'cascading', name:'cascading-core', version: cascadingVersion, classifier: 'tests' 
+    testCompile( group: 'org.apache.hadoop', name: 'hadoop-test', version: hadoopVersion ){
+        exclude group: 'oro'
+    }
+
+    provided( group: 'org.apache.hadoop', name: 'hadoop-core', version: hadoopVersion) { 
+       exclude group: 'ant'
+       exclude group: 'junit'
+       exclude group: 'oro' // causes transient build maven failures, ftw
+    }
+
+    provided( group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1')
+}
