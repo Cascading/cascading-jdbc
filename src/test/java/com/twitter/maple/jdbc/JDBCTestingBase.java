@@ -14,15 +14,12 @@ package com.twitter.maple.jdbc;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
-import org.hsqldb.Server;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 import cascading.flow.Flow;
 import cascading.flow.hadoop.HadoopFlowConnector;
@@ -38,32 +35,18 @@ import cascading.tuple.Fields;
 import cascading.tuple.TupleEntryIterator;
 
 /**
- *
+ * Base class for the various database tests. This class contains the actual tests, while the subclasses
+ * can implement their own specific setUp and tearDown methods.
  */
-public class JDBCTest
+public abstract class JDBCTestingBase
   {
   String inputFile = "src/test/resources/data/small.txt";
-  private Server server;
 
-  @Before
-  public void setUp() throws IOException
-    {
-  	  File datadir = new File("build/db/testing");
-  	  // the test hangs, if there are stale db file in the directory.
-  	  if (datadir.exists())
-  		  FileUtils.deleteDirectory(datadir);
-    	
-  	  server = new Server();
-    	server.setDatabasePath( 0, datadir.getAbsolutePath() );
-    	server.setDatabaseName( 0, "testing" );
-    	server.start();
-    }
+  protected String jdbcurl;
+  protected String driverName;
 
-  @After
-  public void tearDown() throws IOException
-    {
-  		server.stop();
-    }
+  @Rule
+  public TestName name = new TestName();
 
 
   @Test
@@ -72,26 +55,19 @@ public class JDBCTest
 
     // CREATE NEW TABLE FROM SOURCE
 
-    Tap source = new Hfs( new TextLine(), inputFile );
+    Tap<?, ?, ?> source = new Hfs( new TextLine(), inputFile );
 
     Pipe parsePipe = new Each( "insert", new Fields( "line" ), new RegexSplitter( new Fields( "num", "lwr", "upr" ), "\\s" ) );
 
-    String url = "jdbc:hsqldb:hsql://localhost/testing";
-    
-    
-    //String url = "jdbc:derby:memory:testing;create=true";
-    String driver = "org.hsqldb.jdbcDriver";
-    //String driver = "com.mysql.jdbc.Driver";
-    //String driver = "org.apache.derby.jdbc.EmbeddedDriver";
     String tableName = "testingtable";
     String[] columnNames = {"num", "lwr", "upr"};
     String[] columnDefs = {"VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL"};
     String[] primaryKeys = {"num", "lwr"};
     TableDesc tableDesc = new TableDesc( tableName, columnNames, columnDefs, primaryKeys );
 
-    Tap replaceTap = new JDBCTap( url, driver, tableDesc, new JDBCScheme( columnNames ), SinkMode.REPLACE );
+    Tap<?, ?, ?> replaceTap = new JDBCTap( jdbcurl, driverName, tableDesc, new JDBCScheme( columnNames ), SinkMode.REPLACE );
 
-    Flow parseFlow = new HadoopFlowConnector(new Properties()).connect( source, replaceTap, parsePipe );
+    Flow<?> parseFlow = new HadoopFlowConnector(createProperties()).connect( source, replaceTap, parsePipe );
 
     parseFlow.complete();
 
@@ -100,13 +76,11 @@ public class JDBCTest
     // READ DATA FROM TABLE INTO TEXT FILE
 
     // create flow to read from hsqldb and save to local file
-    Tap sink = new Hfs( new TextLine(), "build/test/jdbc", SinkMode.REPLACE );
+    Tap<?, ?, ?> sink = new Hfs( new TextLine(), "build/test/jdbc", SinkMode.REPLACE );
 
     Pipe copyPipe = new Each( "read", new Identity() );
 
-    Properties props = new Properties();
-    props.put("mapred.reduce.tasks.speculative.execution", "false");
-    Flow copyFlow = new HadoopFlowConnector(props).connect( replaceTap, sink, copyPipe );
+    Flow<?> copyFlow = new HadoopFlowConnector(createProperties()).connect( replaceTap, sink, copyPipe );
 
     copyFlow.complete();
 
@@ -115,9 +89,9 @@ public class JDBCTest
     // READ DATA FROM TEXT FILE AND UPDATE TABLE
 
     JDBCScheme jdbcScheme = new JDBCScheme( columnNames, null, new String[]{"num", "lwr"} );
-    Tap updateTap = new JDBCTap( url, driver, tableDesc, jdbcScheme, SinkMode.UPDATE );
+    Tap<?, ?, ?> updateTap = new JDBCTap( jdbcurl, driverName, tableDesc, jdbcScheme, SinkMode.UPDATE );
 
-    Flow updateFlow = new HadoopFlowConnector(props).connect( sink, updateTap, parsePipe );
+    Flow<?> updateFlow = new HadoopFlowConnector(createProperties()).connect( sink, updateTap, parsePipe );
 
     updateFlow.complete();
 
@@ -125,12 +99,12 @@ public class JDBCTest
 
     // READ DATA FROM TABLE INTO TEXT FILE, USING CUSTOM QUERY
 
-    Tap sourceTap = new JDBCTap( url, driver, new JDBCScheme( columnNames,
+    Tap<?, ?, ?> sourceTap = new JDBCTap( jdbcurl, driverName, new JDBCScheme( columnNames,
             "select num, lwr, upr from testingtable as testingtable", "select count(*) from testingtable" ) );
 
     Pipe readPipe = new Each( "read", new Identity() );
 
-    Flow readFlow = new HadoopFlowConnector(props).connect( sourceTap, sink, readPipe );
+    Flow<?> readFlow = new HadoopFlowConnector(createProperties()).connect( sourceTap, sink, readPipe );
 
     readFlow.complete();
 
@@ -144,24 +118,21 @@ public class JDBCTest
 
     // CREATE NEW TABLE FROM SOURCE
 
-    Tap source = new Hfs( new TextLine(), inputFile );
+    Tap<?, ?, ?> source = new Hfs( new TextLine(), inputFile );
 
     Fields columnFields = new Fields( "num", "lwr", "upr" );
     Pipe parsePipe = new Each( "insert", new Fields( "line" ), new RegexSplitter( columnFields, "\\s" ) );
 
-    String url = "jdbc:hsqldb:hsql://localhost/testing";
-    //String url = "jdbc:derby:memory:testing;create=true";
-    String driver = "org.hsqldb.jdbcDriver";
-    //String driver = "org.apache.derby.jdbc.EmbeddedDriver";
+
     String tableName = "testingtablealias";
     String[] columnNames = {"db_num", "db_lower", "db_upper"};
     String[] columnDefs = {"VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL"};
     String[] primaryKeys = {"db_num", "db_lower"};
     TableDesc tableDesc = new TableDesc( tableName, columnNames, columnDefs, primaryKeys );
 
-    Tap replaceTap = new JDBCTap( url, driver, tableDesc, new JDBCScheme( columnFields, columnNames ), SinkMode.REPLACE );
+    Tap<?, ?, ?> replaceTap = new JDBCTap( jdbcurl, driverName, tableDesc, new JDBCScheme( columnFields, columnNames ), SinkMode.REPLACE );
 
-    Flow parseFlow = new HadoopFlowConnector(new Properties()).connect( source, replaceTap, parsePipe );
+    Flow<?> parseFlow = new HadoopFlowConnector(createProperties()).connect( source, replaceTap, parsePipe );
 
     parseFlow.complete();
 
@@ -169,11 +140,11 @@ public class JDBCTest
 
     // READ DATA FROM TABLE INTO TEXT FILE
 
-    Tap sink = new Hfs( new TextLine(), "build/test/jdbc", SinkMode.REPLACE );
+    Tap<?, ?, ?> sink = new Hfs( new TextLine(), "build/test/jdbc", SinkMode.REPLACE );
 
     Pipe copyPipe = new Each( "read", new Identity() );
 
-    Flow copyFlow = new HadoopFlowConnector(new Properties()).connect( replaceTap, sink, copyPipe );
+    Flow<?> copyFlow = new HadoopFlowConnector(createProperties()).connect( replaceTap, sink, copyPipe );
 
     copyFlow.complete();
 
@@ -184,9 +155,9 @@ public class JDBCTest
     Fields updateByFields = new Fields( "num", "lwr" );
     String[] updateBy = {"db_num", "db_lower"};
     JDBCScheme jdbcScheme = new JDBCScheme( columnFields, columnNames, null, updateByFields, updateBy );
-    Tap updateTap = new JDBCTap( url, driver, tableDesc, jdbcScheme, SinkMode.UPDATE );
+    Tap<?, ?, ?> updateTap = new JDBCTap( jdbcurl, driverName, tableDesc, jdbcScheme, SinkMode.UPDATE );
 
-    Flow updateFlow = new HadoopFlowConnector(new Properties()).connect( sink, updateTap, parsePipe );
+    Flow<?> updateFlow = new HadoopFlowConnector(createProperties()).connect( sink, updateTap, parsePipe );
 
     updateFlow.complete();
 
@@ -194,19 +165,19 @@ public class JDBCTest
 
     // READ DATA FROM TABLE INTO TEXT FILE, USING CUSTOM QUERY
 
-    Tap sourceTap = new JDBCTap( url, driver, new JDBCScheme( columnFields, columnNames,
+    Tap<?, ?, ?> sourceTap = new JDBCTap( jdbcurl, driverName, new JDBCScheme( columnFields, columnNames,
             "select db_num, db_lower, db_upper from testingtablealias as testingtablealias", "select count(*) from testingtablealias" ) );
 
     Pipe readPipe = new Each( "read", new Identity() );
 
-    Flow readFlow = new HadoopFlowConnector().connect( sourceTap, sink, readPipe );
+    Flow<?> readFlow = new HadoopFlowConnector(createProperties()).connect( sourceTap, sink, readPipe );
 
     readFlow.complete();
 
     verifySink( readFlow, 13 );
     }
 
-  private void verifySink( Flow flow, int expects ) throws IOException
+  private void verifySink( Flow<?> flow, int expects ) throws IOException
     {
     int count = 0;
 
@@ -223,5 +194,12 @@ public class JDBCTest
     assertEquals( "wrong number of values", expects, count );
     }
 
+   private Properties createProperties()
+     {
+	   Properties props = new Properties();
+     props.put("mapred.reduce.tasks.speculative.execution", "false");
+     props.put("mapred.map.tasks.speculative.execution", "false");
+     return props;
+     }
   }
 

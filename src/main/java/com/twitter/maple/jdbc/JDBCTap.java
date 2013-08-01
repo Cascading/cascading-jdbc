@@ -20,7 +20,9 @@ import cascading.tap.TapException;
 import cascading.tap.hadoop.io.HadoopTupleEntrySchemeIterator;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
+
 import com.twitter.maple.jdbc.db.DBConfiguration;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.JobConf;
@@ -463,6 +465,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector> {
             try
             {
                 if( connection != null )
+                    connection.commit();
                     connection.close();
             }
             catch( SQLException exception )

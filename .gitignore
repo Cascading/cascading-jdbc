@@ -13,5 +13,6 @@
 build
 .classpath
 .project
+.settings
 .idea
 /bin
