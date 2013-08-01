@@ -1,17 +1,18 @@
 package com.twitter.maple.jdbc;
 
-import org.h2.tools.Server;
 import org.junit.Before;
 
+
+/**
+ * Runs the tests against an instance of h2: http://www.h2database.com/html/main.html
+ * */
 public class H2Test extends JDBCTestingBase {
-	
-	Server server;
 	
 	@Before
 	public void setUp()
   	{
-		  this.driverName = "org.h2.Driver";
-			this.jdbcurl = "jdbc:h2:mem:testing_" + name.getMethodName()+ ";DB_CLOSE_DELAY=-1;MVCC=true";
+		setDriverName("org.h2.Driver");
+		setJdbcurl("jdbc:h2:mem:testing;DB_CLOSE_DELAY=-1;MVCC=true");
  	  }
 
 }

@@ -2,13 +2,11 @@ package com.twitter.maple.jdbc;
 
 import java.io.IOException;
 
-import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 
 
 /**
- * This class runs the tests against an instance of hsql.
+ * This class runs the tests against an instance of hsql: http://hsqldb.org/
  * */
 public class HSQLTest extends JDBCTestingBase
   {
@@ -17,11 +15,8 @@ public class HSQLTest extends JDBCTestingBase
 	@Before
   public void setUp() throws IOException
     {
-
-    	
-    	this.jdbcurl =  "jdbc:hsqldb:mem://testing_" + name.getMethodName() + ";hsqldb.tx=mvcc";
-    	this.driverName = "org.hsqldb.jdbcDriver";
-	    
+    setJdbcurl("jdbc:hsqldb:mem://testing;hsqldb.tx=mvcc");
+    setDriverName("org.hsqldb.jdbcDriver");
     }
 	
   }

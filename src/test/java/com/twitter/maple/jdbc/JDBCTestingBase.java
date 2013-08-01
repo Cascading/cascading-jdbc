@@ -42,12 +42,11 @@ public abstract class JDBCTestingBase
   {
   String inputFile = "src/test/resources/data/small.txt";
 
-  protected String jdbcurl;
-  protected String driverName;
+  /** the JDBC url for the tests. subclasses have to set this */
+  private String jdbcurl;
 
-  @Rule
-  public TestName name = new TestName();
-
+	/** the name of the JDBC driver to use.*/
+  private String driverName;
 
   @Test
   public void testJDBC() throws IOException
@@ -201,5 +200,18 @@ public abstract class JDBCTestingBase
      props.put("mapred.map.tasks.speculative.execution", "false");
      return props;
      }
+   
+   
+  public void setJdbcurl(String jdbcurl)
+    {
+ 		this.jdbcurl = jdbcurl;
+ 	  }
+
+ 	public void setDriverName(String driverName)
+ 	  {
+    this.driverName = driverName;
+ 	  }
+
+   
   }
 
