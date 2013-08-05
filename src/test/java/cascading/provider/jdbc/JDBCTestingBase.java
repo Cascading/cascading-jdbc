@@ -10,7 +10,7 @@
  * conditions, unless such conditions are required by law.
  */
 
-package com.twitter.maple.jdbc;
+package cascading.provider.jdbc;
 
 import static org.junit.Assert.assertEquals;
 
@@ -27,6 +27,9 @@ import cascading.operation.Identity;
 import cascading.operation.regex.RegexSplitter;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
+import cascading.provider.jdbc.JDBCScheme;
+import cascading.provider.jdbc.JDBCTap;
+import cascading.provider.jdbc.TableDesc;
 import cascading.scheme.hadoop.TextLine;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;

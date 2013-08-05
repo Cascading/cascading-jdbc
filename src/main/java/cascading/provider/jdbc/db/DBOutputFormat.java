@@ -27,7 +27,7 @@
  * limitations under the License.
  */
 
-package com.twitter.maple.jdbc.db;
+package cascading.provider.jdbc.db;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -27,7 +27,7 @@
  * limitations under the License.
  */
 
-package com.twitter.maple.jdbc.db;
+package cascading.provider.jdbc.db;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
@@ -333,7 +333,8 @@ public class DBInputFormat<T extends DBWritable>
     @SuppressWarnings("unchecked")
     public RecordReader<LongWritable, T> getRecordReader(InputSplit split, JobConf job,
         Reporter reporter) throws IOException {
-        Class inputClass = dbConf.getInputClass();
+        @SuppressWarnings("rawtypes")
+				Class inputClass = dbConf.getInputClass();
         try {
             return new DBRecordReader((DBInputSplit) split, inputClass, job);
         } catch (SQLException exception) {

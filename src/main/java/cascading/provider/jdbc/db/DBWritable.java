@@ -10,7 +10,7 @@
  * conditions, unless such conditions are required by law.
  */
 
-package com.twitter.maple.jdbc.db;
+package cascading.provider.jdbc.db;
 
 import org.apache.hadoop.io.Writable;
 

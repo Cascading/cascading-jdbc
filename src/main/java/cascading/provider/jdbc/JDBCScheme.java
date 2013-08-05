@@ -10,9 +10,11 @@
  * conditions, unless such conditions are required by law.
  */
 
-package com.twitter.maple.jdbc;
+package cascading.provider.jdbc;
 
 import cascading.flow.FlowProcess;
+import cascading.provider.jdbc.db.DBInputFormat;
+import cascading.provider.jdbc.db.DBOutputFormat;
 import cascading.scheme.Scheme;
 import cascading.scheme.SinkCall;
 import cascading.scheme.SourceCall;
@@ -22,8 +24,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 import cascading.util.Util;
-import com.twitter.maple.jdbc.db.DBInputFormat;
-import com.twitter.maple.jdbc.db.DBOutputFormat;
+
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;

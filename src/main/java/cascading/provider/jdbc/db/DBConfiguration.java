@@ -27,7 +27,7 @@
  * limitations under the License.
  */
 
-package com.twitter.maple.jdbc.db;
+package cascading.provider.jdbc.db;
 
 import java.io.IOException;
 import java.sql.Connection;

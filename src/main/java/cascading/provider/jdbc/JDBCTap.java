@@ -10,7 +10,7 @@
  * conditions, unless such conditions are required by law.
  */
 
-package com.twitter.maple.jdbc;
+package cascading.provider.jdbc;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -34,14 +34,13 @@ import org.slf4j.LoggerFactory;
 
 import cascading.flow.FlowProcess;
 import cascading.flow.hadoop.util.HadoopUtil;
+import cascading.provider.jdbc.db.DBConfiguration;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.TapException;
 import cascading.tap.hadoop.io.HadoopTupleEntrySchemeIterator;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
-
-import com.twitter.maple.jdbc.db.DBConfiguration;
 
 /**
  * Class JDBCTap is a {@link Tap} sub-class that provides read and write access to a RDBMS via JDBC drivers.
@@ -54,7 +53,7 @@ import com.twitter.maple.jdbc.db.DBConfiguration;
  * <p/>
  * Both INSERT and UPDATE are supported through the JDBCScheme.
  * <p/>
- * By sub-classing JDBCScheme, {@link com.twitter.maple.jdbc.db.DBInputFormat}, and {@link com.twitter.maple.jdbc.db.DBOutputFormat},
+ * By sub-classing JDBCScheme, {@link cascading.provider.jdbc.db.DBInputFormat}, and {@link cascading.provider.jdbc.db.DBOutputFormat},
  * specific vendor features can be supported.
  * <p/>
  * Use {@link #setBatchSize(int)} to set the number of INSERT/UPDATES should be grouped together before being
@@ -63,13 +62,13 @@ import com.twitter.maple.jdbc.db.DBConfiguration;
  * Use {@link #executeQuery(String, int)} or {@link #executeUpdate(String)} to invoke SQL statements against
  * the underlying Table.
  * <p/>
- * Note that all classes under the {@link com.twitter.maple.jdbc.db} package originated from the Hadoop project and
+ * Note that all classes under the {@link cascading.provider.jdbc.db} package originated from the Hadoop project and
  * retain their Apache 2.0 license though they have been heavily modified to support INSERT/UPDATE and
  * vendor specialization, and a number of other features like 'limit'.
  *
  * @see JDBCScheme
- * @see com.twitter.maple.jdbc.db.DBInputFormat
- * @see com.twitter.maple.jdbc.db.DBOutputFormat
+ * @see cascading.provider.jdbc.db.DBInputFormat
+ * @see cascading.provider.jdbc.db.DBOutputFormat
  */
 public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector> {
     /** Field LOG */

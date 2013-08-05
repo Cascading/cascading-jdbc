@@ -10,7 +10,7 @@
  * conditions, unless such conditions are required by law.
  */
 
-package com.twitter.maple.jdbc;
+package cascading.provider.jdbc;
 
 import cascading.util.Util;
 

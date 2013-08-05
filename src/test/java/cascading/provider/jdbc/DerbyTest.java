@@ -1,4 +1,4 @@
-package com.twitter.maple.jdbc;
+package cascading.provider.jdbc;
 
 import java.io.File;
 import java.io.PrintWriter;

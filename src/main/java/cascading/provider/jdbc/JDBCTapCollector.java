@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.twitter.maple.jdbc;
+package cascading.provider.jdbc;
 
 import cascading.flow.FlowProcess;
 import cascading.flow.hadoop.HadoopFlowProcess;

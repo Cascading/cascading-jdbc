@@ -10,10 +10,10 @@
  * conditions, unless such conditions are required by law.
  */
 
-package com.twitter.maple.jdbc;
+package cascading.provider.jdbc;
 
+import cascading.provider.jdbc.db.DBWritable;
 import cascading.tuple.Tuple;
-import com.twitter.maple.jdbc.db.DBWritable;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
