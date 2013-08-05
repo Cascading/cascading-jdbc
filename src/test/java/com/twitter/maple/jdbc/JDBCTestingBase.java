@@ -118,7 +118,6 @@ public abstract class JDBCTestingBase
     // CREATE NEW TABLE FROM SOURCE
 
     Tap<?, ?, ?> source = new Hfs( new TextLine(), inputFile );
-
     Fields columnFields = new Fields( "num", "lwr", "upr" );
     Pipe parsePipe = new Each( "insert", new Fields( "line" ), new RegexSplitter( columnFields, "\\s" ) );
 
@@ -165,7 +164,7 @@ public abstract class JDBCTestingBase
     // READ DATA FROM TABLE INTO TEXT FILE, USING CUSTOM QUERY
 
     Tap<?, ?, ?> sourceTap = new JDBCTap( jdbcurl, driverName, new JDBCScheme( columnFields, columnNames,
-            "select db_num, db_lower, db_upper from testingtablealias as testingtablealias", "select count(*) from testingtablealias" ) );
+            "select db_num, db_lower, db_upper from testingtablealias as testingtable", "select count(*) from testingtablealias" ) );
 
     Pipe readPipe = new Each( "read", new Identity() );
 
@@ -185,7 +184,7 @@ public abstract class JDBCTestingBase
     while( iterator.hasNext() )
       {
       count++;
-      System.out.println( "iterator.next() = " + iterator.next() );
+      iterator.next();
       }
 
     iterator.close();
@@ -211,7 +210,5 @@ public abstract class JDBCTestingBase
  	  {
     this.driverName = driverName;
  	  }
-
    
   }
-

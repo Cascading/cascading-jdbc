@@ -12,6 +12,26 @@
 
 package com.twitter.maple.jdbc;
 
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.FileInputFormat;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.RecordReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cascading.flow.FlowProcess;
 import cascading.flow.hadoop.util.HadoopUtil;
 import cascading.tap.SinkMode;
@@ -22,18 +42,6 @@ import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
 
 import com.twitter.maple.jdbc.db.DBConfiguration;
-
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.RecordReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.sql.*;
-import java.util.*;
 
 /**
  * Class JDBCTap is a {@link Tap} sub-class that provides read and write access to a RDBMS via JDBC drivers.
@@ -114,7 +122,12 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector> {
         this( connectionUrl, null, null, driverClassName, tableDesc, scheme, sinkMode );
     }
 
-    /**
+    @Override
+		public boolean commitResource(JobConf conf) throws IOException {
+			return super.commitResource(conf);
+		}
+
+		/**
      * Constructor JDBCTap creates a new JDBCTap instance.
      * <p/>
      * Use this constructor for connecting to existing tables that will be read from, or will be inserted/updated
@@ -360,7 +373,6 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector> {
                 connection = DriverManager.getConnection( connectionUrl );
             else
                 connection = DriverManager.getConnection( connectionUrl, username, password );
-
             connection.setAutoCommit( false );
 
             return connection;
@@ -401,6 +413,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector> {
 
                 connection.commit();
                 statement.close();
+                connection.close();
             }
             catch( SQLException exception )
             {
@@ -408,17 +421,20 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector> {
             }
         }
         finally
-        {
+          {
             try
             {
-                if( connection != null )
-                    connection.close();
-            }
+                if( connection != null && !connection.isClosed() )
+                  {
+                  connection.commit();
+                  connection.close();
+                  }
+              }
             catch( SQLException exception )
-            {
+              {
                 // ignore
                 LOG.warn( "ignoring connection close exception", exception );
-            }
+              }
         }
 
         return result;
@@ -454,6 +470,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector> {
 
                 connection.commit();
                 statement.close();
+                connection.close();
             }
             catch( SQLException exception )
             {
@@ -464,9 +481,11 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector> {
         {
             try
             {
-                if( connection != null )
+                if( connection != null && !connection.isClosed())
+                  {
                     connection.commit();
                     connection.close();
+                  }
             }
             catch( SQLException exception )
             {

@@ -29,12 +29,12 @@
 
 package com.twitter.maple.jdbc.db;
 
-import org.apache.hadoop.conf.Configuration;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+
+import org.apache.hadoop.conf.Configuration;
 
 /**
  * A container for configuration property names for jobs with DB input/output. <br> The job can be

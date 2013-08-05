@@ -15,7 +15,7 @@ public class HSQLTest extends JDBCTestingBase
 	@Before
   public void setUp() throws IOException
     {
-    setJdbcurl("jdbc:hsqldb:mem://testing;hsqldb.tx=mvcc");
+    setJdbcurl("jdbc:hsqldb:mem://testing");
     setDriverName("org.hsqldb.jdbcDriver");
     }
 	

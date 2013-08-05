@@ -73,19 +73,23 @@ public class DBInputFormat<T extends DBWritable>
             this.split = split;
             this.job = job;
 
+            if (connection == null)
+              openConnection();
             statement =
                 connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
             //statement.setFetchSize(Integer.MIN_VALUE);
             String query = getSelectQuery();
-            try {
+            try
+              {
                 LOG.info(query);
                 results = statement.executeQuery(query);
                 LOG.info("done executing select query");
-            } catch (SQLException exception) {
+              } catch (SQLException exception)
+              {
                 LOG.error("unable to execute select query: " + query, exception);
                 throw new IOException("unable to execute select query: " + query, exception);
-            }
+              }
         }
 
         /**
@@ -138,17 +142,27 @@ public class DBInputFormat<T extends DBWritable>
         }
 
         /** {@inheritDoc} */
-        public void close() throws IOException {
-            try {
-                connection.commit();
-                results.close();
-                statement.close();
-            } catch (SQLException exception) {
-                throw new IOException("unable to commit and close", exception);
+        @Override
+        public void close() throws IOException
+          {
+          try
+            {
+            if (connection != null)
+              {
+              results.close();
+              statement.close();
+              connection.commit();
+              closeConnection();
+              }
             }
-        }
+            catch (SQLException exception)
+              {
+              throw new IOException("unable to commit and close", exception);
+              }
+          }
 
         /** {@inheritDoc} */
+        @Override
         public LongWritable createKey() {
             return new LongWritable();
         }
@@ -287,19 +301,16 @@ public class DBInputFormat<T extends DBWritable>
         conditions = dbConf.getInputConditions();
         limit = dbConf.getInputLimit();
         maxConcurrentReads = dbConf.getMaxConcurrentReadsNum();
-
-        try {
-            connection = dbConf.getConnection();
-        } catch (IOException exception) {
-            throw new RuntimeException("unable to create connection", exception.getCause());
-        }
-
-        configureConnection(connection);
     }
 
-    protected void configureConnection(Connection connection) {
-        setTransactionIsolationLevel(connection);
-        setAutoCommit(connection);
+		private void openConnection() {
+			try {
+			    connection = dbConf.getConnection();
+			} catch (IOException exception) {
+			    throw new RuntimeException("unable to create connection", exception.getCause());
+			}
+      setTransactionIsolationLevel(connection);
+      setAutoCommit(connection);
     }
 
     protected void setAutoCommit(Connection connection) {
@@ -336,6 +347,9 @@ public class DBInputFormat<T extends DBWritable>
         chunks = maxConcurrentReads == 0 ? chunks : maxConcurrentReads;
 
         try {
+            if (connection == null)
+              openConnection();
+
             Statement statement = connection.createStatement();
 
             ResultSet results = statement.executeQuery(getCountQuery());
@@ -352,6 +366,7 @@ public class DBInputFormat<T extends DBWritable>
 
             results.close();
             statement.close();
+            closeConnection();
 
             InputSplit[] splits = new InputSplit[chunks];
 
@@ -367,7 +382,6 @@ public class DBInputFormat<T extends DBWritable>
 
                 splits[i] = split;
             }
-
             return splits;
         } catch (SQLException e) {
             throw new IOException(e.getMessage());
@@ -454,4 +468,25 @@ public class DBInputFormat<T extends DBWritable>
 
         dbConf.setMaxConcurrentReadsNum(concurrentReads);
     }
-}
+
+	  /**
+	   * Closes the database connection.
+	   * */
+    private void closeConnection() throws IOException
+	    {
+      if (connection != null)
+       {
+       try
+         {
+          // some databases like derby require a commit, before a close.
+          connection.commit();
+				  connection.close();
+				  connection = null;
+         }
+       catch (SQLException e)
+         {
+				  throw new IOException(e);
+				 }
+        }
+	    }
+	}
