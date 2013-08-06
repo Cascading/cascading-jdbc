@@ -114,3 +114,30 @@ eclipse{
     downloadJavadoc = true
   }
 }
+
+uploadArchives {
+
+  repositories.mavenDeployer {
+    configuration = configurations.archives
+
+    repository( url: repoUrl ) { 
+      authentication( userName: repoUserName, password: repoPassword )
+    }   
+
+    pom.project {
+      description 'Cascading JDBC is a collection of adapters for JDBC.'
+      inceptionYear '2013'
+      url 'http://cascading.org/'
+      scm {
+        url 'https://github.com/Cascading/cascading-jdbc.git'
+      }   
+      licenses {
+        license {
+          name 'The Apache Software License, Version 2.0'
+          url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          distribution 'repo'
+        }   
+      }   
+    }   
+  }
+
