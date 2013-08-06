@@ -1,0 +1,11 @@
+include 'cascading-jdbc-core'
+include 'cascading-jdbc-derby'
+include 'cascading-jdbc-hypersql'
+include 'cascading-jdbc-h2'
+
+
+if (System.getProperty("cascading.jdbc.url.mysql")){
+    include 'cascading-jdbc-mysql'
+}
+else
+  logger.warn("excluding cascading-jdbc-mysql due to missing cascading.jdbc.url.mysql property")

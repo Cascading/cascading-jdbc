@@ -38,14 +38,14 @@ if( !currentCommit )
 def versionProperties = new Properties()
 file( 'version.properties' ).withInputStream { versionProperties.load( it ) }
 
-ext.majorVersion = versionProperties[ 'multitool.release.major' ]
-ext.minorVersion = versionProperties[ 'multitool.release.minor' ]
+ext.majorVersion = versionProperties[ 'cascading-jdbc.release.major' ]
+ext.minorVersion = versionProperties[ 'cascading-jdbc.release.minor' ]
 
 ext.buildNumber = System.getProperty( 'build.number', 'dev' )
 
-if( System.properties[ 'multitool.release.private' ] )
+if( System.properties[ 'cascading-jdbc.release.private' ] )
   buildNumber = "priv-${buildNumber}"
-else if( !System.properties[ 'multitool.release.final' ] )
+else if( !System.properties[ 'cascading-jdbc.release.final' ] )
   buildNumber = "wip-${buildNumber}"
 
 ext.releaseTag = "${majorVersion}-${buildNumber}"
@@ -58,5 +58,5 @@ ext.releaseVersion = majorVersion
 if( minorVersion )
   releaseVersion = "${releaseVersion}.${minorVersion}"
 
-if( !System.properties[ 'multitool.release.final' ] )
+if( !System.properties[ 'cascading-jdbc.release.final' ] )
   releaseVersion = "${releaseVersion}-${buildNumber}"

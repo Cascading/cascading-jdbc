@@ -16,7 +16,7 @@ import org.junit.Before;
 public class DerbyTest extends JDBCTestingBase {
 	
 	
-	@Before
+  @Before
   public void setUp() throws Exception
     {
 		System.setProperty("derby.storage.rowLocking", "true");

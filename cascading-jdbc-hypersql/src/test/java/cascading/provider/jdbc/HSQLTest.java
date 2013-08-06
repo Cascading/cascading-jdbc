@@ -11,8 +11,7 @@ import org.junit.Before;
 public class HSQLTest extends JDBCTestingBase
   {
 
-
-	@Before
+  @Before
   public void setUp() throws IOException
     {
     setJdbcurl("jdbc:hsqldb:mem://testing");

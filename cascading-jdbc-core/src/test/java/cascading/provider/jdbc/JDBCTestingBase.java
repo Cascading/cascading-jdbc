@@ -43,7 +43,7 @@ import cascading.tuple.TupleEntryIterator;
  */
 public abstract class JDBCTestingBase
   {
-  String inputFile = "src/test/resources/data/small.txt";
+  String inputFile = "../cascading-jdbc-core/src/test/resources/data/small.txt";
 
   /** the JDBC url for the tests. subclasses have to set this */
   private String jdbcurl;
