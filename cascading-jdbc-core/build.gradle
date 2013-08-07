@@ -17,27 +17,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-task sourcesJar( type: Jar, dependsOn: classes ) { 
-      from sourceSets.main.allSource
-        classifier = 'sources'
-}
-
-task javadocJar( type: Jar, dependsOn: javadoc ) { 
-      classifier = 'javadoc'
-        from javadoc.destinationDir
-}
-
-task testsJar( type: Jar, dependsOn: testClasses ) { 
-      from sourceSets.test.output
-        classifier = 'tests'
-}
-
-task testSourcesJar( type: Jar, dependsOn: classes ) { 
-      from sourceSets.test.allSource
-        classifier = 'test-sources'
-}
-
 test{
   scanForTestClasses = false
   exclude("**/*Check.class")

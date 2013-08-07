@@ -55,6 +55,8 @@ if( System.properties[ 'cascading-jdbc.release.local' ] )
   cascadingVersion = '2.2.0-wip-dev'
 
 subprojects{
+ 
+  version = releaseVersion
 
   repositories{
     mavenLocal()
@@ -74,6 +76,7 @@ subprojects{
 
 
     testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
     testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
     testCompile group: 'cascading', name:'cascading-core', version: cascadingVersion, classifier: 'tests'
     testCompile( group: 'org.apache.hadoop', name: 'hadoop-test', version: hadoopVersion ){
@@ -90,12 +93,41 @@ subprojects{
 
     provided( group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1')
   }
-}
+  task sourcesJar( type: Jar, dependsOn: classes ) {
+        from sourceSets.main.allSource
+          classifier = 'sources'
+  }
 
+  task javadocJar( type: Jar, dependsOn: javadoc ) {
+        classifier = 'javadoc'
+          from javadoc.destinationDir
+  }
 
-artifacts{
-  subprojects{
-    archives fatJar
+  task testsJar( type: Jar, dependsOn: testClasses ) {
+        from sourceSets.test.output
+          classifier = 'tests'
+  }
+
+  task testSourcesJar( type: Jar, dependsOn: classes ) {
+        from sourceSets.test.allSource
+          classifier = 'test-sources'
+  }
+
+  configurations {
+    testArtifacts {
+      extendsFrom testRuntime
+    }
+  }
+
+  artifacts {
+    archives jar 
+    archives fatJar 
+    archives sourcesJar
+    archives javadocJar
+    archives testsJar
+    archives testSourcesJar
+    testArtifacts testsJar
+    testArtifacts testSourcesJar
   }
 }
 
