@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
+ *
+ * Project and contact information: http://www.cascading.org/
+ *
+ * This file is part of the Cascading project.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package cascading.provider.jdbc;
 
 import java.util.Properties;
@@ -9,8 +28,15 @@ import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
+/**
+ * {@link JDBCFactory} is a factory class that can be used by the lingual
+ * provider mechanism to create {@link JDBCScheme}s and {@link JDBCTap}s.
+ * 
+ * */
 public class JDBCFactory
   {
+    
+    public static final String DEFAULT_SEPARATOR = ":";
 
     public static final String PROTOCOL_JDBC_USER = "jdbcuser";
     public static final String PROTOCOL_JDBC_PASSWORD = "jdbcpassword";
@@ -23,13 +49,15 @@ public class JDBCFactory
     public static final String PROTOCOL_PRIMARY_KEYS = "tabledesc.primarykeys";
 
     public static final String FORMAT_SEPARATOR = "separator";
-    public static final String FORMAT_COMLUMNS = "columns";
+    public static final String FORMAT_COLUMNS = "columnNames";
     public static final String FORMAT_ORDER_BY = "orderBy";
     public static final String FORMAT_CONDITIONS = "conditions";
     public static final String FORMAT_LIMIT = "limit";
-    public static final String FORMAT_UPDATEFIELDS_BY = "updateByFields";
     public static final String FORMAT_UPDATE_BY = "updateBy";
     public static final String FORMAT_TABLE_ALIAS = "tableAlias";
+
+    public static final String FORMAT_SELECT_QUERY = "selectQuery";
+    public static final String FORMAT_COUNT_QUERY = "countQuery";
 
     /**
      * Creates a new Tap for the given arguments.
@@ -47,6 +75,7 @@ public class JDBCFactory
      *          optionally a jdbc user and a jdbc password.
      * @return a new {@link JDBCTap} instance.
      */
+    @SuppressWarnings("rawtypes")
     public Tap createTap(String protocol, Scheme scheme, String identifier,
         SinkMode mode, Properties properties)
       {
@@ -62,14 +91,78 @@ public class JDBCFactory
 
       }
 
-    public Scheme createScheme()
+    
+    /**
+     * Creates a new {@link JDBCScheme} instance for the given format, fields and properties.
+     * 
+     * @param format The format of the scheme. This is JDBC driver dependent.
+     * @param fields The fields to interact with.
+     * @param properties The {@link Properties} object containing the necessary information to construct a {@link JDBCScheme}.
+     * @return a new {@link JDBCScheme} instance.
+     */
+    @SuppressWarnings("rawtypes")
+    public Scheme createScheme(String format, Fields fields,
+        Properties properties)
       {
-        // return new JDBCScheme(DBInputFormat.class, DBOutputFormat.class,
-        // columnFields, columns, orderBy, conditions, limit, updateByFields,
-        // updateBy, tableAlias)
-        return null;
+        String selectQuery = properties.getProperty(FORMAT_SELECT_QUERY);
+
+        String countQuery = properties.getProperty(FORMAT_COUNT_QUERY);
+
+        String separator = properties.getProperty(FORMAT_SEPARATOR, DEFAULT_SEPARATOR);
+
+        long limit = -1;
+
+        String limitProperty = properties.getProperty(FORMAT_LIMIT);
+        if (limitProperty != null)
+          limit = Long.parseLong(limitProperty);
+
+        String columnNamesProperty = properties.getProperty(FORMAT_COLUMNS);
+        if (columnNamesProperty == null || columnNamesProperty == "")
+          throw new IllegalArgumentException("no column names given");
+
+        String[] columNames = columnNamesProperty.split(separator);
+
+        Boolean tableAlias = false;
+        String tableAliasProperty = properties.getProperty(FORMAT_TABLE_ALIAS);
+        if (tableAliasProperty != null)
+          tableAlias = new Boolean(tableAliasProperty);
+
+        if (selectQuery != null)
+          return new JDBCScheme(DBInputFormat.class, fields, columNames,
+              selectQuery, countQuery, limit, tableAlias);
+
+        String conditions = properties.getProperty(FORMAT_CONDITIONS);
+
+        String updateByProperty = properties.getProperty(FORMAT_UPDATE_BY);
+        String[] updateBy = new String[] {};
+        if (updateByProperty != null)
+          updateBy = updateByProperty.split(separator);
+
+        
+        Fields updateByFields = null;
+        if (updateByProperty != null)
+          updateByFields = new Fields(updateBy);
+
+        String[] orderBy = new String[] {};
+        String orderByProperty = properties.getProperty(FORMAT_ORDER_BY);
+        if (orderByProperty != null)
+          orderBy = orderByProperty.split(separator);
+
+        return new JDBCScheme(DBInputFormat.class, DBOutputFormat.class,
+            fields, columNames, orderBy, conditions, limit, updateByFields,
+            updateBy, tableAlias);
+
       }
 
+    /**
+     * Private helper method to extract values representing a {@link TableDesc}
+     * instance from the properties passed to the createTap method.
+     * 
+     * @param properties
+     *          A properties instance.
+     * @return A {@link TableDesc} instance.
+     *          
+     */ 
     private TableDesc createTableDescFromProperties(Properties properties)
       {
         String tableName = properties.getProperty(PROTOCOL_TABLE_NAME);
@@ -77,7 +170,7 @@ public class JDBCFactory
         if (tableName == null)
           throw new IllegalArgumentException("no tablename given");
 
-        String separator = properties.getProperty(PROTOCOL_FIELD_SEPARATOR);
+        String separator = properties.getProperty(PROTOCOL_FIELD_SEPARATOR, DEFAULT_SEPARATOR);
 
         String columnNamesProperty = properties
             .getProperty(PROTOCOL_COLUMN_NAMES);
