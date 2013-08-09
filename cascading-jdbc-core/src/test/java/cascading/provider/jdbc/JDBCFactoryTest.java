@@ -20,15 +20,20 @@
 
 package cascading.provider.jdbc;
 
+import static cascading.tuple.Fields.names;
+import static cascading.tuple.Fields.types;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 
 import java.util.Properties;
 
 import org.junit.Test;
 
+import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
+import cascading.tuple.Fields;
 
 /**
  * Tests for {@link JDBCFactory}.
@@ -56,6 +61,26 @@ public class JDBCFactoryTest
             props);
       }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateTapEmptyTableName()
+      {
+        String protocol = "jdbc";
+        String identifier = "jdbc:some:stuf//database";
+        JDBCScheme mockScheme = mock(JDBCScheme.class);
+
+        JDBCFactory factory = new JDBCFactory();
+
+        Properties props = new Properties();
+        props.setProperty(JDBCFactory.PROTOCOL_FIELD_SEPARATOR, ":");
+        props.setProperty(JDBCFactory.PROTOCOL_JDBC_DRIVER, "some.Driver");
+        props.setProperty(JDBCFactory.PROTOCOL_JDBC_USER, "username");
+        props.setProperty(JDBCFactory.PROTOCOL_JDBC_PASSWORD, "password");
+        props.setProperty(JDBCFactory.PROTOCOL_TABLE_NAME, " ");
+
+        factory.createTap(protocol, mockScheme, identifier, SinkMode.REPLACE,
+            props);
+      }
+    
     @Test(expected = IllegalArgumentException.class)
     public void testCreateTapNoColumns()
       {
@@ -138,4 +163,69 @@ public class JDBCFactoryTest
         assertArrayEquals(new String[] { "id" }, tdesc.getPrimaryKeys());
 
       }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateSchemeNoColumns()
+      {
+        JDBCFactory factory = new JDBCFactory();
+        factory.createScheme("someFormat", new Fields(), new Properties());
+
+      }
+
+    @Test
+    public void testCreateScheme()
+      {
+        JDBCFactory factory = new JDBCFactory();
+        Fields fields = new Fields("one", "two", "three");
+
+        Properties schemeProperties = new Properties();
+        schemeProperties.setProperty(JDBCFactory.FORMAT_COLUMNS,
+            "one:two:three");
+
+        Scheme<?, ?, ?, ?, ?> scheme = factory.createScheme("someFormat",
+            fields, schemeProperties);
+        assertNotNull(scheme);
+
+        JDBCScheme jdbcScheme = (JDBCScheme) scheme;
+
+        assertArrayEquals(jdbcScheme.getColumns(), new String[] { "one", "two",
+            "three" });
+
+      }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateSchemeWithSelectNoCount()
+      {
+        JDBCFactory factory = new JDBCFactory();
+        Fields fields = new Fields("one", "two", "three");
+
+        Properties schemeProperties = new Properties();
+        schemeProperties.setProperty(JDBCFactory.FORMAT_COLUMNS,
+            "one:two:three");
+        schemeProperties.setProperty(JDBCFactory.FORMAT_SELECT_QUERY,
+            "select one, two, three from table");
+
+        factory.createScheme("someFormat", fields, schemeProperties);
+      }
+
+    @Test
+    public void testCreateSchemeWithSelectAndCount()
+      {
+        JDBCFactory factory = new JDBCFactory();
+        Fields fields = new Fields("one", "two", "three");
+
+        Properties schemeProperties = new Properties();
+        schemeProperties.setProperty(JDBCFactory.FORMAT_COLUMNS,
+            "one:two:three");
+        schemeProperties.setProperty(JDBCFactory.FORMAT_SELECT_QUERY,
+            "select one, two, three from table");
+        schemeProperties.setProperty(JDBCFactory.FORMAT_COUNT_QUERY,
+            "select count(*) from table");
+
+        Scheme<?, ?, ?, ?, ?> scheme = factory.createScheme("someFormat",
+            fields, schemeProperties);
+        assertNotNull(scheme);
+
+      }
+    
   }
