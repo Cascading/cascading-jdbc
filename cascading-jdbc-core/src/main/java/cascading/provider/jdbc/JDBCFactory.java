@@ -90,14 +90,18 @@ public class JDBCFactory
         SinkMode mode, Properties properties)
       {
         LOG.info("creating jdbc protocol with properties {} in mode {}", properties, mode);
-        String jdbcUser = properties.getProperty(PROTOCOL_JDBC_USER);
-        String jdbcPassword = properties.getProperty(PROTOCOL_JDBC_PASSWORD);
+        String jdbcUserProperty = properties.getProperty(PROTOCOL_JDBC_USER);
+        String jdbcPasswordProperty = properties.getProperty(PROTOCOL_JDBC_PASSWORD);
         String driver = properties.getProperty(PROTOCOL_JDBC_DRIVER);
 
-        if (jdbcUser.isEmpty())
-          jdbcUser = null;
-        if (jdbcPassword.isEmpty())
-          jdbcPassword = null;
+        String jdbcUser = null;
+        if (jdbcUserProperty != null && !jdbcUserProperty.isEmpty())
+          jdbcUser = jdbcUserProperty;
+        
+        String jdbcPassword = null;
+        if (jdbcPasswordProperty != null && !jdbcPasswordProperty.isEmpty())
+          jdbcPassword = jdbcPasswordProperty;
+        
         
         final TableDesc tableDesc = createTableDescFromProperties(properties);
 
