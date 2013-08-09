@@ -19,10 +19,8 @@
  */
 package cascading.provider.jdbc;
 
-import java.util.Arrays;
 import java.util.Properties;
 
-import org.mortbay.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,8 +30,6 @@ import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
-
-import com.google.common.collect.Lists;
 
 /**
  * {@link JDBCFactory} is a factory class that can be used by the lingual
@@ -72,16 +68,12 @@ public class JDBCFactory
     /**
      * Creates a new Tap for the given arguments.
      * 
-     * @param protocol
-     *          name of the protocol, only accepts "jdbc".
-     * @param scheme
-     *          a {@link JDBCScheme} instance.
-     * @param identifier
-     *          The identifier of the tap, which is assumed to be the jdbc URL.
-     * @param mode
-     *          a {@link SinkMode}. All are supported.
-     * @param properties
-     *          The Properties object containing the table description,
+     * @param protocol name of the protocol, only accepts "jdbc".
+     * @param scheme a {@link JDBCScheme} instance.
+     * @param identifier The identifier of the tap, which is assumed to be the
+     *          jdbc URL.
+     * @param mode a {@link SinkMode}. All are supported.
+     * @param properties The Properties object containing the table description,
      *          optionally a jdbc user and a jdbc password.
      * @return a new {@link JDBCTap} instance.
      */
@@ -89,20 +81,23 @@ public class JDBCFactory
     public Tap createTap(String protocol, Scheme scheme, String identifier,
         SinkMode mode, Properties properties)
       {
-        LOG.info("creating jdbc protocol with properties {} in mode {}", properties, mode);
-        String jdbcUserProperty = properties.getProperty(PROTOCOL_JDBC_USER);
-        String jdbcPasswordProperty = properties.getProperty(PROTOCOL_JDBC_PASSWORD);
+        LOG.info("creating jdbc protocol with properties {} in mode {}",
+            properties, mode);
+
         String driver = properties.getProperty(PROTOCOL_JDBC_DRIVER);
+
+        String jdbcUserProperty = properties.getProperty(PROTOCOL_JDBC_USER);
+        String jdbcPasswordProperty = properties
+            .getProperty(PROTOCOL_JDBC_PASSWORD);
 
         String jdbcUser = null;
         if (jdbcUserProperty != null && !jdbcUserProperty.isEmpty())
           jdbcUser = jdbcUserProperty;
-        
+
         String jdbcPassword = null;
         if (jdbcPasswordProperty != null && !jdbcPasswordProperty.isEmpty())
           jdbcPassword = jdbcPasswordProperty;
-        
-        
+
         final TableDesc tableDesc = createTableDescFromProperties(properties);
 
         return new JDBCTap(identifier, jdbcUser, jdbcPassword, driver,
@@ -114,12 +109,9 @@ public class JDBCFactory
      * Creates a new {@link JDBCScheme} instance for the given format, fields
      * and properties.
      * 
-     * @param format
-     *          The format of the scheme. This is JDBC driver dependent.
-     * @param fields
-     *          The fields to interact with.
-     * @param properties
-     *          The {@link Properties} object containing the necessary
+     * @param format The format of the scheme. This is JDBC driver dependent.
+     * @param fields The fields to interact with.
+     * @param properties The {@link Properties} object containing the necessary
      *          information to construct a {@link JDBCScheme}.
      * @return a new {@link JDBCScheme} instance.
      */
@@ -191,8 +183,7 @@ public class JDBCFactory
      * Private helper method to extract values representing a {@link TableDesc}
      * instance from the properties passed to the createTap method.
      * 
-     * @param properties
-     *          A properties instance.
+     * @param properties A properties instance.
      * @return A {@link TableDesc} instance.
      * 
      */

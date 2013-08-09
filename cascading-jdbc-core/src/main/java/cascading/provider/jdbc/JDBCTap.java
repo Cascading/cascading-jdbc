@@ -104,18 +104,12 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
      * from, or will be inserted/updated into. By default it uses
      * {@link SinkMode#UPDATE}.
      * 
-     * @param connectionUrl
-     *          of type String
-     * @param username
-     *          of type String
-     * @param password
-     *          of type String
-     * @param driverClassName
-     *          of type String
-     * @param tableName
-     *          of type String
-     * @param scheme
-     *          of type JDBCScheme
+     * @param connectionUrl of type String
+     * @param username of type String
+     * @param password of type String
+     * @param driverClassName of type String
+     * @param tableName of type String
+     * @param scheme of type JDBCScheme
      */
     public JDBCTap(String connectionUrl, String username, String password,
         String driverClassName, String tableName, JDBCScheme scheme)
@@ -127,16 +121,11 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     /**
      * Constructor JDBCTap creates a new JDBCTap instance.
      * 
-     * @param connectionUrl
-     *          of type String
-     * @param driverClassName
-     *          of type String
-     * @param tableDesc
-     *          of type TableDesc
-     * @param scheme
-     *          of type JDBCScheme
-     * @param sinkMode
-     *          of type SinkMode
+     * @param connectionUrl of type String
+     * @param driverClassName of type String
+     * @param tableDesc of type TableDesc
+     * @param scheme of type JDBCScheme
+     * @param sinkMode of type SinkMode
      */
     public JDBCTap(String connectionUrl, String driverClassName,
         TableDesc tableDesc, JDBCScheme scheme, SinkMode sinkMode)
@@ -158,18 +147,12 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
      * from, or will be inserted/updated into. By default it uses
      * {@link SinkMode#UPDATE}.
      * 
-     * @param connectionUrl
-     *          of type String
-     * @param username
-     *          of type String
-     * @param password
-     *          of type String
-     * @param driverClassName
-     *          of type String
-     * @param tableDesc
-     *          of type TableDesc
-     * @param scheme
-     *          of type JDBCScheme
+     * @param connectionUrl of type String
+     * @param username of type String
+     * @param password of type String
+     * @param driverClassName of type String
+     * @param tableDesc of type TableDesc
+     * @param scheme of type JDBCScheme
      */
     public JDBCTap(String connectionUrl, String username, String password,
         String driverClassName, TableDesc tableDesc, JDBCScheme scheme)
@@ -181,20 +164,13 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     /**
      * Constructor JDBCTap creates a new JDBCTap instance.
      * 
-     * @param connectionUrl
-     *          of type String
-     * @param username
-     *          of type String
-     * @param password
-     *          of type String
-     * @param driverClassName
-     *          of type String
-     * @param tableDesc
-     *          of type TableDesc
-     * @param scheme
-     *          of type JDBCScheme
-     * @param sinkMode
-     *          of type SinkMode
+     * @param connectionUrl of type String
+     * @param username of type String
+     * @param password of type String
+     * @param driverClassName of type String
+     * @param tableDesc of type TableDesc
+     * @param scheme of type JDBCScheme
+     * @param sinkMode of type SinkMode
      */
     public JDBCTap(String connectionUrl, String username, String password,
         String driverClassName, TableDesc tableDesc, JDBCScheme scheme,
@@ -224,14 +200,10 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
      * from, or will be inserted/updated into. By default it uses
      * {@link SinkMode#UPDATE}.
      * 
-     * @param connectionUrl
-     *          of type String
-     * @param driverClassName
-     *          of type String
-     * @param tableDesc
-     *          of type TableDesc
-     * @param scheme
-     *          of type JDBCScheme
+     * @param connectionUrl of type String
+     * @param driverClassName of type String
+     * @param tableDesc of type TableDesc
+     * @param scheme of type JDBCScheme
      */
     public JDBCTap(String connectionUrl, String driverClassName,
         TableDesc tableDesc, JDBCScheme scheme)
@@ -243,16 +215,11 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
      * Constructor JDBCTap creates a new JDBCTap instance that may only used as
      * a data source.
      * 
-     * @param connectionUrl
-     *          of type String
-     * @param username
-     *          of type String
-     * @param password
-     *          of type String
-     * @param driverClassName
-     *          of type String
-     * @param scheme
-     *          of type JDBCScheme
+     * @param connectionUrl of type String
+     * @param username of type String
+     * @param password of type String
+     * @param driverClassName of type String
+     * @param scheme of type JDBCScheme
      */
     public JDBCTap(String connectionUrl, String username, String password,
         String driverClassName, JDBCScheme scheme)
@@ -267,12 +234,9 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     /**
      * Constructor JDBCTap creates a new JDBCTap instance.
      * 
-     * @param connectionUrl
-     *          of type String
-     * @param driverClassName
-     *          of type String
-     * @param scheme
-     *          of type JDBCScheme
+     * @param connectionUrl of type String
+     * @param driverClassName of type String
+     * @param scheme of type JDBCScheme
      */
     public JDBCTap(String connectionUrl, String driverClassName,
         JDBCScheme scheme)
@@ -293,8 +257,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     /**
      * Method setBatchSize sets the batchSize of this JDBCTap object.
      * 
-     * @param batchSize
-     *          the batchSize of this JDBCTap object.
+     * @param batchSize the batchSize of this JDBCTap object.
      */
     public void setBatchSize(int batchSize)
       {
@@ -332,8 +295,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
      * This value specifies the number of concurrent selects and thus the number
      * of mappers that may be used. A value of -1 uses the job default.
      * 
-     * @param concurrentReads
-     *          the concurrentReads of this JDBCTap object.
+     * @param concurrentReads the concurrentReads of this JDBCTap object.
      */
     public void setConcurrentReads(int concurrentReads)
       {
@@ -491,8 +453,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
      * the remote RDBMS. The number of rows updated will be returned, if
      * applicable.
      * 
-     * @param updateString
-     *          of type String
+     * @param updateString of type String
      * @return int
      */
     public int executeUpdate(String updateString)
@@ -547,10 +508,8 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
      * RDBMS. A value of -1 for returnResults will return a List of all results
      * from the query, a value of 0 will return an empty List.
      * 
-     * @param queryString
-     *          of type String
-     * @param returnResults
-     *          of type int
+     * @param queryString of type String
+     * @param returnResults of type int
      * @return List
      */
     public List<Object[]> executeQuery(String queryString, int returnResults)
@@ -569,6 +528,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
                 Statement statement = connection.createStatement();
 
                 ResultSet resultSet = statement.executeQuery(queryString);
+
                 if (returnResults != 0)
                   result = copyResultSet(resultSet,
                       returnResults == -1 ? Integer.MAX_VALUE : returnResults);
