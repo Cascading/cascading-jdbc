@@ -172,7 +172,18 @@ public class JDBCFactory
         String orderByProperty = properties.getProperty(FORMAT_ORDER_BY);
         if (orderByProperty != null && !orderByProperty.isEmpty())
           orderBy = orderByProperty.split(separator);
-
+        
+        // XXX quick workaround for situations where cascading doesn't know the fields yet
+        Fields newFields = new Fields();
+        if (fields == Fields.UNKNOWN)
+          {
+            for (int i = 0; i < columNames.length; i++)
+              {
+                newFields = newFields.append(new Fields(columNames[i]));
+              }
+            fields = newFields;
+          }
+        
         return new JDBCScheme(DBInputFormat.class, DBOutputFormat.class,
             fields, columNames, orderBy, conditions, limit, updateByFields,
             updateBy, tableAlias);
