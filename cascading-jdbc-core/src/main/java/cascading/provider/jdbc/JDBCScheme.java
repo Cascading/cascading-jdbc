@@ -28,6 +28,8 @@ import cascading.util.Util;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -130,8 +132,6 @@ public class JDBCScheme extends
         Fields updateByFields, String[] updateBy, Boolean tableAlias)
       {
         this.columnFields = columnFields;
-
-        verifyColumns(columnFields, columns);
 
         setSinkFields(columnFields);
         setSourceFields(columnFields);
@@ -745,6 +745,16 @@ public class JDBCScheme extends
         return result;
       }
 
+    
+    
+    @Override
+    public void presentSinkFields(FlowProcess<JobConf> flowProcess, Tap tap, Fields fields)
+      {
+      super.presentSinkFields(flowProcess, tap, fields);
+      verifyColumns(getSinkFields(), columns);
+      }
+    
+    
     @Override
     public boolean equals(Object object)
       {
