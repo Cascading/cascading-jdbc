@@ -1,6 +1,5 @@
 include 'cascading-jdbc-core'
 include 'cascading-jdbc-derby'
-include 'cascading-jdbc-hypersql'
 include 'cascading-jdbc-h2'
 
 
