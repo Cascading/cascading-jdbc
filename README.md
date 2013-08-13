@@ -88,7 +88,7 @@ Next we set the protocol properties for `jdbc` in the `derby` provider. The
 first line describes the table, we are operating on to the underlying JDBCTap.
 The table has two columns `title` and `cnt`, which are of type `varchar(100)`
 and `int`. The command line interface uses `:` as a separator for properties,
-which contail multiple values.
+which contain multiple values.
 
     > lingual catalog --schema working --protocol jdbc --add "--properties=tabledesc.tablename=title_counts,tabledesc.columnnames=title:cnt,tabledesc.columndefs=varchar(100) not null:int not null" --provider derby
 
