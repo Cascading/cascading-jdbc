@@ -41,7 +41,6 @@ configure(allprojects) {
 
 apply from: 'etc/version.gradle'
 
-group = 'cascading'
 version = releaseVersion
 
 // the version of hadoop used for compiling and testing
@@ -56,6 +55,7 @@ if( System.properties[ 'cascading-jdbc.release.local' ] )
 
 subprojects{
  
+  group = 'cascading'
   version = releaseVersion
 
   repositories{
