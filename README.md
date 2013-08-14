@@ -8,6 +8,14 @@ project consists of a generic part `cascading-jdbc-core` and database specific
 sub-projects. The database specific projects have dependencies to their
 respective JDBC drivers and run tests against those systems during build. 
 
+
+Currently three relational databases are supported in the build:
+
+* [derby](http://db.apache.org/derby/)
+* [h2](http://www.h2database.com/html/main.html)
+* [mysql](http://www.mysql.com/)
+
+
 This code is based on previous work:
 
 * https://github.com/Cascading/maple
