@@ -129,28 +129,10 @@ subprojects{
     testArtifacts testsJar
     testArtifacts testSourcesJar
   }
-}
+  uploadArchives {
 
-
-idea {
-  module {
-      downloadJavadoc = true
-      downloadSources = true
-  }
-}
-
-eclipse{
-  classpath{
-    defaultOutputDir = file('build')
-    downloadSources = true
-    downloadJavadoc = true
-  }
-}
-
-uploadArchives {
-
-  repositories.mavenDeployer {
-    configuration = configurations.archives
+    repositories.mavenDeployer {
+      configuration = configurations.archives
 
     repository( url: repoUrl ) { 
       authentication( userName: repoUserName, password: repoPassword )
@@ -172,4 +154,23 @@ uploadArchives {
       }   
     }   
   }
+ }
 }
+
+
+idea {
+  module {
+      downloadJavadoc = true
+      downloadSources = true
+  }
+}
+
+eclipse{
+  classpath{
+    defaultOutputDir = file('build')
+    downloadSources = true
+    downloadJavadoc = true
+  }
+}
+
+
