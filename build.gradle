@@ -22,7 +22,7 @@ buildscript {
   repositories {
     mavenLocal()
     mavenCentral()
-        maven { url 'http://repo.springsource.org/plugins-release' }
+    maven { url 'http://repo.springsource.org/plugins-release' }
   }
   dependencies {
     classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.4'
@@ -32,7 +32,7 @@ buildscript {
 }
 
 // gives 'provided' scope for hadoop
-configure(allprojects) {
+configure( allprojects ) {
   apply plugin: 'propdeps'
   apply plugin: 'propdeps-maven'
   apply plugin: 'propdeps-idea'
@@ -50,15 +50,15 @@ ext.cascadingVersion = '2.2.0-+'
 
 // set property to use locally installed cascading builds
 // otherwise wip releases will be pulled from conjars
-if( System.properties[ 'cascading-jdbc.release.local' ] ) 
+if( System.properties[ 'cascading-jdbc.release.local' ] )
   cascadingVersion = '2.2.0-wip-dev'
 
-subprojects{
- 
+subprojects {
+
   group = 'cascading'
   version = releaseVersion
 
-  repositories{
+  repositories {
     mavenLocal()
     mavenCentral()
     mavenRepo name: 'conjars', url: 'http://conjars.org/repo/'
@@ -70,47 +70,46 @@ subprojects{
   apply plugin: 'eclipse'
   apply plugin: 'fatjar'
 
-  dependencies{
-    compile group: 'cascading', name: 'cascading-local', version: cascadingVersion
-    compile group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion
+  dependencies {
+    provided group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion
+    provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.2'
 
-
-    testCompile group: 'junit', name: 'junit', version: '4.11'
-    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
-    testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
-    testCompile group: 'cascading', name:'cascading-core', version: cascadingVersion, classifier: 'tests'
-    testCompile( group: 'org.apache.hadoop', name: 'hadoop-test', version: hadoopVersion ){
-      exclude group: 'oro'
-      exclude group: 'hsqldb'
-    }
-
-    provided( group: 'org.apache.hadoop', name: 'hadoop-core', version: hadoopVersion) {
+    provided( group: 'org.apache.hadoop', name: 'hadoop-core', version: hadoopVersion ) {
       exclude group: 'ant'
       exclude group: 'junit'
       exclude group: 'hsqldb'
       exclude group: 'oro' // causes transient build maven failures, ftw
     }
 
-    provided( group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1')
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
+    testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
+    testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests'
+    testCompile( group: 'org.apache.hadoop', name: 'hadoop-test', version: hadoopVersion ) {
+      exclude group: 'oro'
+      exclude group: 'hsqldb'
+    }
+
   }
+
   task sourcesJar( type: Jar, dependsOn: classes ) {
-        from sourceSets.main.allSource
-          classifier = 'sources'
+    from sourceSets.main.allSource
+    classifier = 'sources'
   }
 
   task javadocJar( type: Jar, dependsOn: javadoc ) {
-        classifier = 'javadoc'
-          from javadoc.destinationDir
+    classifier = 'javadoc'
+    from javadoc.destinationDir
   }
 
   task testsJar( type: Jar, dependsOn: testClasses ) {
-        from sourceSets.test.output
-          classifier = 'tests'
+    from sourceSets.test.output
+    classifier = 'tests'
   }
 
   task testSourcesJar( type: Jar, dependsOn: classes ) {
-        from sourceSets.test.allSource
-          classifier = 'test-sources'
+    from sourceSets.test.allSource
+    classifier = 'test-sources'
   }
 
   configurations {
@@ -120,8 +119,8 @@ subprojects{
   }
 
   artifacts {
-    archives jar 
-    archives fatJar 
+    archives jar
+    archives fatJar
     archives sourcesJar
     archives javadocJar
     archives testsJar
@@ -134,40 +133,40 @@ subprojects{
     repositories.mavenDeployer {
       configuration = configurations.archives
 
-    repository( url: repoUrl ) { 
-      authentication( userName: repoUserName, password: repoPassword )
-    }   
+      repository( url: repoUrl ) {
+        authentication( userName: repoUserName, password: repoPassword )
+      }
 
-    pom.project {
-      description 'Cascading JDBC is a collection of adapters for JDBC.'
-      inceptionYear '2013'
-      url 'http://cascading.org/'
-      scm {
-        url 'https://github.com/Cascading/cascading-jdbc.git'
-      }   
-      licenses {
-        license {
-          name 'The Apache Software License, Version 2.0'
-          url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-          distribution 'repo'
-        }   
-      }   
-    }   
+      pom.project {
+        description 'Cascading JDBC is a collection of adapters for JDBC.'
+        inceptionYear '2013'
+        url 'http://cascading.org/'
+        scm {
+          url 'https://github.com/Cascading/cascading-jdbc.git'
+        }
+        licenses {
+          license {
+            name 'The Apache Software License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            distribution 'repo'
+          }
+        }
+      }
+    }
   }
- }
 }
 
 
 idea {
   module {
-      downloadJavadoc = true
-      downloadSources = true
+    downloadJavadoc = true
+    downloadSources = true
   }
 }
 
-eclipse{
-  classpath{
-    defaultOutputDir = file('build')
+eclipse {
+  classpath {
+    defaultOutputDir = file( 'build' )
     downloadSources = true
     downloadJavadoc = true
   }
