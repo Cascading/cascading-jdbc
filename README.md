@@ -8,13 +8,11 @@ project consists of a generic part `cascading-jdbc-core` and database specific
 sub-projects. The database specific projects have dependencies to their
 respective JDBC drivers and run tests against those systems during build. 
 
-
 Currently three relational databases are supported in the build:
 
 * [derby](http://db.apache.org/derby/)
 * [h2](http://www.h2database.com/html/main.html)
 * [mysql](http://www.mysql.com/)
-
 
 This code is based on previous work:
 
@@ -31,9 +29,9 @@ that can be used within [lingual](http://docs.cascading.org/lingual/1.0/).
 
 Database systems like `mysql` require an external database server. In order to
 be able to test with an external server, the build uses system properties, which
-can be given on the commandline. 
+can be given on the command line. 
 
-Because of this the sub-project for `mysql` is only enabled, if the connnection
+Due to this the sub-project for `mysql` is only enabled, if the connnection
 information is given to gradle like this:
 
     > gradle build -Dcascading.jdbc.url.mysql="jdbc:mysql://some-host/somedb?user=someuser&password=somepw"
@@ -47,6 +45,8 @@ like starting and stopping an in-process server during `setUp()` and
 You can install the jars into a local maven repository with 
 
     > gralde install
+
+or you can use the ones deployed to [http://conjars.org](conjars).
 
 # Usage
 
@@ -89,7 +89,7 @@ Next we can add the `working` schema, the `titles` stereotype and the
 `title_counts` table.
 
     > lingual catalog --schema working --add
-    > lingual catalog --schema working --stereotype titles -add --columns title,cnt --types string,int
+    > lingual catalog --schema working --stereotype titles -add --columns TITLE,CNT --types string,int
     > lingual catalog --schema working --format derby --add --properties columnnames=title:cnt --provider derby
 
 Next we set the protocol properties for `jdbc` in the `derby` provider. The
@@ -111,9 +111,30 @@ directly into your derby server like this:
 
     > lingual shell
     (lingual shell)  insert into "working"."title_counts" select title, count( title ) as cnt from employees.titles group by title;
+    +-----------+
+    | ROWCOUNT  |
+    +-----------+
+    | 7         |
+    +-----------+
+    1 row selected (9,581 seconds)
 
-__Note__: Right now you can only use a table backed by the JDBC provider either
-as a source or as a sink. Not both ways.
+The provider can not only be used as a sink, but also as a source, meaning you
+can investigat the data, that was just written into the derby table directly
+from the lingual shell:
+
+    > (lingual shell) selct * from "working"."title_counts"
+    +---------------------+---------+
+    |        TITLE        |   CNT   |
+    +---------------------+---------+
+    | Assistant Engineer  | 15128   |
+    | Engineer            | 115003  |
+    | Manager             | 24      |
+    | Senior Engineer     | 97749   |
+    | Senior Staff        | 92853   |
+    | Staff               | 107391  |
+    | Technique Leader    | 15159   |
+    +---------------------+---------+
+    7 rows selected (0,172 seconds
 
 
 # Extending
