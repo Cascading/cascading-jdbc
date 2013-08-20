@@ -396,7 +396,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     {
     try
       {
-      LOG.info( "creating connection: {} user={} pw={}", connectionUrl );
+      LOG.info( "creating connection: {}", connectionUrl );
 
       Class.forName( driverClassName );
 
