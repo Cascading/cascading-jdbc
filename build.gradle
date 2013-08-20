@@ -71,6 +71,8 @@ subprojects {
   apply plugin: 'fatjar'
 
   dependencies {
+    compile group: 'com.google.guava', name: 'guava', version: "14.0.1"
+
     provided group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion
     provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.2'
 
