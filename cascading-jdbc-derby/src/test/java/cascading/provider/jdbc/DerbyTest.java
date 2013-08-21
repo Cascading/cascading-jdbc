@@ -1,5 +1,10 @@
 package cascading.provider.jdbc;
 
+import java.io.PrintWriter;
+import java.net.InetAddress;
+
+import org.apache.derby.drda.NetworkServerControl;
+import org.junit.After;
 import org.junit.Before;
 
 /**
@@ -8,7 +13,12 @@ import org.junit.Before;
  * */
 public class DerbyTest extends JDBCTestingBase
   {
+  
+  private final int PORT = 9006;
+  private NetworkServerControl serverControl;
+  
 
+  
   @Before
   public void setUp() throws Exception
     {
@@ -17,9 +27,18 @@ public class DerbyTest extends JDBCTestingBase
     System.setProperty( "derby.locks.deadlockTrace", "true" );
     System.setProperty( "derby.system.home", "build/derby" );
 
-    setDriverName( "org.apache.derby.jdbc.EmbeddedDriver" );
-    setJdbcurl( "jdbc:derby:testing;create=true" );
+    serverControl = new NetworkServerControl(InetAddress.getByName("localhost"), PORT);
+    serverControl.start(new PrintWriter(System.out,true));
+    
+    setDriverName( "org.apache.derby.jdbc.ClientDriver" );
+    setJdbcurl( String.format("jdbc:derby://localhost:%s/testing;create=true", PORT) );
 
     }
 
+  
+  @After
+  public void tearDown() throws Exception
+    {
+    serverControl.shutdown();
+    }
   }
