@@ -24,6 +24,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
@@ -72,51 +73,11 @@ public class JDBCFactoryTest
     props.setProperty( JDBCFactory.PROTOCOL_JDBC_DRIVER, "some.Driver" );
     props.setProperty( JDBCFactory.PROTOCOL_JDBC_USER, "username" );
     props.setProperty( JDBCFactory.PROTOCOL_JDBC_PASSWORD, "password" );
-    props.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, " " );
+    props.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, "" );
 
     factory.createTap( protocol, mockScheme, identifier, SinkMode.REPLACE, props );
     }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testCreateTapNoColumns()
-    {
-    String protocol = "jdbc";
-    String identifier = "jdbc:some:stuf//database";
-    JDBCScheme mockScheme = mock( JDBCScheme.class );
-
-    JDBCFactory factory = new JDBCFactory();
-
-    Properties props = new Properties();
-    props.setProperty( JDBCFactory.PROTOCOL_FIELD_SEPARATOR, ":" );
-    props.setProperty( JDBCFactory.PROTOCOL_JDBC_DRIVER, "some.Driver" );
-    props.setProperty( JDBCFactory.PROTOCOL_JDBC_USER, "username" );
-    props.setProperty( JDBCFactory.PROTOCOL_JDBC_PASSWORD, "password" );
-
-    props.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, "myTable" );
-
-    factory.createTap( protocol, mockScheme, identifier, SinkMode.REPLACE, props );
-    }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testCreateTapNoColumnDefs()
-    {
-    String protocol = "jdbc";
-    String identifier = "jdbc:some:stuf//database";
-    JDBCScheme mockScheme = mock( JDBCScheme.class );
-
-    JDBCFactory factory = new JDBCFactory();
-
-    Properties props = new Properties();
-    props.setProperty( JDBCFactory.PROTOCOL_FIELD_SEPARATOR, ":" );
-    props.setProperty( JDBCFactory.PROTOCOL_JDBC_DRIVER, "some.Driver" );
-    props.setProperty( JDBCFactory.PROTOCOL_JDBC_USER, "username" );
-    props.setProperty( JDBCFactory.PROTOCOL_JDBC_PASSWORD, "password" );
-
-    props.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, "myTable" );
-    props.setProperty( JDBCFactory.PROTOCOL_COLUMN_NAMES, "id:name:lastname" );
-
-    factory.createTap( protocol, mockScheme, identifier, SinkMode.UPDATE, props );
-    }
 
   @Test()
   public void testCreateTapFullyWorking()
@@ -136,7 +97,7 @@ public class JDBCFactoryTest
     props.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, "myTable" );
     props.setProperty( JDBCFactory.PROTOCOL_COLUMN_NAMES, "id:name:lastname" );
 
-    props.setProperty( JDBCFactory.PROTOCOL_COLUMN_DEFS, "id int:name varchar(42):lastname varchar(23)" );
+    props.setProperty( JDBCFactory.PROTOCOL_COLUMN_DEFS, "int:varchar(42):varchar(23)" );
     props.setProperty( JDBCFactory.PROTOCOL_PRIMARY_KEYS, "id" );
 
     JDBCTap tap = (JDBCTap) factory.createTap( protocol, mockScheme, identifier, SinkMode.UPDATE, props );
@@ -147,7 +108,7 @@ public class JDBCFactoryTest
 
     assertEquals( "myTable", tdesc.getTableName() );
     assertArrayEquals( new String[] { "id", "name", "lastname" }, tdesc.getColumnNames() );
-    assertArrayEquals( new String[] { "id int", "name varchar(42)", "lastname varchar(23)" }, tdesc.getColumnDefs() );
+    assertArrayEquals( new String[] { "int", "varchar(42)", "varchar(23)" }, tdesc.getColumnDefs() );
     assertArrayEquals( new String[] { "id" }, tdesc.getPrimaryKeys() );
 
     }
@@ -170,7 +131,7 @@ public class JDBCFactoryTest
     props.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, "myTable" );
     props.setProperty( JDBCFactory.PROTOCOL_COLUMN_NAMES, "id:name:lastname" );
 
-    props.setProperty( JDBCFactory.PROTOCOL_COLUMN_DEFS, "id int:name varchar(42):lastname varchar(23)" );
+    props.setProperty( JDBCFactory.PROTOCOL_COLUMN_DEFS, "int:varchar(42):varchar(23)" );
     props.setProperty( JDBCFactory.PROTOCOL_PRIMARY_KEYS, "id" );
 
     JDBCTap tap = (JDBCTap) factory.createTap( protocol, mockScheme, identifier, SinkMode.UPDATE, props );
@@ -181,19 +142,44 @@ public class JDBCFactoryTest
 
     assertEquals( "myTable", tdesc.getTableName() );
     assertArrayEquals( new String[] { "id", "name", "lastname" }, tdesc.getColumnNames() );
-    assertArrayEquals( new String[] { "id int", "name varchar(42)", "lastname varchar(23)" }, tdesc.getColumnDefs() );
+    assertArrayEquals( new String[] { "int", "varchar(42)", "varchar(23)" }, tdesc.getColumnDefs() );
     assertArrayEquals( new String[] { "id" }, tdesc.getPrimaryKeys() );
 
     }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testCreateSchemeNoColumns()
+  @Test
+  public void testCreateTapWithMissingTableInformation()
     {
+    String protocol = "jdbc";
+    String identifier = "jdbc:some:stuf//database";
+    JDBCScheme mockScheme = mock( JDBCScheme.class );
+
     JDBCFactory factory = new JDBCFactory();
-    factory.createScheme( "someFormat", new Fields(), new Properties() );
+
+    Properties props = new Properties();
+    props.setProperty( JDBCFactory.PROTOCOL_FIELD_SEPARATOR, ":" );
+    props.setProperty( JDBCFactory.PROTOCOL_JDBC_DRIVER, "some.Driver" );
+    props.setProperty( JDBCFactory.PROTOCOL_JDBC_USER, "" );
+    props.setProperty( JDBCFactory.PROTOCOL_JDBC_PASSWORD, "" );
+
+    props.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, "myTable" );
+    
+    String[] columnNames = new String [] {"id", "name", "lastname"};
+    @SuppressWarnings("rawtypes")
+    Class[] fieldTypes = new Class<?>[] {int.class, String.class, String.class};
+    
+    Fields fields = new Fields(columnNames, fieldTypes);
+    when(mockScheme.getSinkFields()).thenReturn( fields );
+    
+    JDBCTap tap = (JDBCTap) factory.createTap( protocol, mockScheme, identifier, SinkMode.UPDATE, props );
+    
+    TableDesc tdesc = tap.tableDesc;
+    assertEquals( "myTable", tdesc.getTableName() );
+    assertArrayEquals( new String[] { "id", "name", "lastname" }, tdesc.getColumnNames() );
+    assertArrayEquals( new String[] { "int not null", "varchar(256)", "varchar(256)" }, tdesc.getColumnDefs() );
 
     }
-
+  
   @Test
   public void testCreateScheme()
     {

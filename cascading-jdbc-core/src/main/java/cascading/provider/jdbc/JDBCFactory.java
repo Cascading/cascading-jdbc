@@ -96,7 +96,24 @@ public class JDBCFactory
 
     final TableDesc tableDesc = createTableDescFromProperties( properties );
 
-    return new JDBCTap( identifier, jdbcUser, jdbcPassword, driver, tableDesc, (JDBCScheme) scheme, mode );
+    JDBCScheme jdbcScheme = (JDBCScheme) scheme;
+
+    // it is possible, that the schema information given via properties is incomplete
+    // and therefore, we derive it from the given fields. We can only do that, if we actually get
+    // meaningful fields. There is a second place, where this happens, which is the presentSinkFields method
+    // of the JDBCScheme, which is used as the last place, where we can learn about the fields, before we actually
+    // talk toe the database.
+    if ( !tableDesc.hasRequiredTableInformation() && 
+        jdbcScheme.getSinkFields() != Fields.UNKNOWN &&
+        jdbcScheme.getSinkFields() != Fields.ALL)
+      {
+      LOG.debug( "tabledesc information incomplete, falling back to sink-fields {}", jdbcScheme.getSinkFields() );
+      tableDesc.completeFromFields( jdbcScheme.getSinkFields() );
+
+      ( (JDBCScheme) scheme ).setColumns( tableDesc.getColumnNames() );
+      }
+
+    return new JDBCTap( identifier, jdbcUser, jdbcPassword, driver, tableDesc, jdbcScheme, mode );
 
     }
 
@@ -124,14 +141,10 @@ public class JDBCFactory
     if ( limitProperty != null && !limitProperty.isEmpty() )
       limit = Long.parseLong( limitProperty );
 
+    String[] columNames = null;
     String columnNamesProperty = properties.getProperty( FORMAT_COLUMNS );
-    if ( columnNamesProperty == null || columnNamesProperty == "" )
-      {
-      LOG.error( "no column names given" );
-      throw new IllegalArgumentException( "no column names given" );
-      }
-
-    String[] columNames = columnNamesProperty.split( separator );
+    if ( columnNamesProperty != null && !columnNamesProperty.isEmpty() )
+      columNames = columnNamesProperty.split( separator );
 
     Boolean tableAlias = false;
     String tableAliasProperty = properties.getProperty( FORMAT_TABLE_ALIAS );
@@ -184,17 +197,15 @@ public class JDBCFactory
 
     String separator = properties.getProperty( PROTOCOL_FIELD_SEPARATOR, DEFAULT_SEPARATOR );
 
+    String[] columnNames = null;
     String columnNamesProperty = properties.getProperty( PROTOCOL_COLUMN_NAMES );
-    if ( columnNamesProperty == null || columnNamesProperty.isEmpty() )
-      throw new IllegalArgumentException( "no column names given" );
+    if ( columnNamesProperty != null && !columnNamesProperty.isEmpty() )
+      columnNames = columnNamesProperty.split( separator );
 
-    String[] columnNames = columnNamesProperty.split( separator );
-
+    String[] columnDefs = null;
     String columnDefsProperty = properties.getProperty( PROTOCOL_COLUMN_DEFS );
-    if ( columnDefsProperty == null || columnDefsProperty.isEmpty() )
-      throw new IllegalArgumentException( "no column definitions given" );
-
-    String[] columnDefs = columnDefsProperty.split( separator );
+    if ( columnDefsProperty != null && !columnDefsProperty.isEmpty() )
+      columnDefs = columnDefsProperty.split( separator );
 
     String primaryKeysProperty = properties.getProperty( PROTOCOL_PRIMARY_KEYS );
 
