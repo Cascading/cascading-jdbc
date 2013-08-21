@@ -12,6 +12,16 @@
 
 package cascading.provider.jdbc;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.RecordReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cascading.flow.FlowProcess;
 import cascading.provider.jdbc.db.DBInputFormat;
 import cascading.provider.jdbc.db.DBOutputFormat;
@@ -25,14 +35,7 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 import cascading.util.Util;
 
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.RecordReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Arrays;
+import com.google.common.collect.Lists;
 
 /**
  * Class JDBCScheme defines what its parent Tap will select and insert/update
@@ -54,6 +57,7 @@ import java.util.Arrays;
  */
 public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]>
   {
+
   private Class<? extends DBInputFormat> inputFormatClass;
   private Class<? extends DBOutputFormat> outputFormatClass;
   private String[] columns;
@@ -68,6 +72,8 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
   private String countQuery;
   private long limit = -1;
   private Boolean tableAlias = true;
+
+  private static final Logger LOG = LoggerFactory.getLogger( JDBCScheme.class );
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
@@ -688,11 +694,33 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     {
     return result;
     }
+  
+  
+  public void setColumns(String[] columns)
+    {
+    this.columns = columns;
+    }
+
 
   @Override
   public void presentSinkFields(FlowProcess<JobConf> flowProcess, Tap tap, Fields fields)
     {
+    LOG.debug( "receiving final sink fields {}", fields );
     super.presentSinkFields( flowProcess, tap, fields );
+
+    JDBCTap jtap = (JDBCTap) tap;
+
+    TableDesc desc = jtap.tableDesc;
+    
+    // if the column names or types on the tabledesc instance are missing,
+    // we can now add it. The method will throw an Exception, if the information is
+    // still incomplete afterwards.
+    if ( !desc.hasRequiredTableInformation() )
+      desc.completeFromFields( fields );
+
+    if ( columns == null )
+      columns = desc.columnNames;
+
     verifyColumns( getSinkFields(), columns );
     }
 
