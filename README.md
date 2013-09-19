@@ -147,20 +147,18 @@ from the lingual shell:
     | Staff               | 107391  |
     | Technique Leader    | 15159   |
     +---------------------+---------+
-    7 rows selected (0,172 seconds
+    7 rows selected (0,172 seconds)
 
 
 # Extending
 
 Adding a new JDBC system is straight forward. Create a new sub-project and add
 it to `settings.gradle`. Include the JDBC driver of your RDBMS in the
-build.gradle file and create a `TestCase` subclassing the JDBCTestingBase
-explained above. All you have to do, is setting the driver class and JDBC URL
-for your database. For an example see
-[H2Test](https://github.com/Cascading/cascading-jdbc/blob/wip-2.2/cascading-jdbc-h2/src/test/java/cascading/provider/jdbc/H2Test.java).
+`build.gradle` file of your sub-project and create a `TestCase` subclassing the
+`JDBCTestingBase` explained above. All you have to do, is setting the driver
+class and JDBC URL for your database. For an example see
+[H2Test](https://github.com/Cascading/cascading-jdbc/blob/wip-2.2/cascading-jdbc-mysql/src/test/java/cascading/jdbc/MysqlTest.java).
 
-Alternatively you can also run the `GenericJdbcCheck`, like it is done in
-`cascading-jdbc-mysql`.
 
 ## Provider mechanism
 
