@@ -126,7 +126,7 @@ public abstract class JDBCTestingBase
 
         Tap<?, ?, ?> sourceTap = new JDBCTap(jdbcurl, driverName,
             new JDBCScheme(columnNames,
-                "select num, lwr, upr from testingtable as testingtable",
+                "select num, lwr, upr from testingtable testingtable",
                 "select count(*) from testingtable"));
 
         Pipe readPipe = new Each("read", new Identity());
@@ -206,7 +206,7 @@ public abstract class JDBCTestingBase
             new JDBCScheme(
                 columnFields,
                 columnNames,
-                "select db_num, db_lower, db_upper from testingtablealias as testingtable",
+                "select db_num, db_lower, db_upper from testingtablealias testingtable",
                 "select count(*) from testingtablealias"));
 
         Pipe readPipe = new Each("read", new Identity());
@@ -292,7 +292,7 @@ public abstract class JDBCTestingBase
         
         schemeProperties.remove(JDBCFactory.FORMAT_UPDATE_BY);
         
-        schemeProperties.setProperty(JDBCFactory.FORMAT_SELECT_QUERY, "select num, lwr, upr from testingtable as testingtable");
+        schemeProperties.setProperty(JDBCFactory.FORMAT_SELECT_QUERY, "select num, lwr, upr from testingtable testingtable");
         schemeProperties.setProperty(JDBCFactory.FORMAT_COUNT_QUERY, "select count(*) from testingtable");
         
         JDBCScheme sourceScheme = (JDBCScheme) factory.createScheme("hypersql", new Fields(columnNames), schemeProperties);

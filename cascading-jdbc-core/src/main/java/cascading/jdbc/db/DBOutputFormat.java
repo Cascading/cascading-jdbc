@@ -124,7 +124,10 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
 
                     for (int value : result) { count += value; }
 
-                    if (count != updateStatementsCurrent) {
+                    if (count != updateStatementsCurrent 
+                        // oracle returns PreparedStatement.SUCCESS_NO_INFO for each entry, which
+                        // means it worked, but we cannot check the count
+                        && ! ( count == PreparedStatement.SUCCESS_NO_INFO * result.length ) ) {
                         throw new IOException(
                             "update did not update same number of statements executed in batch, batch: "
                             + updateStatementsCurrent + " updated: " + count);

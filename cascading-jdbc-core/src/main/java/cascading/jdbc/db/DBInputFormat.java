@@ -113,7 +113,7 @@ public class DBInputFormat<T extends DBWritable>
                 query.append(" FROM ").append(tableName);
 
                 if (dbConf.getTableAlias()) {
-                    query.append(" AS ").append(tableName); //in hsqldb this is necessary
+                    query.append(" ").append(tableName); 
                 }
 
                 if (conditions != null && conditions.length() > 0)
