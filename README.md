@@ -14,6 +14,7 @@ Currently three relational databases are supported in the build:
 * [h2](http://www.h2database.com/html/main.html)
 * [mysql](http://www.mysql.com/)
 * [postgres](http://www.postgresql.org/)
+* [oracle](http://www.oracle.com/technetwork/database/enterprise-edition/overview/index.html) (see below)
 
 This code is based on previous work:
 
@@ -60,6 +61,31 @@ You can install the jars into a local maven repository with
     > gralde install
 
 or you can use the ones deployed to [http://conjars.org](conjars).
+
+## Oracle
+
+The `cascading-jdbc-oracle` project contains everything to create jar files to
+talk to oracle, but due to the fact, that the oracle jdbc driver is not
+available on any public maven repository, you have to build it yourself. Here is
+how:
+
+1. Download the `odbc6.jar` file from [http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html](oracle technet)
+2. Install it in your local maven repo
+
+    > mvn install:install-file -DgroupId=com.oracle -DartifactId=ojdbc6
+           -Dversion=11.2.0.4 -Dpackaging=jar -Dfile=ojdbc6.jar -DgeneratePom=true 
+
+3. Build the project against an existing oracle database. The user has to be
+   able to create and delete tables, in order for the tests to work.
+
+    > gradle  cascading-jdbc-oracle:build -Dcascading.jdbc.url.oracle='jdbc:oracle:thin:user/password@host:port:SID'
+
+
+Afterwards you will find all the jars in `cascading-jdbc-oracle/build/libs/`.
+You can install them in your local maven repository with by using `gradle
+install` instead of `gradle build` or upload them to your organizations repo
+manager.
+
 
 # Usage
 
