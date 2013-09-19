@@ -13,6 +13,7 @@ Currently three relational databases are supported in the build:
 * [derby](http://db.apache.org/derby/)
 * [h2](http://www.h2database.com/html/main.html)
 * [mysql](http://www.mysql.com/)
+* [postgres](http://www.postgresql.org/)
 
 This code is based on previous work:
 
@@ -35,6 +36,18 @@ Due to this the sub-project for `mysql` is only enabled, if the connnection
 information is given to gradle like this:
 
     > gradle build -Dcascading.jdbc.url.mysql="jdbc:mysql://some-host/somedb?user=someuser&password=somepw"
+
+The same applies to the postgres sub-project, which will only work, if you run
+the build like this:
+
+
+    > gradle build -Dcascading.jdbc.url.postgres='jdbc:postgresql://192.168.33.10/cascading?user=postgres&password=password'
+
+Debian based systems turn on SSL encryption of the databases by default, but are
+using self signed certificates. If you want to connect to such a database, you
+have to add `sslfactory=org.postgresql.ssl.NonValidatingFactory` to the JDBC
+url.
+
 
 The database specific test are implemented as an abstract class in the core
 project `cascading.provider.jdbc.JDBCTestingBase`. Each project has a sub-class
@@ -122,7 +135,7 @@ The provider can not only be used as a sink, but also as a source, meaning you
 can investigat the data, that was just written into the derby table directly
 from the lingual shell:
 
-    > (lingual shell) selct * from "working"."title_counts"
+    > (lingual shell) select * from "working"."title_counts"
     +---------------------+---------+
     |        TITLE        |   CNT   |
     +---------------------+---------+

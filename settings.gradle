@@ -8,3 +8,11 @@ if (System.getProperty("cascading.jdbc.url.mysql")){
 }
 else
   logger.warn("excluding cascading-jdbc-mysql due to missing cascading.jdbc.url.mysql property")
+
+
+
+if (System.getProperty("cascading.jdbc.url.postgres")){
+    include 'cascading-jdbc-postgres'
+}
+else
+  logger.warn("excluding cascading-jdbc-postgres due to missing cascading.jdbc.url.postgres property")
