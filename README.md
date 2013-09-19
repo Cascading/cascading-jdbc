@@ -175,7 +175,7 @@ Below is an example from the `derby` subproject:
     cascading.bind.provider.names=derby
     cascading.bind.provider.derby.platforms=hadoop
 
-    cascading.bind.provider.derby.factory.classname=cascading.provider.jdbc.JDBCFactory
+    cascading.bind.provider.derby.factory.classname=cascading.jdbc.JDBCFactory
 
     # define protocols differentiated by properties
     cascading.bind.provider.derby.protocol.names=jdbc
@@ -203,7 +203,7 @@ Below is an example from the `derby` subproject:
     cascading.bind.provider.derby.format.derby.selectquery=
     cascading.bind.provider.derby.format.derby.countquery=
 
-For more information on the provider.properties file, see the [lingual
+For more information on the `provider.properties` file, see the [lingual
 documentation](http://docs.cascading.org/lingual/1.0/#_creating_a_data_provider).
 
 # Licsense
