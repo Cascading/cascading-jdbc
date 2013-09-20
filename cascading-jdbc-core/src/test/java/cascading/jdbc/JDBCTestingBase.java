@@ -20,24 +20,16 @@
 
 package cascading.jdbc;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestName;
-
-import com.sun.jersey.server.impl.cdi.Utils;
 
 import cascading.flow.Flow;
 import cascading.flow.hadoop.HadoopFlowConnector;
-import cascading.jdbc.JDBCFactory;
-import cascading.jdbc.JDBCScheme;
-import cascading.jdbc.JDBCTap;
-import cascading.jdbc.TableDesc;
 import cascading.operation.Identity;
 import cascading.operation.regex.RegexSplitter;
 import cascading.pipe.Each;
@@ -291,9 +283,6 @@ public abstract class JDBCTestingBase
 
         
         schemeProperties.remove(JDBCFactory.FORMAT_UPDATE_BY);
-        
-        schemeProperties.setProperty(JDBCFactory.FORMAT_SELECT_QUERY, "select num, lwr, upr from testingtable testingtable");
-        schemeProperties.setProperty(JDBCFactory.FORMAT_COUNT_QUERY, "select count(*) from testingtable");
         
         JDBCScheme sourceScheme = (JDBCScheme) factory.createScheme("hypersql", new Fields(columnNames), schemeProperties);
         Tap<?, ?, ?> sourceTap = 
