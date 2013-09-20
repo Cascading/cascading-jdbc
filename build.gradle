@@ -71,7 +71,7 @@ subprojects {
   apply plugin: 'fatjar'
 
   dependencies {
-    compile group: 'com.google.guava', name: 'guava', version: "14.0.1"
+    compile group: 'com.google.guava', name: 'guava', version: "15.0"
 
     provided group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion
     provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.2'
@@ -156,22 +156,19 @@ subprojects {
       }
     }
   }
-}
+  idea {
+    module {
+      downloadJavadoc = true
+      downloadSources = true
+    }
+  }
 
-
-idea {
-  module {
-    downloadJavadoc = true
-    downloadSources = true
+  eclipse {
+    classpath {
+      defaultOutputDir = file( 'build' )
+      downloadSources = true
+      downloadJavadoc = true
+    }
   }
 }
-
-eclipse {
-  classpath {
-    defaultOutputDir = file( 'build' )
-    downloadSources = true
-    downloadJavadoc = true
-  }
-}
-
 

@@ -24,6 +24,8 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+
 import cascading.jdbc.db.DBInputFormat;
 import cascading.jdbc.db.DBOutputFormat;
 import cascading.scheme.Scheme;
@@ -86,6 +88,7 @@ public class JDBCFactory
     String jdbcUserProperty = properties.getProperty( PROTOCOL_JDBC_USER );
     String jdbcPasswordProperty = properties.getProperty( PROTOCOL_JDBC_PASSWORD );
 
+    
     String jdbcUser = null;
     if ( jdbcUserProperty != null && !jdbcUserProperty.isEmpty() )
       jdbcUser = jdbcUserProperty;
@@ -102,7 +105,7 @@ public class JDBCFactory
     // and therefore, we derive it from the given fields. We can only do that, if we actually get
     // meaningful fields. There is a second place, where this happens, which is the presentSinkFields method
     // of the JDBCScheme, which is used as the last place, where we can learn about the fields, before we actually
-    // talk toe the database.
+    // talk to the database.
     if ( !tableDesc.hasRequiredTableInformation() && 
         jdbcScheme.getSinkFields() != Fields.UNKNOWN &&
         jdbcScheme.getSinkFields() != Fields.ALL)
