@@ -3,12 +3,13 @@ use it in production applications yet.
 
 # cascading-jdbc
 
-A set cascading (2.2) Taps and Schemes which interact with RDBMS systems via JDBC. The
-project consists of a generic part `cascading-jdbc-core` and database specific
-sub-projects. The database specific projects have dependencies to their
-respective JDBC drivers and run tests against those systems during build. 
+A set of Cascading (version 2.2 and above) Taps and Schemes which interact with
+RDBMS systems via JDBC. The project consists of a generic part
+`cascading-jdbc-core` and database specific sub-projects. The database specific
+projects have dependencies to their respective JDBC drivers and run tests
+against those systems during build. 
 
-Currently three relational databases are supported in the build:
+Currently five relational databases are supported in the build:
 
 * [derby](http://db.apache.org/derby/)
 * [h2](http://www.h2database.com/html/main.html)
@@ -29,27 +30,6 @@ Building all jars is done with a simple `gradle build`. This produces "normal"
 jar files, to be used within cascading applications as well as "fat" provider jars,
 that can be used within [lingual](http://docs.cascading.org/lingual/1.0/).
 
-Database systems like `mysql` require an external database server. In order to
-be able to test with an external server, the build uses system properties, which
-can be given on the command line. 
-
-Due to this the sub-project for `mysql` is only enabled, if the connnection
-information is given to gradle like this:
-
-    > gradle build -Dcascading.jdbc.url.mysql="jdbc:mysql://some-host/somedb?user=someuser&password=somepw"
-
-The same applies to the postgres sub-project, which will only work, if you run
-the build like this:
-
-
-    > gradle build -Dcascading.jdbc.url.postgres='jdbc:postgresql://192.168.33.10/cascading?user=postgres&password=password'
-
-Debian based systems turn on SSL encryption of the databases by default, but are
-using self signed certificates. If you want to connect to such a database, you
-have to add `sslfactory=org.postgresql.ssl.NonValidatingFactory` to the JDBC
-url.
-
-
 The database specific test are implemented as an abstract class in the core
 project `cascading.provider.jdbc.JDBCTestingBase`. Each project has a sub-class
 setting driver specific things. Some might perform more sophisticated setups,
@@ -61,6 +41,29 @@ You can install the jars into a local maven repository with
     > gralde install
 
 or you can use the ones deployed to [http://conjars.org](conjars).
+
+
+## mysql and postgres
+
+Database systems like `mysql` require an external database server. In order to
+be able to test with an external server, the build uses system properties, which
+can be given on the command line. 
+
+Due to this the sub-projects for `mysql` and `postgres` are only enabled, if the
+connnection information is given to gradle like this:
+
+    > gradle build -Dcascading.jdbc.url.mysql="jdbc:mysql://some-host/somedb?user=someuser&password=somepw" -i
+
+or this
+
+    > gradle build -Dcascading.jdbc.url.postgres='jdbc:postgresql://some-host/somedb?user=some-user&password=somepw' -i
+
+If you want to build both, you can of course combine the properties.
+
+Debian based systems enable SSL by default for postgres, but are using self
+signed certificates. If you want to connect to such a database, you have to add
+`sslfactory=org.postgresql.ssl.NonValidatingFactory` to the JDBC url, otherwise
+you will run into an exception.
 
 ## Oracle
 
@@ -78,13 +81,15 @@ how:
 3. Build the project against an existing oracle database. The user has to be
    able to create and delete tables, in order for the tests to work.
 
-    > gradle  cascading-jdbc-oracle:build -Dcascading.jdbc.url.oracle='jdbc:oracle:thin:user/password@host:port:SID'
+    > gradle cascading-jdbc-oracle:build -Dcascading.jdbc.url.oracle='jdbc:oracle:thin:user/password@host:port:SID' -i
 
+Alternatively to 1. and 2. you can add your organizations maven repository to
+the build, in case, it already contains the oracle jdbc driver.
 
-Afterwards you will find all the jars in `cascading-jdbc-oracle/build/libs/`.
-You can install them in your local maven repository with by using `gradle
-install` instead of `gradle build` or upload them to your organizations repo
-manager.
+After executing the build you will find all the jars in
+`cascading-jdbc-oracle/build/libs/`.  You can install them in your local maven
+repository with by using `gradle install` instead of `gradle build` or upload
+them to your organizations repo manager.
 
 
 # Usage
@@ -109,16 +114,19 @@ can clean up your database table in the `onThrowable(Flow flow)` method of your
 
 ## In Lingual
 
-__NOTE__: The JDBC providers can only be used on the hadoop platform. The local
-platform is not supported.
+__NOTE__: The JDBC providers can only be used on the `hadoop` platform. The
+`local` platform is not supported.
 
-This assumes, that you have followed the lingual tutorial, esp. the part, where
+This assumes, that you have followed the
+[http://docs.cascading.org/lingual/1.0/](lingual tutorial), esp. the part, where
 a provider is used to write directly into a memcached server. To accomplish the
-same, but with a derby database, you can do the following. First run `gradle
-build` in this project. Next setup your lingual catalog with the derby provider:
+same, but with a [http://db.apache.org/derby/](derby) database, you can do the
+following. First run `gradle build` in this project. Next setup your lingual
+catalog with the derby provider:
 
     # only hadoop platform is supported
     > export LINGUAL_PLATFORM=hadoop
+
     > lingual catalog --provider -add /path/to/cascading-jdbc-derby-2.2.0-wip-dev-provider.jar
 
 This will register the provider `derby` for the `hadoop` platform. The provider
@@ -132,12 +140,16 @@ Next we can add the `working` schema, the `titles` stereotype and the
     > lingual catalog --schema working --format derby --add --properties columnnames=title:cnt --provider derby
 
 Next we set the protocol properties for `jdbc` in the `derby` provider. The
-first line describes the table, we are operating on to the underlying JDBCTap.
-The table has two columns `title` and `cnt`, which are of type `varchar(100)`
-and `int`. The command line interface uses `:` as a separator for properties,
-which contain multiple values.
+first line describes the table, that we are operating on, to the underlying
+JDBCTap.  The table has two columns `title` and `cnt`, which are of type
+`varchar(100)` and `int`. The command line interface uses `:` as a separator for
+properties, which contain multiple values.
 
     > lingual catalog --schema working --protocol jdbc --add "--properties=tabledesc.tablename=title_counts,tabledesc.columnnames=title:cnt,tabledesc.columndefs=varchar(100) not null:int not null" --provider derby
+
+__Tip__: If the `--properties` syntax becomes to complex for your use case, you
+can put them in a properties file and use
+`--properties-file=/path/to/my.properties` instead.
 
 Finally we tell the derby provider, where it can find the derby server. The
 `create=true` is optional. If the database exist already, you can omit it.
@@ -158,7 +170,7 @@ directly into your derby server like this:
     1 row selected (9,581 seconds)
 
 The provider can not only be used as a sink, but also as a source, meaning you
-can investigat the data, that was just written into the derby table directly
+can investigate the data, that was just written into the derby table directly
 from the lingual shell:
 
     > (lingual shell) select * from "working"."title_counts"
