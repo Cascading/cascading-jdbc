@@ -87,8 +87,8 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param limit of type long
    * @param updateBy of type String[]
    */
-  public JDBCScheme(Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass, String[] columns,
-      String[] orderBy, String conditions, long limit, String[] updateBy)
+  public JDBCScheme( Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass, String[] columns,
+      String[] orderBy, String conditions, long limit, String[] updateBy )
     {
     this( inputFormatClass, outputFormatClass, new Fields( columns ), columns, orderBy, conditions, limit, updateBy != null ? new Fields(
         updateBy ) : null, updateBy );
@@ -106,8 +106,8 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param updateBy of type String[]
    * @param tableAlias of type Boolean
    */
-  public JDBCScheme(Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass, String[] columns,
-      String[] orderBy, String conditions, long limit, String[] updateBy, Boolean tableAlias)
+  public JDBCScheme( Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass, String[] columns,
+      String[] orderBy, String conditions, long limit, String[] updateBy, Boolean tableAlias )
     {
     this( inputFormatClass, outputFormatClass, new Fields( columns ), columns, orderBy, conditions, limit, updateBy != null ? new Fields(
         updateBy ) : null, updateBy, tableAlias );
@@ -127,24 +127,24 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param updateBy of type String[]
    * @param tableAlias of type Boolean
    */
-  public JDBCScheme(Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass,
+  public JDBCScheme( Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass,
       Fields columnFields, String[] columns, String[] orderBy, String conditions, long limit, Fields updateByFields, String[] updateBy,
-      Boolean tableAlias)
+      Boolean tableAlias )
     {
     this.columnFields = columnFields;
 
     setSinkFields( columnFields );
     setSourceFields( columnFields );
 
-    if ( updateBy != null && updateBy.length != 0 )
+    if( updateBy != null && updateBy.length != 0 )
       {
       this.updateBy = updateBy;
       this.updateByFields = updateByFields;
 
-      if ( updateByFields.size() != updateBy.length )
+      if( updateByFields.size() != updateBy.length )
         throw new IllegalArgumentException( "updateByFields and updateBy must be the same size" );
 
-      if ( !this.columnFields.contains( this.updateByFields ) )
+      if( !this.columnFields.contains( this.updateByFields ) )
         throw new IllegalArgumentException( "columnFields must contain updateByFields column names" );
 
       this.updateValueFields = columnFields.subtract( updateByFields ).append( updateByFields );
@@ -174,16 +174,16 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param updateByFields of type Fields
    * @param updateBy of type String[]
    */
-  public JDBCScheme(Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass,
-      Fields columnFields, String[] columns, String[] orderBy, String conditions, long limit, Fields updateByFields, String[] updateBy)
+  public JDBCScheme( Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass,
+      Fields columnFields, String[] columns, String[] orderBy, String conditions, long limit, Fields updateByFields, String[] updateBy )
     {
     this( inputFormatClass, outputFormatClass, columnFields, columns, orderBy, conditions, limit, updateByFields, updateBy, true );
 
     }
 
-  private void verifyColumns(Fields columnFields, String[] columns)
+  private void verifyColumns( Fields columnFields, String[] columns )
     {
-    if ( columnFields.size() != columns.length )
+    if( columnFields.size() != columns.length )
       throw new IllegalArgumentException( "columnFields and columns must be the same size" );
     }
 
@@ -197,8 +197,8 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param conditions of type String
    * @param updateBy of type String[]
    */
-  public JDBCScheme(Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass, String[] columns,
-      String[] orderBy, String conditions, String[] updateBy)
+  public JDBCScheme( Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass, String[] columns,
+      String[] orderBy, String conditions, String[] updateBy )
     {
     this( inputFormatClass, outputFormatClass, columns, orderBy, conditions, -1, updateBy );
     }
@@ -215,8 +215,8 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param updateByFields of type Fields
    * @param updateBy of type String[]
    */
-  public JDBCScheme(Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass,
-      Fields columnFields, String[] columns, String[] orderBy, String conditions, Fields updateByFields, String[] updateBy)
+  public JDBCScheme( Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass,
+      Fields columnFields, String[] columns, String[] orderBy, String conditions, Fields updateByFields, String[] updateBy )
     {
     this( inputFormatClass, outputFormatClass, columnFields, columns, orderBy, conditions, -1, updateByFields, updateBy );
     }
@@ -230,8 +230,8 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param orderBy of type String[]
    * @param updateBy of type String[]
    */
-  public JDBCScheme(Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass, String[] columns,
-      String[] orderBy, String[] updateBy)
+  public JDBCScheme( Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass, String[] columns,
+      String[] orderBy, String[] updateBy )
     {
     this( inputFormatClass, outputFormatClass, columns, orderBy, null, updateBy );
     }
@@ -247,8 +247,8 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param updateByFields of type Fields
    * @param updateBy of type String[]
    */
-  public JDBCScheme(Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass,
-      Fields columnFields, String[] columns, String[] orderBy, Fields updateByFields, String[] updateBy)
+  public JDBCScheme( Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass,
+      Fields columnFields, String[] columns, String[] orderBy, Fields updateByFields, String[] updateBy )
     {
     this( inputFormatClass, outputFormatClass, columnFields, columns, orderBy, null, -1, updateByFields, updateBy );
     }
@@ -260,7 +260,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param orderBy of type String[]
    * @param updateBy of type String[]
    */
-  public JDBCScheme(String[] columns, String[] orderBy, String[] updateBy)
+  public JDBCScheme( String[] columns, String[] orderBy, String[] updateBy )
     {
     this( null, null, columns, orderBy, updateBy );
     }
@@ -274,7 +274,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param updateByFields of type Fields
    * @param updateBy of type String[]
    */
-  public JDBCScheme(Fields columnFields, String[] columns, String[] orderBy, Fields updateByFields, String[] updateBy)
+  public JDBCScheme( Fields columnFields, String[] columns, String[] orderBy, Fields updateByFields, String[] updateBy )
     {
     this( null, null, columnFields, columns, orderBy, updateByFields, updateBy );
     }
@@ -287,7 +287,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param conditions of type String
    * @param limit of type long
    */
-  public JDBCScheme(String[] columns, String[] orderBy, String conditions, long limit)
+  public JDBCScheme( String[] columns, String[] orderBy, String conditions, long limit )
     {
     this( null, null, columns, orderBy, conditions, limit, null );
     }
@@ -301,7 +301,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param conditions of type String
    * @param limit of type long
    */
-  public JDBCScheme(Fields columnFields, String[] columns, String[] orderBy, String conditions, long limit)
+  public JDBCScheme( Fields columnFields, String[] columns, String[] orderBy, String conditions, long limit )
     {
     this( null, null, columnFields, columns, orderBy, conditions, limit, null, null );
     }
@@ -313,12 +313,12 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param orderBy of type String[]
    * @param conditions of type String
    */
-  public JDBCScheme(String[] columns, String[] orderBy, String conditions)
+  public JDBCScheme( String[] columns, String[] orderBy, String conditions )
     {
     this( null, null, columns, orderBy, conditions, null );
     }
 
-  public JDBCScheme(Fields columnFields, String[] columns, String[] orderBy, String conditions)
+  public JDBCScheme( Fields columnFields, String[] columns, String[] orderBy, String conditions )
     {
     this( null, null, columnFields, columns, orderBy, conditions, null, null );
     }
@@ -330,12 +330,12 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param orderBy of type String[]
    * @param limit of type long
    */
-  public JDBCScheme(String[] columns, String[] orderBy, long limit)
+  public JDBCScheme( String[] columns, String[] orderBy, long limit )
     {
     this( null, null, columns, orderBy, null, limit, null );
     }
 
-  public JDBCScheme(Fields columnFields, String[] columns, String[] orderBy, long limit)
+  public JDBCScheme( Fields columnFields, String[] columns, String[] orderBy, long limit )
     {
     this( null, null, columnFields, columns, orderBy, null, limit, null, null );
     }
@@ -346,7 +346,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param columns of type String[]
    * @param orderBy of type String[]
    */
-  public JDBCScheme(String[] columns, String[] orderBy)
+  public JDBCScheme( String[] columns, String[] orderBy )
     {
     this( null, null, columns, orderBy, null );
     }
@@ -358,7 +358,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param columns of type String[]
    * @param orderBy of type String[]
    */
-  public JDBCScheme(Fields columnFields, String[] columns, String[] orderBy)
+  public JDBCScheme( Fields columnFields, String[] columns, String[] orderBy )
     {
     this( null, null, columnFields, columns, orderBy, null, -1, null, null );
     }
@@ -370,7 +370,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param conditions of type String
    * @param limit of type long
    */
-  public JDBCScheme(String[] columns, String conditions, long limit)
+  public JDBCScheme( String[] columns, String conditions, long limit )
     {
     this( null, null, new Fields( columns ), columns, null, conditions, limit, null, null );
     }
@@ -383,7 +383,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param conditions of type String
    * @param limit of type long
    */
-  public JDBCScheme(Fields columnFields, String[] columns, String conditions, long limit)
+  public JDBCScheme( Fields columnFields, String[] columns, String conditions, long limit )
     {
     this( null, null, columnFields, columns, null, conditions, limit, null, null );
     }
@@ -394,7 +394,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param columns of type String[]
    * @param conditions of type String
    */
-  public JDBCScheme(String[] columns, String conditions)
+  public JDBCScheme( String[] columns, String conditions )
     {
     this( null, null, columns, null, conditions, null );
     }
@@ -406,7 +406,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param columns of type String[]
    * @param conditions of type String
    */
-  public JDBCScheme(Fields columnFields, String[] columns, String conditions)
+  public JDBCScheme( Fields columnFields, String[] columns, String conditions )
     {
     this( null, null, columnFields, columns, null, conditions, null, null );
     }
@@ -417,7 +417,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param columns of type String[]
    * @param limit of type long
    */
-  public JDBCScheme(String[] columns, long limit)
+  public JDBCScheme( String[] columns, long limit )
     {
     this( null, null, new Fields( columns ), columns, null, null, limit, null, null );
     }
@@ -429,7 +429,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param columns of type String[]
    * @param limit of type long
    */
-  public JDBCScheme(Fields columnFields, String[] columns, long limit)
+  public JDBCScheme( Fields columnFields, String[] columns, long limit )
     {
     this( null, null, columnFields, columns, null, null, limit, null, null );
     }
@@ -439,7 +439,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * 
    * @param columns of type String[]
    */
-  public JDBCScheme(String[] columns)
+  public JDBCScheme( String[] columns )
     {
     this( null, null, new Fields( columns ), columns, null, null, null );
     }
@@ -450,7 +450,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param columnFields of type Fields
    * @param columns of type String[]
    */
-  public JDBCScheme(Fields columnFields, String[] columns)
+  public JDBCScheme( Fields columnFields, String[] columns )
     {
     this( null, null, columnFields, columns, null, null, null );
     }
@@ -466,7 +466,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param countQuery of type String
    * @param limit of type long
    */
-  public JDBCScheme(Class<? extends DBInputFormat> inputFormatClass, String[] columns, String selectQuery, String countQuery, long limit)
+  public JDBCScheme( Class<? extends DBInputFormat> inputFormatClass, String[] columns, String selectQuery, String countQuery, long limit )
     {
     this( inputFormatClass, new Fields( columns ), columns, selectQuery, countQuery, limit, true );
     }
@@ -482,8 +482,8 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param limit of type long
    * @param tableAlias of type Boolean
    */
-  public JDBCScheme(Class<? extends DBInputFormat> inputFormatClass, Fields columnFields, String[] columns, String selectQuery,
-      String countQuery, long limit, Boolean tableAlias)
+  public JDBCScheme( Class<? extends DBInputFormat> inputFormatClass, Fields columnFields, String[] columns, String selectQuery,
+      String countQuery, long limit, Boolean tableAlias )
     {
     this.columnFields = columnFields;
 
@@ -510,8 +510,8 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param countQuery of type String
    * @param limit of type long
    */
-  public JDBCScheme(Class<? extends DBInputFormat> inputFormatClass, Fields columnFields, String[] columns, String selectQuery,
-      String countQuery, long limit)
+  public JDBCScheme( Class<? extends DBInputFormat> inputFormatClass, Fields columnFields, String[] columns, String selectQuery,
+      String countQuery, long limit )
     {
     this( inputFormatClass, columnFields, columns, selectQuery, countQuery, limit, true );
     }
@@ -526,7 +526,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param countQuery of type String
    * @param limit of type long
    */
-  public JDBCScheme(String[] columns, String selectQuery, String countQuery, long limit)
+  public JDBCScheme( String[] columns, String selectQuery, String countQuery, long limit )
     {
     this( null, new Fields( columns ), columns, selectQuery, countQuery, limit );
     }
@@ -540,7 +540,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param countQuery of type String
    * @param limit of type long
    */
-  public JDBCScheme(Fields columnFields, String[] columns, String selectQuery, String countQuery, long limit)
+  public JDBCScheme( Fields columnFields, String[] columns, String selectQuery, String countQuery, long limit )
     {
     this( null, columnFields, columns, selectQuery, countQuery, limit );
     }
@@ -554,7 +554,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param selectQuery of type String
    * @param countQuery of type String
    */
-  public JDBCScheme(String[] columns, String selectQuery, String countQuery)
+  public JDBCScheme( String[] columns, String selectQuery, String countQuery )
     {
     this( null, new Fields( columns ), columns, selectQuery, countQuery, -1 );
     }
@@ -567,7 +567,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param selectQuery of type String
    * @param countQuery of type String
    */
-  public JDBCScheme(Fields columnFields, String[] columns, String selectQuery, String countQuery)
+  public JDBCScheme( Fields columnFields, String[] columns, String selectQuery, String countQuery )
     {
     this( null, columnFields, columns, selectQuery, countQuery, -1 );
     }
@@ -593,11 +593,11 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     }
 
   @Override
-  public void sourceConfInit(FlowProcess<JobConf> process, Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf)
+  public void sourceConfInit( FlowProcess<JobConf> process, Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf )
     {
     int concurrentReads = ( (JDBCTap) tap ).concurrentReads;
 
-    if ( selectQuery != null )
+    if( selectQuery != null )
       DBInputFormat.setInput( conf, TupleRecord.class, selectQuery, countQuery, limit, concurrentReads, tableAlias );
     else
       {
@@ -606,40 +606,40 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
       DBInputFormat.setInput( conf, TupleRecord.class, tableName, conditions, joinedOrderBy, limit, concurrentReads, tableAlias, columns );
       }
 
-    if ( inputFormatClass != null )
+    if( inputFormatClass != null )
       conf.setInputFormat( inputFormatClass );
     }
 
   @Override
-  public void sinkConfInit(FlowProcess<JobConf> process, Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf)
+  public void sinkConfInit( FlowProcess<JobConf> process, Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf )
     {
-    if ( selectQuery != null )
+    if( selectQuery != null )
       throw new TapException( "cannot sink to this Scheme" );
 
     String tableName = ( (JDBCTap) tap ).getTableName();
     int batchSize = ( (JDBCTap) tap ).getBatchSize();
     DBOutputFormat.setOutput( conf, DBOutputFormat.class, tableName, columns, updateBy, batchSize );
 
-    if ( outputFormatClass != null )
+    if( outputFormatClass != null )
       conf.setOutputFormat( outputFormatClass );
     }
 
   @Override
-  public void sourcePrepare(FlowProcess<JobConf> flowProcess, SourceCall<Object[], RecordReader> sourceCall)
+  public void sourcePrepare( FlowProcess<JobConf> flowProcess, SourceCall<Object[], RecordReader> sourceCall )
     {
-    Object[] pair = new Object[] { sourceCall.getInput().createKey(), sourceCall.getInput().createValue() };
+    Object[] pair = new Object[]{ sourceCall.getInput().createKey(), sourceCall.getInput().createValue() };
 
     sourceCall.setContext( pair );
     }
 
   @Override
-  public boolean source(FlowProcess<JobConf> flowProcess, SourceCall<Object[], RecordReader> sourceCall) throws IOException
+  public boolean source( FlowProcess<JobConf> flowProcess, SourceCall<Object[], RecordReader> sourceCall ) throws IOException
     {
-    Object key = sourceCall.getContext()[0];
-    Object value = sourceCall.getContext()[1];
+    Object key = sourceCall.getContext()[ 0 ];
+    Object value = sourceCall.getContext()[ 1 ];
     boolean result = sourceCall.getInput().next( key, value );
 
-    if ( !result )
+    if( !result )
       return false;
 
     Tuple newTuple = ( (TupleRecord) value ).getTuple();
@@ -649,27 +649,40 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     }
 
   @Override
-  public void sourceCleanup(FlowProcess<JobConf> flowProcess, SourceCall<Object[], RecordReader> sourceCall)
+  public void sourceCleanup( FlowProcess<JobConf> flowProcess, SourceCall<Object[], RecordReader> sourceCall )
     {
     sourceCall.setContext( null );
     }
 
   @Override
-  public void sink(FlowProcess<JobConf> flowProcess, SinkCall<Object[], OutputCollector> sinkCall) throws IOException
+  public void sink( FlowProcess<JobConf> flowProcess, SinkCall<Object[], OutputCollector> sinkCall ) throws IOException
     {
     // it's ok to use NULL here so the collector does not write anything
     TupleEntry tupleEntry = sinkCall.getOutgoingEntry();
     OutputCollector outputCollector = sinkCall.getOutput();
-    if ( updateBy != null )
+    
+    if( updateBy != null )
       {
-      Tuple allValues = tupleEntry.selectTuple( updateValueFields );
-      Tuple updateValues = tupleEntry.selectTuple( updateByFields );
+      Tuple allValues;
+      Tuple updateValues;
+      
+      Type[] updateValueTypes = updateByFields.getTypes();
+      if  (updateValueTypes != null)
+        allValues = tupleEntry.getCoercedTuple( updateValueTypes );
+      else  
+        allValues = tupleEntry.selectTuple( updateValueFields );
+      
+      Type[] updateByTypes = updateByFields.getTypes();
+      if (updateByTypes != null )
+        updateValues = tupleEntry.getCoercedTuple( updateByTypes );
+      else
+        updateValues = tupleEntry.selectTuple( updateByFields );
 
       allValues = cleanTuple( allValues );
 
       TupleRecord key = new TupleRecord( allValues );
 
-      if ( updateValues.equals( updateIfTuple ) )
+      if( updateValues.equals( updateIfTuple ) )
         outputCollector.collect( key, null );
       else
         outputCollector.collect( key, key );
@@ -677,14 +690,14 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
       return;
       }
 
-    
-    Type [] types = getSinkFields().getTypes();
+    Type[] types = getSinkFields().getTypes();
     Tuple result;
-    if (types != null )
-      result = tupleEntry.getCoercedTuple( getSinkFields().getTypes() );
+    // types are optional on Fields, so we only use them, if they are present
+    if( types != null )
+      result = tupleEntry.getCoercedTuple( types );
     else
-      result = tupleEntry.selectTuple( getSinkFields());
-    
+      result = tupleEntry.selectTuple( getSinkFields() );
+
     result = cleanTuple( result );
 
     outputCollector.collect( new TupleRecord( result ), null );
@@ -697,20 +710,18 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * @param result
    * @return
    */
-  protected Tuple cleanTuple(Tuple result)
+  protected Tuple cleanTuple( Tuple result )
     {
     return result;
     }
-  
-  
-  public void setColumns(String[] columns)
+
+  public void setColumns( String[] columns )
     {
     this.columns = columns;
     }
 
-
   @Override
-  public void presentSinkFields(FlowProcess<JobConf> flowProcess, Tap tap, Fields fields)
+  public void presentSinkFields( FlowProcess<JobConf> flowProcess, Tap tap, Fields fields )
     {
     LOG.debug( "receiving final sink fields {}", fields );
     super.presentSinkFields( flowProcess, tap, fields );
@@ -718,56 +729,57 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     JDBCTap jtap = (JDBCTap) tap;
 
     TableDesc desc = jtap.tableDesc;
-    
+
     // if the column names or types on the tabledesc instance are missing,
-    // we can now add it. The method will throw an Exception, if the information is
+    // we can now add it. The method will throw an Exception, if the information
+    // is
     // still incomplete afterwards.
-    if ( !desc.hasRequiredTableInformation() )
+    if( !desc.hasRequiredTableInformation() )
       desc.completeFromFields( fields );
 
-    if ( columns == null )
+    if( columns == null )
       columns = desc.columnNames;
 
     verifyColumns( getSinkFields(), columns );
     }
 
   @Override
-  public boolean equals(Object object)
+  public boolean equals( Object object )
     {
-    if ( this == object )
+    if( this == object )
       return true;
-    if ( ! ( object instanceof JDBCScheme ) )
+    if( ! ( object instanceof JDBCScheme ) )
       return false;
-    if ( !super.equals( object ) )
+    if( !super.equals( object ) )
       return false;
 
     JDBCScheme that = (JDBCScheme) object;
 
-    if ( limit != that.limit )
+    if( limit != that.limit )
       return false;
-    if ( columnFields != null ? !columnFields.equals( that.columnFields ) : that.columnFields != null )
+    if( columnFields != null ? !columnFields.equals( that.columnFields ) : that.columnFields != null )
       return false;
-    if ( !Arrays.equals( columns, that.columns ) )
+    if( !Arrays.equals( columns, that.columns ) )
       return false;
-    if ( conditions != null ? !conditions.equals( that.conditions ) : that.conditions != null )
+    if( conditions != null ? !conditions.equals( that.conditions ) : that.conditions != null )
       return false;
-    if ( countQuery != null ? !countQuery.equals( that.countQuery ) : that.countQuery != null )
+    if( countQuery != null ? !countQuery.equals( that.countQuery ) : that.countQuery != null )
       return false;
-    if ( inputFormatClass != null ? !inputFormatClass.equals( that.inputFormatClass ) : that.inputFormatClass != null )
+    if( inputFormatClass != null ? !inputFormatClass.equals( that.inputFormatClass ) : that.inputFormatClass != null )
       return false;
-    if ( !Arrays.equals( orderBy, that.orderBy ) )
+    if( !Arrays.equals( orderBy, that.orderBy ) )
       return false;
-    if ( outputFormatClass != null ? !outputFormatClass.equals( that.outputFormatClass ) : that.outputFormatClass != null )
+    if( outputFormatClass != null ? !outputFormatClass.equals( that.outputFormatClass ) : that.outputFormatClass != null )
       return false;
-    if ( selectQuery != null ? !selectQuery.equals( that.selectQuery ) : that.selectQuery != null )
+    if( selectQuery != null ? !selectQuery.equals( that.selectQuery ) : that.selectQuery != null )
       return false;
-    if ( !Arrays.equals( updateBy, that.updateBy ) )
+    if( !Arrays.equals( updateBy, that.updateBy ) )
       return false;
-    if ( updateByFields != null ? !updateByFields.equals( that.updateByFields ) : that.updateByFields != null )
+    if( updateByFields != null ? !updateByFields.equals( that.updateByFields ) : that.updateByFields != null )
       return false;
-    if ( updateIfTuple != null ? !updateIfTuple.equals( that.updateIfTuple ) : that.updateIfTuple != null )
+    if( updateIfTuple != null ? !updateIfTuple.equals( that.updateIfTuple ) : that.updateIfTuple != null )
       return false;
-    if ( updateValueFields != null ? !updateValueFields.equals( that.updateValueFields ) : that.updateValueFields != null )
+    if( updateValueFields != null ? !updateValueFields.equals( that.updateValueFields ) : that.updateValueFields != null )
       return false;
 
     return true;
