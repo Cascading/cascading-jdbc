@@ -13,6 +13,7 @@
 package cascading.jdbc;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 
@@ -676,8 +677,14 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
       return;
       }
 
-    Tuple result = tupleEntry.selectTuple( getSinkFields() );
-
+    
+    Type [] types = getSinkFields().getTypes();
+    Tuple result;
+    if (types != null )
+      result = tupleEntry.getCoercedTuple( getSinkFields().getTypes() );
+    else
+      result = tupleEntry.selectTuple( getSinkFields());
+    
     result = cleanTuple( result );
 
     outputCollector.collect( new TupleRecord( result ), null );
