@@ -112,6 +112,12 @@ interface. In case something goes wrong during the execution of your Flow, you
 can clean up your database table in the `onThrowable(Flow flow)` method of your
 `FlowListener` implementation.
 
+## Maven repository
+
+All artifacts, except the ones for Oracle (see above) are in
+[http://conjars.org](conjars).
+
+
 ## In Lingual
 
 __NOTE__: The JDBC providers can only be used on the `hadoop` platform. The
@@ -121,19 +127,21 @@ This assumes, that you have followed the
 [http://docs.cascading.org/lingual/1.0/](lingual tutorial), esp. the part, where
 a provider is used to write directly into a memcached server. To accomplish the
 same, but with a [http://db.apache.org/derby/](derby) database, you can do the
-following. First run `gradle build` in this project. Next setup your lingual
-catalog with the derby provider:
+following:
+
+Setup your lingual catalog with the derby provider:
 
     # only hadoop platform is supported
     > export LINGUAL_PLATFORM=hadoop
 
-    > lingual catalog --provider -add /path/to/cascading-jdbc-derby-2.2.0-wip-dev-provider.jar
+    > lingual catalog --provider -add cascading:cascading-jdbc-derby:2.2.0-+:provider
 
 This will register the provider `derby` for the `hadoop` platform. The provider
-supports one protocol (`jdbc`) and one format (`derby`).
+supports one protocol (`jdbc`) and one format (`derby`). The provider is
+downloaded from [http://conjars.org](conjars).
 
-Next we can add the `working` schema, the `titles` stereotype and the
-`title_counts` table.
+Next we can add the `working` schema, the `titles` stereotype and register the
+`derby` provider in the schema.
 
     > lingual catalog --schema working --add
     > lingual catalog --schema working --stereotype titles -add --columns TITLE,CNT --types string,int
@@ -152,7 +160,7 @@ can put them in a properties file and use
 `--properties-file=/path/to/my.properties` instead.
 
 Finally we tell the derby provider, where it can find the derby server. The
-`create=true` is optional. If the database exist already, you can omit it.
+`create=true` is optional. If the database already exists, you can omit it.
 
     > lingual catalog --schema working --table title_counts --stereotype titles -add "jdbc:derby://localhost:1527/mydb;create=true" --protocol jdbc  --format derby 
 
