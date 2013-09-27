@@ -40,7 +40,7 @@ You can install the jars into a local maven repository with
 
     > gralde install
 
-or you can use the ones deployed to [http://conjars.org](conjars).
+or you can use the ones deployed to [conjars](http://conjars.org).
 
 
 ## mysql and postgres
@@ -72,7 +72,7 @@ talk to oracle, but due to the fact, that the oracle jdbc driver is not
 available on any public maven repository, you have to build it yourself. Here is
 how:
 
-1. Download the `odbc6.jar` file from [http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html](oracle technet)
+1. Download the `odbc6.jar` file from [oracle technet](http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html)
 2. Install it in your local maven repo
 
     > mvn install:install-file -DgroupId=com.oracle -DartifactId=ojdbc6
@@ -115,7 +115,7 @@ can clean up your database table in the `onThrowable(Flow flow)` method of your
 ## Maven repository
 
 All artifacts, except the ones for Oracle (see above) are in
-[http://conjars.org](conjars).
+[conjars](http://conjars.org).
 
 
 ## In Lingual
@@ -126,7 +126,7 @@ __NOTE__: The JDBC providers can only be used on the `hadoop` platform. The
 This assumes, that you have followed the
 [http://docs.cascading.org/lingual/1.0/](lingual tutorial), esp. the part, where
 a provider is used to write directly into a memcached server. To accomplish the
-same, but with a [http://db.apache.org/derby/](derby) database, you can do the
+same, but with a [derby](http://db.apache.org/derby/) database, you can do the
 following:
 
 Setup your lingual catalog with the derby provider:
@@ -138,7 +138,7 @@ Setup your lingual catalog with the derby provider:
 
 This will register the provider `derby` for the `hadoop` platform. The provider
 supports one protocol (`jdbc`) and one format (`derby`). The provider is
-downloaded from [http://conjars.org](conjars).
+downloaded from [conjars](http://conjars.org).
 
 Next we can add the `working` schema, the `titles` stereotype and register the
 `derby` provider in the schema.
@@ -250,7 +250,7 @@ Below is an example from the `derby` subproject:
 For more information on the `provider.properties` file, see the [lingual
 documentation](http://docs.cascading.org/lingual/1.0/#_creating_a_data_provider).
 
-# Licsense
+# License
 
 All code, unless otherwise noted, is licensed under the Apache Software License
 version 2.
