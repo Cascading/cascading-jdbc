@@ -79,7 +79,7 @@ public class JDBCFactory
    * @return a new {@link JDBCTap} instance.
    */
   @SuppressWarnings("rawtypes")
-  public Tap createTap(String protocol, Scheme scheme, String identifier, SinkMode mode, Properties properties)
+  public Tap createTap( String protocol, Scheme scheme, String identifier, SinkMode mode, Properties properties )
     {
     LOG.info( "creating jdbc protocol with properties {} in mode {}", properties, mode );
 
@@ -88,27 +88,29 @@ public class JDBCFactory
     String jdbcUserProperty = properties.getProperty( PROTOCOL_JDBC_USER );
     String jdbcPasswordProperty = properties.getProperty( PROTOCOL_JDBC_PASSWORD );
 
-    
     String jdbcUser = null;
-    if ( jdbcUserProperty != null && !jdbcUserProperty.isEmpty() )
+    if( jdbcUserProperty != null && !jdbcUserProperty.isEmpty() )
       jdbcUser = jdbcUserProperty;
 
     String jdbcPassword = null;
-    if ( jdbcPasswordProperty != null && !jdbcPasswordProperty.isEmpty() )
+    if( jdbcPasswordProperty != null && !jdbcPasswordProperty.isEmpty() )
       jdbcPassword = jdbcPasswordProperty;
 
     final TableDesc tableDesc = createTableDescFromProperties( properties );
 
     JDBCScheme jdbcScheme = (JDBCScheme) scheme;
 
-    // it is possible, that the schema information given via properties is incomplete
-    // and therefore, we derive it from the given fields. We can only do that, if we actually get
-    // meaningful fields. There is a second place, where this happens, which is the presentSinkFields method
-    // of the JDBCScheme, which is used as the last place, where we can learn about the fields, before we actually
+    // it is possible, that the schema information given via properties is
+    // incomplete
+    // and therefore, we derive it from the given fields. We can only do that,
+    // if we actually get
+    // meaningful fields. There is a second place, where this happens, which is
+    // the presentSinkFields method
+    // of the JDBCScheme, which is used as the last place, where we can learn
+    // about the fields, before we actually
     // talk to the database.
-    if ( !tableDesc.hasRequiredTableInformation() && 
-        jdbcScheme.getSinkFields() != Fields.UNKNOWN &&
-        jdbcScheme.getSinkFields() != Fields.ALL)
+    if( !tableDesc.hasRequiredTableInformation() && jdbcScheme.getSinkFields() != Fields.UNKNOWN
+        && jdbcScheme.getSinkFields() != Fields.ALL )
       {
       LOG.debug( "tabledesc information incomplete, falling back to sink-fields {}", jdbcScheme.getSinkFields() );
       tableDesc.completeFromFields( jdbcScheme.getSinkFields() );
@@ -131,7 +133,7 @@ public class JDBCFactory
    * @return a new {@link JDBCScheme} instance.
    */
   @SuppressWarnings("rawtypes")
-  public Scheme createScheme(String format, Fields fields, Properties properties)
+  public Scheme createScheme( String format, Fields fields, Properties properties )
     {
     LOG.info( "creating {} format with properties {} and fields {}", format, properties, fields );
 
@@ -141,22 +143,31 @@ public class JDBCFactory
     long limit = -1;
 
     String limitProperty = properties.getProperty( FORMAT_LIMIT );
-    if ( limitProperty != null && !limitProperty.isEmpty() )
+    if( limitProperty != null && !limitProperty.isEmpty() )
       limit = Long.parseLong( limitProperty );
 
-    String[] columNames = null;
+    String[] columNames;
     String columnNamesProperty = properties.getProperty( FORMAT_COLUMNS );
-    if ( columnNamesProperty != null && !columnNamesProperty.isEmpty() )
+    if( columnNamesProperty != null && !columnNamesProperty.isEmpty() )
       columNames = columnNamesProperty.split( separator );
+    else
+      {
+      columNames = new String[ fields.size() ];
+      for( int i = 0; i < fields.size(); i++ )
+        {
+        Comparable<?> cmp = fields.get( i );
+        columNames[ i ] = cmp.toString();
+        }
+      }
 
     Boolean tableAlias = false;
     String tableAliasProperty = properties.getProperty( FORMAT_TABLE_ALIAS );
-    if ( tableAliasProperty != null )
+    if( tableAliasProperty != null )
       tableAlias = new Boolean( tableAliasProperty );
 
-    if ( selectQuery != null )
+    if( selectQuery != null )
       {
-      if ( countQuery == null )
+      if( countQuery == null )
         throw new IllegalArgumentException( "no count query for select query given" );
 
       return new JDBCScheme( DBInputFormat.class, fields, columNames, selectQuery, countQuery, limit, tableAlias );
@@ -166,16 +177,16 @@ public class JDBCFactory
 
     String updateByProperty = properties.getProperty( FORMAT_UPDATE_BY );
     String[] updateBy = null;
-    if ( updateByProperty != null && !updateByProperty.isEmpty() )
+    if( updateByProperty != null && !updateByProperty.isEmpty() )
       updateBy = updateByProperty.split( separator );
 
     Fields updateByFields = null;
-    if ( updateByProperty != null && !updateByProperty.isEmpty() )
+    if( updateByProperty != null && !updateByProperty.isEmpty() )
       updateByFields = new Fields( updateBy );
 
     String[] orderBy = null;
     String orderByProperty = properties.getProperty( FORMAT_ORDER_BY );
-    if ( orderByProperty != null && !orderByProperty.isEmpty() )
+    if( orderByProperty != null && !orderByProperty.isEmpty() )
       orderBy = orderByProperty.split( separator );
 
     return new JDBCScheme( DBInputFormat.class, DBOutputFormat.class, fields, columNames, orderBy, conditions, limit, updateByFields,
@@ -191,30 +202,30 @@ public class JDBCFactory
    * @return A {@link TableDesc} instance.
    * 
    */
-  private TableDesc createTableDescFromProperties(Properties properties)
+  private TableDesc createTableDescFromProperties( Properties properties )
     {
     String tableName = properties.getProperty( PROTOCOL_TABLE_NAME );
 
-    if ( tableName == null || tableName.isEmpty() )
+    if( tableName == null || tableName.isEmpty() )
       throw new IllegalArgumentException( "no tablename given" );
 
     String separator = properties.getProperty( PROTOCOL_FIELD_SEPARATOR, DEFAULT_SEPARATOR );
 
     String[] columnNames = null;
     String columnNamesProperty = properties.getProperty( PROTOCOL_COLUMN_NAMES );
-    if ( columnNamesProperty != null && !columnNamesProperty.isEmpty() )
+    if( columnNamesProperty != null && !columnNamesProperty.isEmpty() )
       columnNames = columnNamesProperty.split( separator );
 
     String[] columnDefs = null;
     String columnDefsProperty = properties.getProperty( PROTOCOL_COLUMN_DEFS );
-    if ( columnDefsProperty != null && !columnDefsProperty.isEmpty() )
+    if( columnDefsProperty != null && !columnDefsProperty.isEmpty() )
       columnDefs = columnDefsProperty.split( separator );
 
     String primaryKeysProperty = properties.getProperty( PROTOCOL_PRIMARY_KEYS );
 
     String[] primaryKeys = null;
 
-    if ( primaryKeysProperty != null && !primaryKeysProperty.isEmpty() )
+    if( primaryKeysProperty != null && !primaryKeysProperty.isEmpty() )
       primaryKeys = primaryKeysProperty.split( separator );
 
     TableDesc desc = new TableDesc( tableName, columnNames, columnDefs, primaryKeys );

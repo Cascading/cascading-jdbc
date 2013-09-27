@@ -188,10 +188,28 @@ public class JDBCFactoryTest
   public void testCreateScheme()
     {
     JDBCFactory factory = new JDBCFactory();
-    Fields fields = new Fields( "one", "two", "three" );
+    Fields fields = new Fields( "ONE", "TWO", "THREE" );
 
     Properties schemeProperties = new Properties();
     schemeProperties.setProperty( JDBCFactory.FORMAT_COLUMNS, "one:two:three" );
+
+    Scheme<?, ?, ?, ?, ?> scheme = factory.createScheme( "someFormat", fields, schemeProperties );
+    assertNotNull( scheme );
+
+    JDBCScheme jdbcScheme = (JDBCScheme) scheme;
+
+    assertArrayEquals( jdbcScheme.getColumns(), new String[] { "one", "two", "three" } );
+
+    }
+  
+  
+  @Test
+  public void testCreateSchemeColumnsFromFields()
+    {
+    JDBCFactory factory = new JDBCFactory();
+    Fields fields = new Fields( "one", "two", "three" );
+
+    Properties schemeProperties = new Properties();
 
     Scheme<?, ?, ?, ?, ?> scheme = factory.createScheme( "someFormat", fields, schemeProperties );
     assertNotNull( scheme );

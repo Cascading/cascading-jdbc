@@ -137,7 +137,7 @@ Next we can add the `working` schema, the `titles` stereotype and the
 
     > lingual catalog --schema working --add
     > lingual catalog --schema working --stereotype titles -add --columns TITLE,CNT --types string,int
-    > lingual catalog --schema working --format derby --add --properties columnnames=title:cnt --provider derby
+    > lingual catalog --schema working --format derby --add --provider derby
 
 Next we set the protocol properties for `jdbc` in the `derby` provider. The
 first line describes the table, that we are operating on, to the underlying
