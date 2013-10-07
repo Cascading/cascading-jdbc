@@ -501,7 +501,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
         ResultSet resultSet = statement.executeQuery( queryString );
 
         if ( returnResults != 0 )
-          result = copyResultSet( resultSet, returnResults == -1 ? Integer.MAX_VALUE : returnResults );
+          result = copyResultSet( resultSet, returnResults );
 
         statement.close();
         connection.commit();
@@ -534,7 +534,11 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
   private List<Object[]> copyResultSet(ResultSet resultSet, int length) throws SQLException
     {
-    List<Object[]> results = new ArrayList<Object[]>( length );
+    List<Object[]> results = new ArrayList<Object[]>();
+
+    if ( length == -1 )
+      length = Integer.MAX_VALUE;
+
     int size = resultSet.getMetaData().getColumnCount();
 
     int count = 0;
