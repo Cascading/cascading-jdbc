@@ -417,7 +417,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
       }
     catch ( SQLException exception )
       {
-      throw new TapException( "unable to open connection: " + connectionUrl, exception );
+      throw new TapException( "SQL error code: " + exception.getErrorCode() + " opening connection: " + connectionUrl, exception );
       }
     }
 
@@ -451,7 +451,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
         }
       catch ( SQLException exception )
         {
-        throw new TapException( "unable to execute update statement: " + updateString, exception );
+        throw new TapException( "SQL error code: " + exception.getErrorCode() + " executing update statement: " + updateString, exception );
         }
       }
     finally
@@ -467,7 +467,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
       catch ( SQLException exception )
         {
         // ignore
-        LOG.warn( "ignoring connection close exception", exception );
+        LOG.warn( "ignoring connection close exception. SQL error code: " + exception.getErrorCode(), exception );
         }
       }
 
@@ -509,7 +509,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
         }
       catch ( SQLException exception )
         {
-        throw new TapException( "unable to execute query statement: " + queryString, exception );
+        throw new TapException( "SQL error code: " + exception.getErrorCode() + " executing query statement: " + queryString, exception );
         }
       }
     finally
@@ -525,7 +525,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
       catch ( SQLException exception )
         {
         // ignore
-        LOG.warn( "ignoring connection close exception", exception );
+        LOG.warn( "ignoring connection close exception. SQL error code: " + exception.getErrorCode(), exception );
         }
       }
 
