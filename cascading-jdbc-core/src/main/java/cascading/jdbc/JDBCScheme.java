@@ -15,7 +15,6 @@ package cascading.jdbc;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.List;
 
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -34,9 +33,8 @@ import cascading.tap.TapException;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
+import cascading.tuple.type.CoercibleType;
 import cascading.util.Util;
-
-import com.google.common.collect.Lists;
 
 /**
  * Class JDBCScheme defines what its parent Tap will select and insert/update
@@ -73,6 +71,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
   private String countQuery;
   private long limit = -1;
   private Boolean tableAlias = true;
+  private Fields internalSinkFields;
 
   private static final Logger LOG = LoggerFactory.getLogger( JDBCScheme.class );
 
@@ -641,9 +640,27 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
     if( !result )
       return false;
+    Tuple rawTuple = ( (TupleRecord) value ).getTuple();
 
-    Tuple newTuple = ( (TupleRecord) value ).getTuple();
-    sourceCall.getIncomingEntry().setTuple( newTuple );
+    int size = rawTuple.size();
+
+    // apply optional type coercions
+    if( getColumnFields().getTypes() != null )
+      {
+      Type[] types = columnFields.getTypes();
+      Tuple newTuple = Tuple.size( size );
+      for( int i = 0; i < size; i++ )
+        {
+        Object rawValue = rawTuple.getObject( i );
+        if( rawValue != null && types[ i ] instanceof CoercibleType<?> )
+          newTuple.set( i, ( (CoercibleType<?>) types[ i ] ).canonical( rawValue ) );
+        else
+          newTuple.set( i, rawValue );
+        }
+      sourceCall.getIncomingEntry().setTuple( newTuple );
+      }
+    else
+      sourceCall.getIncomingEntry().setTuple( rawTuple );
 
     return true;
     }
@@ -661,23 +678,18 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     TupleEntry tupleEntry = sinkCall.getOutgoingEntry();
     OutputCollector outputCollector = sinkCall.getOutput();
     
+    Fields fields = getSinkFields();
+    if ( internalSinkFields != null && ! fields.equals( internalSinkFields ))
+      fields = internalSinkFields;
+    
+    System.err.println("fields is " + fields);
+    Tuple result = tupleEntry.getCoercedTuple( fields.getTypes() );
+    
+    System.err.println("result is " + result);
     if( updateBy != null )
       {
-      Tuple allValues;
-      Tuple updateValues;
-      
-      Type[] updateValueTypes = updateByFields.getTypes();
-      if  (updateValueTypes != null)
-        allValues = tupleEntry.getCoercedTuple( updateValueTypes );
-      else  
-        allValues = tupleEntry.selectTuple( updateValueFields );
-      
-      Type[] updateByTypes = updateByFields.getTypes();
-      if (updateByTypes != null )
-        updateValues = tupleEntry.getCoercedTuple( updateByTypes );
-      else
-        updateValues = tupleEntry.selectTuple( updateByFields );
-
+      Tuple allValues = result.get( fields, updateValueFields );
+      Tuple updateValues = result.get( fields, updateByFields );
       allValues = cleanTuple( allValues );
 
       TupleRecord key = new TupleRecord( allValues );
@@ -689,18 +701,41 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
       return;
       }
-
-    Type[] types = getSinkFields().getTypes();
-    Tuple result;
-    // types are optional on Fields, so we only use them, if they are present
-    if( types != null )
-      result = tupleEntry.getCoercedTuple( types );
-    else
-      result = tupleEntry.selectTuple( getSinkFields() );
-
     result = cleanTuple( result );
-
     outputCollector.collect( new TupleRecord( result ), null );
+
+    }
+
+  @Override
+  public void presentSinkFields( FlowProcess<JobConf> flowProcess, Tap tap, Fields fields )
+    {
+    LOG.info( "receiving final sink fields {}", fields );
+    super.presentSinkFields( flowProcess, tap, fields );
+
+    Comparable<?> [] comparables = new Comparable[ fields.size() ];
+    Type [] types = new Type[ fields.size() ];
+    
+    for( int i = 0; i < fields.size(); i++ )
+      {
+      comparables [ i ] = fields.get( i );
+      types [ i ]= InternalTypeMapping.findInternalType( fields.getType( i ) );
+      }
+    
+    this.internalSinkFields = new Fields( comparables, types );
+    
+    // if the column names or types on the tabledesc instance are missing,
+    // we can now add it. The method will throw an Exception, if the information
+    // is still incomplete afterwards.
+    JDBCTap jtap = (JDBCTap) tap;
+    TableDesc tableDesc = jtap.getTableDesc();
+
+    if( !tableDesc.hasRequiredTableInformation() )
+      tableDesc.completeFromFields( fields );
+
+    if( columns == null )
+      columns = tableDesc.columnNames;
+
+    verifyColumns( getSinkFields(), columns );
     }
 
   /**
@@ -720,27 +755,9 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     this.columns = columns;
     }
 
-  @Override
-  public void presentSinkFields( FlowProcess<JobConf> flowProcess, Tap tap, Fields fields )
+  public Fields getColumnFields()
     {
-    LOG.debug( "receiving final sink fields {}", fields );
-    super.presentSinkFields( flowProcess, tap, fields );
-
-    JDBCTap jtap = (JDBCTap) tap;
-
-    TableDesc desc = jtap.tableDesc;
-
-    // if the column names or types on the tabledesc instance are missing,
-    // we can now add it. The method will throw an Exception, if the information
-    // is
-    // still incomplete afterwards.
-    if( !desc.hasRequiredTableInformation() )
-      desc.completeFromFields( fields );
-
-    if( columns == null )
-      columns = desc.columnNames;
-
-    verifyColumns( getSinkFields(), columns );
+    return columnFields;
     }
 
   @Override

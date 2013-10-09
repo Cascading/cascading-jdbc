@@ -20,16 +20,13 @@
 
 package cascading.jdbc;
 
-import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import org.apache.hadoop.mapred.JobConf;
 import org.junit.Test;
 
 import cascading.flow.FlowProcess;
-import cascading.jdbc.JDBCScheme;
-import cascading.jdbc.JDBCTap;
-import cascading.jdbc.TableDesc;
 import cascading.jdbc.db.DBInputFormat;
 import cascading.jdbc.db.DBOutputFormat;
 import cascading.tuple.Fields;
@@ -41,80 +38,78 @@ public class JDBCSchemeTest
   @Test
   public void testPresentSinkFields()
     {
-    String[] columnNames = new String [] {"id", "firstname", "lastname"};
-    JDBCScheme scheme = new JDBCScheme( DBInputFormat.class, DBOutputFormat.class, Fields.UNKNOWN, columnNames, null, null, -1, null,
-        null, null );
-    
+    String[] columnNames = new String[]{ "id", "firstname", "lastname" };
+    JDBCScheme scheme = new JDBCScheme( DBInputFormat.class, DBOutputFormat.class, Fields.UNKNOWN, columnNames, null, null, -1, null, null,
+        null );
+
     @SuppressWarnings("rawtypes")
-    Class[] fieldTypes = new Class<?>[] {int.class, String.class, String.class};
+    Class[] fieldTypes = new Class<?>[]{ int.class, String.class, String.class };
     Fields fields = new Fields( columnNames, fieldTypes );
-    FlowProcess<JobConf> fp = mock(FlowProcess.class);
-    
-    JDBCTap tap = mock(JDBCTap.class);
-    
+    FlowProcess<JobConf> fp = mock( FlowProcess.class );
+
+    JDBCTap tap = mock( JDBCTap.class );
+
     TableDesc desc = new TableDesc( "test_table" );
-    tap.tableDesc = desc;
-    assertFalse(desc.hasRequiredTableInformation());
+    when( tap.getTableDesc() ).thenReturn( desc );
     
-    
+    assertFalse( desc.hasRequiredTableInformation() );
+
     scheme.presentSinkFields( fp, tap, fields );
-    
-    assertTrue(desc.hasRequiredTableInformation());
-    assertEquals(fields, scheme.getSinkFields());
-    
+
+    assertTrue( desc.hasRequiredTableInformation() );
+    assertEquals( fields, scheme.getSinkFields() );
+
     assertArrayEquals( columnNames, desc.getColumnNames() );
 
-    assertArrayEquals( new String[] {"int not null", "varchar(256)", "varchar(256)"},  desc.getColumnDefs() );
+    assertArrayEquals( new String[]{ "int not null", "varchar(256)", "varchar(256)" }, desc.getColumnDefs() );
     
     }
-  
-  
+
   @SuppressWarnings("unchecked")
   @Test
   public void testPresentSinkFieldsWithNullColumns()
     {
-    String[] columnNames = new String [] {"id", "firstname", "lastname"};
-    JDBCScheme scheme = new JDBCScheme( DBInputFormat.class, DBOutputFormat.class, Fields.UNKNOWN, null, null, null, -1, null,
-        null, null );
-    
+    String[] columnNames = new String[]{ "id", "firstname", "lastname" };
+    JDBCScheme scheme = new JDBCScheme( DBInputFormat.class, DBOutputFormat.class, Fields.UNKNOWN, null, null, null, -1, null, null, null );
+
     @SuppressWarnings("rawtypes")
-    Class[] fieldTypes = new Class<?>[] {int.class, String.class, String.class};
+    Class[] fieldTypes = new Class<?>[]{ int.class, String.class, String.class };
     Fields fields = new Fields( columnNames, fieldTypes );
-    FlowProcess<JobConf> fp = mock(FlowProcess.class);
-    
-    JDBCTap tap = mock(JDBCTap.class);
-    
+    FlowProcess<JobConf> fp = mock( FlowProcess.class );
+
+    JDBCTap tap = mock( JDBCTap.class );
+
     TableDesc desc = new TableDesc( "test_table" );
-    tap.tableDesc = desc;
-    
+    when( tap.getTableDesc() ).thenReturn( desc );
+
     scheme.presentSinkFields( fp, tap, fields );
-    
-    assertTrue(desc.hasRequiredTableInformation());
-    
+
+    assertTrue( desc.hasRequiredTableInformation() );
+
     assertArrayEquals( columnNames, scheme.getColumns() );
-    
+
     }
-  
+
   @SuppressWarnings("unchecked")
-  @Test(expected=IllegalArgumentException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void testPresentSinkFieldsWithFieldsMismatch()
     {
-    String[] columnNames = new String [] {"id", "firstname", "lastname"};
-    JDBCScheme scheme = new JDBCScheme( DBInputFormat.class, DBOutputFormat.class, Fields.UNKNOWN, columnNames, null, null, -1, null,
-        null, null );
-    
+    String[] columnNames = new String[]{ "id", "firstname", "lastname" };
+    JDBCScheme scheme = new JDBCScheme( DBInputFormat.class, DBOutputFormat.class, Fields.UNKNOWN, columnNames, null, null, -1, null, null,
+        null );
+
     @SuppressWarnings("rawtypes")
-    Class[] fieldTypes = new Class<?>[] {int.class, String.class};
-    Fields fields = new Fields( new String[]{"id", "firstname"}, fieldTypes );
-    FlowProcess<JobConf> fp = mock(FlowProcess.class);
-    
-    JDBCTap tap = mock(JDBCTap.class);
-    
+    Class[] fieldTypes = new Class<?>[]{ int.class, String.class };
+    Fields fields = new Fields( new String[]{ "id", "firstname" }, fieldTypes );
+    FlowProcess<JobConf> fp = mock( FlowProcess.class );
+
+    JDBCTap tap = mock( JDBCTap.class );
+
     TableDesc desc = new TableDesc( "test_table" );
-    tap.tableDesc = desc;
-    
+    when( tap.getTableDesc() ).thenReturn( desc );
+
     scheme.presentSinkFields( fp, tap, fields );
-    
+
     }
-    
+
   }

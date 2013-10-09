@@ -100,24 +100,22 @@ public class JDBCFactory
 
     JDBCScheme jdbcScheme = (JDBCScheme) scheme;
 
-    // it is possible, that the schema information given via properties is
-    // incomplete
-    // and therefore, we derive it from the given fields. We can only do that,
-    // if we actually get
-    // meaningful fields. There is a second place, where this happens, which is
-    // the presentSinkFields method
-    // of the JDBCScheme, which is used as the last place, where we can learn
-    // about the fields, before we actually
-    // talk to the database.
-    if( !tableDesc.hasRequiredTableInformation() && jdbcScheme.getSinkFields() != Fields.UNKNOWN
-        && jdbcScheme.getSinkFields() != Fields.ALL )
+    /*
+     * it is possible, that the schema information given via properties is
+     * incomplete and therefore, we derive it from the given fields. We can only
+     * do that, if we actually get meaningful fields. There is a second place,
+     * where this happens, which is the presentSinkFields method of the
+     * JDBCScheme.
+     */
+    Fields sinkFields = jdbcScheme.getSinkFields();
+    if( !tableDesc.hasRequiredTableInformation() && sinkFields != Fields.UNKNOWN
+        && sinkFields != Fields.ALL && sinkFields != null && sinkFields.getTypes() != null )
       {
       LOG.debug( "tabledesc information incomplete, falling back to sink-fields {}", jdbcScheme.getSinkFields() );
       tableDesc.completeFromFields( jdbcScheme.getSinkFields() );
-
-      ( (JDBCScheme) scheme ).setColumns( tableDesc.getColumnNames() );
+      ((JDBCScheme) scheme ).setColumns( tableDesc.getColumnNames());
       }
-
+    
     return new JDBCTap( identifier, jdbcUser, jdbcPassword, driver, tableDesc, jdbcScheme, mode );
 
     }
@@ -152,7 +150,7 @@ public class JDBCFactory
       columNames = columnNamesProperty.split( separator );
     else
       {
-      columNames = new String[ fields.size() ];
+      columNames = new String[fields.size()];
       for( int i = 0; i < fields.size(); i++ )
         {
         Comparable<?> cmp = fields.get( i );
@@ -228,7 +226,7 @@ public class JDBCFactory
     if( primaryKeysProperty != null && !primaryKeysProperty.isEmpty() )
       primaryKeys = primaryKeysProperty.split( separator );
 
-    TableDesc desc = new TableDesc( tableName, columnNames, columnDefs, primaryKeys );
+    TableDesc desc = new TableDesc( tableName, columnNames, columnDefs, primaryKeys);
     return desc;
     }
 

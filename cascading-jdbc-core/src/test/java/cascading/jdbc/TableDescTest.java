@@ -22,9 +22,11 @@ package cascading.jdbc;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Type;
+
 import org.junit.Test;
 
-import cascading.jdbc.TableDesc;
+import cascading.lingual.type.SQLDateCoercibleType;
 import cascading.tuple.Fields;
 
 public class TableDescTest
@@ -39,10 +41,10 @@ public class TableDescTest
     desc = new TableDesc( "name", null, null, null );
     assertFalse( desc.hasRequiredTableInformation() );
 
-    desc = new TableDesc( "name", new String[] { "id" }, null, null );
+    desc = new TableDesc( "name", new String[]{ "id" }, null, null );
     assertFalse( desc.hasRequiredTableInformation() );
 
-    desc = new TableDesc( "name", new String[] { "id" }, new String[] { "int" }, null );
+    desc = new TableDesc( "name", new String[]{ "id" }, new String[]{ "int" }, null );
     assertTrue( desc.hasRequiredTableInformation() );
 
     }
@@ -58,11 +60,28 @@ public class TableDescTest
 
     assertTrue( desc.hasRequiredTableInformation() );
 
-    assertArrayEquals( new String[] { "id" }, desc.getColumnNames() );
+    assertArrayEquals( new String[]{ "id" }, desc.getColumnNames() );
 
-    assertArrayEquals( new String[] { "int not null" }, desc.getColumnDefs() );
+    assertArrayEquals( new String[]{ "int not null" }, desc.getColumnDefs() );
+    }
+
+  @Test
+  public void testCompleteFromFieldsWithCoercibleType()
+    {
+    TableDesc desc = new TableDesc( "name" );
+    assertFalse( desc.hasRequiredTableInformation() );
+
+    Fields fields = new Fields( "creation_date", new SQLDateCoercibleType() );
+    desc.completeFromFields( fields );
+
+    assertTrue( desc.hasRequiredTableInformation() );
+
+    assertArrayEquals( new String[]{ "creation_date" }, desc.getColumnNames() );
+
+    assertArrayEquals( new String[]{ "date" }, desc.getColumnDefs() );
 
     }
+
 
   @Test(expected = IllegalArgumentException.class)
   public void testCompleteFromFieldsMissingType()

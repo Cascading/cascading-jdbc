@@ -46,7 +46,8 @@ version = releaseVersion
 // the version of hadoop used for compiling and testing
 ext.hadoopVersion = "1.1.2"
 
-ext.cascadingVersion = '2.2.0-+'
+ext.cascadingVersion = '2.2.0'
+ext.lingualVersion = '1.0.0-+'
 
 // set property to use locally installed cascading builds
 // otherwise wip releases will be pulled from conjars
@@ -72,6 +73,10 @@ subprojects {
 
   dependencies {
     compile group: 'com.google.guava', name: 'guava', version: "15.0"
+    compile group: 'com.google.guava', name: 'guava', version: "15.0"
+
+    provided group: 'xerces', name: 'xercesImpl', version: "2.9.1"
+    provided group: 'xalan', name: 'xalan', version: "2.7.1"
 
     provided group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion
     provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.2'
@@ -87,6 +92,8 @@ subprojects {
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
     testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
     testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests'
+    // only used in tests, not in the production code.
+    testCompile group: 'cascading', name: 'lingual-core', version: lingualVersion
     testCompile( group: 'org.apache.hadoop', name: 'hadoop-test', version: hadoopVersion ) {
       exclude group: 'oro'
       exclude group: 'hsqldb'

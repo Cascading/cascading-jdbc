@@ -13,12 +13,13 @@
 package cascading.jdbc;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -35,12 +36,17 @@ import org.slf4j.LoggerFactory;
 import cascading.flow.FlowProcess;
 import cascading.flow.hadoop.util.HadoopUtil;
 import cascading.jdbc.db.DBConfiguration;
+import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.TapException;
 import cascading.tap.hadoop.io.HadoopTupleEntrySchemeIterator;
+import cascading.tuple.Fields;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
+import cascading.tuple.type.CoercibleType;
+
+import com.google.common.collect.Lists;
 
 /**
  * Class JDBCTap is a {@link Tap} sub-class that provides read and write access
@@ -56,9 +62,9 @@ import cascading.tuple.TupleEntryIterator;
  * <p/>
  * Both INSERT and UPDATE are supported through the JDBCScheme.
  * <p/>
- * By sub-classing JDBCScheme, {@link cascading.jdbc.db.DBInputFormat},
- * and {@link cascading.jdbc.db.DBOutputFormat}, specific vendor
- * features can be supported.
+ * By sub-classing JDBCScheme, {@link cascading.jdbc.db.DBInputFormat}, and
+ * {@link cascading.jdbc.db.DBOutputFormat}, specific vendor features can be
+ * supported.
  * <p/>
  * Use {@link #setBatchSize(int)} to set the number of INSERT/UPDATES should be
  * grouped together before being executed. The default vaue is 1,000.
@@ -66,10 +72,10 @@ import cascading.tuple.TupleEntryIterator;
  * Use {@link #executeQuery(String, int)} or {@link #executeUpdate(String)} to
  * invoke SQL statements against the underlying Table.
  * <p/>
- * Note that all classes under the {@link cascading.jdbc.db} package
- * originated from the Hadoop project and retain their Apache 2.0 license though
- * they have been heavily modified to support INSERT/UPDATE and vendor
- * specialization, and a number of other features like 'limit'.
+ * Note that all classes under the {@link cascading.jdbc.db} package originated
+ * from the Hadoop project and retain their Apache 2.0 license though they have
+ * been heavily modified to support INSERT/UPDATE and vendor specialization, and
+ * a number of other features like 'limit'.
  * 
  * @see JDBCScheme
  * @see cascading.jdbc.db.DBInputFormat
@@ -111,7 +117,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * @param tableName of type String
    * @param scheme of type JDBCScheme
    */
-  public JDBCTap(String connectionUrl, String username, String password, String driverClassName, String tableName, JDBCScheme scheme)
+  public JDBCTap( String connectionUrl, String username, String password, String driverClassName, String tableName, JDBCScheme scheme )
     {
     this( connectionUrl, username, password, driverClassName, new TableDesc( tableName ), scheme, SinkMode.UPDATE );
     }
@@ -125,13 +131,13 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * @param scheme of type JDBCScheme
    * @param sinkMode of type SinkMode
    */
-  public JDBCTap(String connectionUrl, String driverClassName, TableDesc tableDesc, JDBCScheme scheme, SinkMode sinkMode)
+  public JDBCTap( String connectionUrl, String driverClassName, TableDesc tableDesc, JDBCScheme scheme, SinkMode sinkMode )
     {
     this( connectionUrl, null, null, driverClassName, tableDesc, scheme, sinkMode );
     }
 
   @Override
-  public boolean commitResource(JobConf conf) throws IOException
+  public boolean commitResource( JobConf conf ) throws IOException
     {
     return super.commitResource( conf );
     }
@@ -150,7 +156,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * @param tableDesc of type TableDesc
    * @param scheme of type JDBCScheme
    */
-  public JDBCTap(String connectionUrl, String username, String password, String driverClassName, TableDesc tableDesc, JDBCScheme scheme)
+  public JDBCTap( String connectionUrl, String username, String password, String driverClassName, TableDesc tableDesc, JDBCScheme scheme )
     {
     this( connectionUrl, username, password, driverClassName, tableDesc, scheme, SinkMode.UPDATE );
     }
@@ -166,8 +172,8 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * @param scheme of type JDBCScheme
    * @param sinkMode of type SinkMode
    */
-  public JDBCTap(String connectionUrl, String username, String password, String driverClassName, TableDesc tableDesc, JDBCScheme scheme,
-      SinkMode sinkMode)
+  public JDBCTap( String connectionUrl, String username, String password, String driverClassName, TableDesc tableDesc, JDBCScheme scheme,
+      SinkMode sinkMode )
     {
     super( scheme, sinkMode );
     this.connectionUrl = connectionUrl;
@@ -176,11 +182,13 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     this.driverClassName = driverClassName;
     this.tableDesc = tableDesc;
 
-    //TODO make sure, this is bullet proof
-//    if ( tableDesc.getColumnDefs() == null && sinkMode != SinkMode.UPDATE )
-//      throw new IllegalArgumentException( "cannot have sink mode REPLACE or KEEP without TableDesc column defs, use UPDATE mode" );
+    // TODO make sure, this is bullet proof
+    // if ( tableDesc.getColumnDefs() == null && sinkMode != SinkMode.UPDATE )
+    // throw new IllegalArgumentException(
+    // "cannot have sink mode REPLACE or KEEP without TableDesc column defs, use UPDATE mode"
+    // );
 
-    if ( sinkMode != SinkMode.UPDATE )
+    if( sinkMode != SinkMode.UPDATE )
       LOG.warn( "using sink mode: {}, consider UPDATE to prevent DROP TABLE from being called during Flow or Cascade setup", sinkMode );
     }
 
@@ -196,7 +204,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * @param tableDesc of type TableDesc
    * @param scheme of type JDBCScheme
    */
-  public JDBCTap(String connectionUrl, String driverClassName, TableDesc tableDesc, JDBCScheme scheme)
+  public JDBCTap( String connectionUrl, String driverClassName, TableDesc tableDesc, JDBCScheme scheme )
     {
     this( connectionUrl, driverClassName, tableDesc, scheme, SinkMode.UPDATE );
     }
@@ -211,7 +219,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * @param driverClassName of type String
    * @param scheme of type JDBCScheme
    */
-  public JDBCTap(String connectionUrl, String username, String password, String driverClassName, JDBCScheme scheme)
+  public JDBCTap( String connectionUrl, String username, String password, String driverClassName, JDBCScheme scheme )
     {
     super( scheme );
     this.connectionUrl = connectionUrl;
@@ -227,7 +235,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * @param driverClassName of type String
    * @param scheme of type JDBCScheme
    */
-  public JDBCTap(String connectionUrl, String driverClassName, JDBCScheme scheme)
+  public JDBCTap( String connectionUrl, String driverClassName, JDBCScheme scheme )
     {
     this( connectionUrl, null, null, driverClassName, scheme );
     }
@@ -247,7 +255,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * 
    * @param batchSize the batchSize of this JDBCTap object.
    */
-  public void setBatchSize(int batchSize)
+  public void setBatchSize( int batchSize )
     {
     this.batchSize = batchSize;
     }
@@ -260,6 +268,16 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
   public int getBatchSize()
     {
     return batchSize;
+    }
+
+  /**
+   * Method getTableDesc returns the {@link TableDesc} of this {@link JDBCTap}.
+   * 
+   * @return
+   */
+  public TableDesc getTableDesc()
+    {
+    return tableDesc;
     }
 
   /**
@@ -284,7 +302,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * 
    * @param concurrentReads the concurrentReads of this JDBCTap object.
    */
-  public void setConcurrentReads(int concurrentReads)
+  public void setConcurrentReads( int concurrentReads )
     {
     this.concurrentReads = concurrentReads;
     }
@@ -315,7 +333,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     return true;
     }
 
-  private JobConf getSourceConf(FlowProcess<JobConf> flowProcess, JobConf conf, String property) throws IOException
+  private JobConf getSourceConf( FlowProcess<JobConf> flowProcess, JobConf conf, String property ) throws IOException
     {
     Map<String, String> priorConf = ( (Map<String, String>) HadoopUtil.deserializeBase64( property, conf, Map.class ) );
 
@@ -323,7 +341,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public TupleEntryIterator openForRead(FlowProcess<JobConf> flowProcess, RecordReader input) throws IOException
+  public TupleEntryIterator openForRead( FlowProcess<JobConf> flowProcess, RecordReader input ) throws IOException
     {
     // input may be null when this method is called on the client side or
     // cluster side when accumulating
@@ -332,9 +350,9 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public TupleEntryCollector openForWrite(FlowProcess<JobConf> flowProcess, OutputCollector output) throws IOException
+  public TupleEntryCollector openForWrite( FlowProcess<JobConf> flowProcess, OutputCollector output ) throws IOException
     {
-    if ( !isSink() )
+    if( !isSink() )
       throw new TapException( "this tap may not be used as a sink, no TableDesc defined" );
 
     LOG.info( "Creating JDBCTapCollector output instance" );
@@ -352,12 +370,12 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public void sourceConfInit(FlowProcess<JobConf> process, JobConf conf)
+  public void sourceConfInit( FlowProcess<JobConf> process, JobConf conf )
     {
     // a hack for MultiInputFormat to see that there is a child format
     FileInputFormat.setInputPaths( conf, getPath() );
 
-    if ( username == null )
+    if( username == null )
       DBConfiguration.configureDB( conf, driverClassName, connectionUrl );
     else
       DBConfiguration.configureDB( conf, driverClassName, connectionUrl, username, password );
@@ -366,18 +384,18 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public void sinkConfInit(FlowProcess<JobConf> process, JobConf conf)
+  public void sinkConfInit( FlowProcess<JobConf> process, JobConf conf )
     {
-    if ( !isSink() )
+    if( !isSink() )
       return;
 
     // do not delete if initialized from within a task
     try
       {
-      if ( isReplace() && conf.get( "mapred.task.partition" ) == null && !deleteResource( conf ) )
+      if( isReplace() && conf.get( "mapred.task.partition" ) == null && !deleteResource( conf ) )
         throw new TapException( "unable to drop table: " + tableDesc.getTableName() );
 
-      if ( !createResource( conf ) )
+      if( !createResource( conf ) )
         throw new TapException( "unable to create table: " + tableDesc.getTableName() );
       }
     catch ( IOException e )
@@ -385,7 +403,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
       throw new TapException( "error while trying to modify table: " + tableDesc.getTableName() );
       }
 
-    if ( username == null )
+    if( username == null )
       DBConfiguration.configureDB( conf, driverClassName, connectionUrl );
     else
       DBConfiguration.configureDB( conf, driverClassName, connectionUrl, username, password );
@@ -403,7 +421,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
       Connection connection = null;
 
-      if ( username == null )
+      if( username == null )
         connection = DriverManager.getConnection( connectionUrl );
       else
         connection = DriverManager.getConnection( connectionUrl, username, password );
@@ -428,7 +446,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * @param updateString of type String
    * @return int
    */
-  public int executeUpdate(String updateString)
+  public int executeUpdate( String updateString )
     {
     Connection connection = null;
     int result;
@@ -436,7 +454,6 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     try
       {
       connection = createConnection();
-
       try
         {
         LOG.info( "executing update: {}", updateString );
@@ -458,7 +475,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
       {
       try
         {
-        if ( connection != null && !connection.isClosed() )
+        if( connection != null && !connection.isClosed() )
           {
           connection.commit();
           connection.close();
@@ -483,7 +500,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * @param returnResults of type int
    * @return List
    */
-  public List<Object[]> executeQuery(String queryString, int returnResults)
+  public List<Object[]> executeQuery( String queryString, int returnResults )
     {
     Connection connection = null;
     List<Object[]> result = Collections.emptyList();
@@ -500,7 +517,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
         ResultSet resultSet = statement.executeQuery( queryString );
 
-        if ( returnResults != 0 )
+        if( returnResults != 0 )
           result = copyResultSet( resultSet, returnResults );
 
         statement.close();
@@ -516,7 +533,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
       {
       try
         {
-        if ( connection != null && !connection.isClosed() )
+        if( connection != null && !connection.isClosed() )
           {
           connection.commit();
           connection.close();
@@ -532,36 +549,33 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     return result;
     }
 
-  private List<Object[]> copyResultSet(ResultSet resultSet, int length) throws SQLException
+  private List<Object[]> copyResultSet( ResultSet resultSet, int length ) throws SQLException
     {
-    List<Object[]> results = new ArrayList<Object[]>();
+    List<Object[]> results = Lists.newArrayList();
 
-    if ( length == -1 )
+    if( length == -1 )
       length = Integer.MAX_VALUE;
 
     int size = resultSet.getMetaData().getColumnCount();
 
     int count = 0;
-
-    while ( resultSet.next() && count < length )
+    while( resultSet.next() && count < length )
       {
       count++;
-
       Object[] row = new Object[size];
-
-      for ( int i = 0; i < row.length; i++ )
-        row[i] = resultSet.getObject( i + 1 );
-
+      for( int i = 0; i < row.length; i++ )
+        {
+        row[ i ] = resultSet.getObject( i + 1 );
+        }
       results.add( row );
       }
-
     return results;
     }
 
   @Override
-  public boolean createResource(JobConf conf) throws IOException
+  public boolean createResource( JobConf conf ) throws IOException
     {
-    if ( resourceExists( conf ) )
+    if( resourceExists( conf ) )
       return true;
 
     try
@@ -581,12 +595,12 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public boolean deleteResource(JobConf conf) throws IOException
+  public boolean deleteResource( JobConf conf ) throws IOException
     {
-    if ( !isSink() )
+    if( !isSink() )
       return false;
 
-    if ( !resourceExists( conf ) )
+    if( !resourceExists( conf ) )
       return true;
 
     try
@@ -607,9 +621,9 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public boolean resourceExists(JobConf conf) throws IOException
+  public boolean resourceExists( JobConf conf ) throws IOException
     {
-    if ( !isSink() )
+    if( !isSink() )
       return true;
 
     try
@@ -627,7 +641,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public long getModifiedTime(JobConf conf) throws IOException
+  public long getModifiedTime( JobConf conf ) throws IOException
     {
     return System.currentTimeMillis();
     }
@@ -640,26 +654,26 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public boolean equals(Object object)
+  public boolean equals( Object object )
     {
-    if ( this == object )
+    if( this == object )
       return true;
-    if ( ! ( object instanceof JDBCTap ) )
+    if( ! ( object instanceof JDBCTap ) )
       return false;
-    if ( !super.equals( object ) )
+    if( !super.equals( object ) )
       return false;
 
     JDBCTap jdbcTap = (JDBCTap) object;
 
-    if ( connectionUrl != null ? !connectionUrl.equals( jdbcTap.connectionUrl ) : jdbcTap.connectionUrl != null )
+    if( connectionUrl != null ? !connectionUrl.equals( jdbcTap.connectionUrl ) : jdbcTap.connectionUrl != null )
       return false;
-    if ( driverClassName != null ? !driverClassName.equals( jdbcTap.driverClassName ) : jdbcTap.driverClassName != null )
+    if( driverClassName != null ? !driverClassName.equals( jdbcTap.driverClassName ) : jdbcTap.driverClassName != null )
       return false;
-    if ( password != null ? !password.equals( jdbcTap.password ) : jdbcTap.password != null )
+    if( password != null ? !password.equals( jdbcTap.password ) : jdbcTap.password != null )
       return false;
-    if ( tableDesc != null ? !tableDesc.equals( jdbcTap.tableDesc ) : jdbcTap.tableDesc != null )
+    if( tableDesc != null ? !tableDesc.equals( jdbcTap.tableDesc ) : jdbcTap.tableDesc != null )
       return false;
-    if ( username != null ? !username.equals( jdbcTap.username ) : jdbcTap.username != null )
+    if( username != null ? !username.equals( jdbcTap.username ) : jdbcTap.username != null )
       return false;
 
     return true;

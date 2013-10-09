@@ -13,24 +13,31 @@
 package cascading.jdbc;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import cascading.tuple.Fields;
 import cascading.util.Util;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * Class TableDesc describes a SQL based table, this description is used by the
- * {@link JDBCTap} when creating a missing table.
+ * {@link JDBCTap} when creating a missing table and by the JDBCScheme, for the
+ * correct type coercion.
  * 
  * @see JDBCTap
  * @see JDBCScheme
  */
 public class TableDesc implements Serializable
   {
+
+  private static final long serialVersionUID = 5009899098019404131L;
+
   /** Field tableName */
   String tableName;
   /** Field columnNames */
@@ -40,12 +47,14 @@ public class TableDesc implements Serializable
   /** Field primaryKeys */
   String[] primaryKeys;
 
+  private Map<Comparable<?>, Type> internalColumnTypeMapping;
+
   /**
    * Constructor TableDesc creates a new TableDesc instance.
    * 
    * @param tableName of type String
    */
-  public TableDesc(String tableName)
+  public TableDesc( String tableName )
     {
     this.tableName = tableName;
     }
@@ -57,8 +66,10 @@ public class TableDesc implements Serializable
    * @param columnNames of type String[]
    * @param columnDefs of type String[]
    * @param primaryKeys of type String
+   * @param internalTypes The JVM "native" types of the fields
+   * 
    */
-  public TableDesc(String tableName, String[] columnNames, String[] columnDefs, String[] primaryKeys)
+  public TableDesc( String tableName, String[] columnNames, String[] columnDefs, String[] primaryKeys )
     {
     this.tableName = tableName;
     this.columnNames = columnNames;
@@ -101,7 +112,7 @@ public class TableDesc implements Serializable
     return String.format( getCreateTableFormat(), tableName, Util.join( createTableStatement, ", " ) );
     }
 
-  protected List<String> addCreateTableBodyTo(List<String> createTableStatement)
+  protected List<String> addCreateTableBodyTo( List<String> createTableStatement )
     {
     createTableStatement = addDefinitionsTo( createTableStatement );
     createTableStatement = addPrimaryKeyTo( createTableStatement );
@@ -114,12 +125,12 @@ public class TableDesc implements Serializable
     return "CREATE TABLE %s ( %s )";
     }
 
-  protected List<String> addDefinitionsTo(List<String> createTableStatement)
+  protected List<String> addDefinitionsTo( List<String> createTableStatement )
     {
-    for ( int i = 0; i < columnNames.length; i++ )
+    for( int i = 0; i < columnNames.length; i++ )
       {
-      String columnName = columnNames[i];
-      String columnDef = columnDefs[i];
+      String columnName = columnNames[ i ];
+      String columnDef = columnDefs[ i ];
 
       createTableStatement.add( columnName + " " + columnDef );
       }
@@ -127,9 +138,9 @@ public class TableDesc implements Serializable
     return createTableStatement;
     }
 
-  protected List<String> addPrimaryKeyTo(List<String> createTableStatement)
+  protected List<String> addPrimaryKeyTo( List<String> createTableStatement )
     {
-    if ( hasPrimaryKey() )
+    if( hasPrimaryKey() )
       createTableStatement.add( String.format( "PRIMARY KEY( %s )", Util.join( primaryKeys, ", " ) ) );
 
     return createTableStatement;
@@ -186,7 +197,9 @@ public class TableDesc implements Serializable
    * descriptions from a Fields instance. This can be useful, when the types can
    * only be determined after a flow has been started. This mechanism can be
    * used to simplify the usage of the {@link JDBCTap} and {@link JDBCScheme} as
-   * a provider. The method
+   * a provider. The method may throw an {@link IllegalStateException} if the
+   * fields are insufficient to determine the correct types.
+   * 
    * 
    * @param fields The {@link Fields} instance to derive the table structure
    *          from.
@@ -195,24 +208,27 @@ public class TableDesc implements Serializable
    *           after trying to determine the table structure fromt he given
    *           fields.
    */
-  public void completeFromFields(Fields fields)
+  public void completeFromFields( Fields fields )
     {
-    if ( !hasRequiredTableInformation() )
+    if( !hasRequiredTableInformation() )
       {
       List<String> names = Lists.newArrayList();
       List<String> defs = Lists.newArrayList();
 
-      for ( int i = 0; i < fields.size(); i++ )
+      for( int i = 0; i < fields.size(); i++ )
         {
         Comparable<?> cmp = fields.get( i );
         names.add( cmp.toString() );
-        defs.add( FieldsTypeMapping.sqltypeForClass( fields.getTypeClass( cmp ) ) );
+        Type internalType = InternalTypeMapping.findInternalType( fields.getType( i ) );
+        defs.add( InternalTypeMapping.sqltypeForClass( internalType ) );
         }
-      columnNames = names.toArray( new String[names.size()] );
-      columnDefs = defs.toArray( new String[defs.size()] );
-      
+      if( columnNames == null )
+        columnNames = names.toArray( new String[names.size()] );
+      if( columnDefs == null )
+        columnDefs = defs.toArray( new String[defs.size()] );
+
       // now it has to be complete and usable, if not bail out.
-      if ( !hasRequiredTableInformation() )
+      if( !hasRequiredTableInformation() )
         throw new IllegalStateException( "could not derive TableDesc from given fields." );
       }
     }
@@ -227,22 +243,22 @@ public class TableDesc implements Serializable
     }
 
   @Override
-  public boolean equals(Object object)
+  public boolean equals( Object object )
     {
-    if ( this == object )
+    if( this == object )
       return true;
-    if ( ! ( object instanceof TableDesc ) )
+    if( ! ( object instanceof TableDesc ) )
       return false;
 
     TableDesc tableDesc = (TableDesc) object;
 
-    if ( !Arrays.equals( columnDefs, tableDesc.columnDefs ) )
+    if( !Arrays.equals( columnDefs, tableDesc.columnDefs ) )
       return false;
-    if ( !Arrays.equals( columnNames, tableDesc.columnNames ) )
+    if( !Arrays.equals( columnNames, tableDesc.columnNames ) )
       return false;
-    if ( !Arrays.equals( primaryKeys, tableDesc.primaryKeys ) )
+    if( !Arrays.equals( primaryKeys, tableDesc.primaryKeys ) )
       return false;
-    if ( tableName != null ? !tableName.equals( tableDesc.tableName ) : tableDesc.tableName != null )
+    if( tableName != null ? !tableName.equals( tableDesc.tableName ) : tableDesc.tableName != null )
       return false;
 
     return true;
