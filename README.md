@@ -134,7 +134,7 @@ Setup your lingual catalog with the derby provider:
     # only hadoop platform is supported
     > export LINGUAL_PLATFORM=hadoop
 
-    > lingual catalog --provider -add cascading:cascading-jdbc-derby:2.2.0-+:provider
+    > lingual catalog --provider --add cascading:cascading-jdbc-derby:2.2.0-+:provider
 
 This will register the provider `derby` for the `hadoop` platform. The provider
 supports one protocol (`jdbc`) and one format (`derby`). The provider is
@@ -144,7 +144,7 @@ Next we can add the `working` schema, the `titles` stereotype and register the
 `derby` provider in the schema.
 
     > lingual catalog --schema working --add
-    > lingual catalog --schema working --stereotype titles -add --columns TITLE,CNT --types string,int
+    > lingual catalog --schema working --stereotype titles --add --columns TITLE,CNT --types string,int
     > lingual catalog --schema working --format derby --add --provider derby
 
 Next we set the protocol properties for `jdbc` in the `derby` provider. The
@@ -162,7 +162,7 @@ can put them in a properties file and use
 Finally we tell the derby provider, where it can find the derby server. The
 `create=true` is optional. If the database already exists, you can omit it.
 
-    > lingual catalog --schema working --table title_counts --stereotype titles -add "jdbc:derby://localhost:1527/mydb;create=true" --protocol jdbc  --format derby 
+    > lingual catalog --schema working --table title_counts --stereotype titles --add "jdbc:derby://localhost:1527/mydb;create=true" --protocol jdbc  --format derby 
 
 Now the table `title_counts` is ready to be used from within lingual as a sink.
 You can now run a query over the employe data from the lingual tutorial on hdfs
