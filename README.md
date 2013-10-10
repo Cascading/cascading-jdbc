@@ -7,7 +7,7 @@ A set of Cascading (version 2.2 and above) Taps and Schemes which interact with
 RDBMS systems via JDBC. The project consists of a generic part
 `cascading-jdbc-core` and database specific sub-projects. The database specific
 projects have dependencies to their respective JDBC drivers and run tests
-against those systems during build. 
+against those systems during build.
 
 Currently five relational databases are supported in the build:
 
@@ -36,7 +36,7 @@ setting driver specific things. Some might perform more sophisticated setups,
 like starting and stopping an in-process server during `setUp()` and
 `tearDown()`, respectively.
 
-You can install the jars into a local maven repository with 
+You can install the jars into a local maven repository with
 
     > gralde install
 
@@ -47,7 +47,7 @@ or you can use the ones deployed to [conjars](http://conjars.org).
 
 Database systems like `mysql` require an external database server. In order to
 be able to test with an external server, the build uses system properties, which
-can be given on the command line. 
+can be given on the command line.
 
 Due to this the sub-projects for `mysql` and `postgres` are only enabled, if the
 connnection information is given to gradle like this:
@@ -76,7 +76,7 @@ how:
 2. Install it in your local maven repo
 
     > mvn install:install-file -DgroupId=com.oracle -DartifactId=ojdbc6
-           -Dversion=11.2.0.4 -Dpackaging=jar -Dfile=ojdbc6.jar -DgeneratePom=true 
+           -Dversion=11.2.0.4 -Dpackaging=jar -Dfile=ojdbc6.jar -DgeneratePom=true
 
 3. Build the project against an existing oracle database. The user has to be
    able to create and delete tables, in order for the tests to work.
@@ -99,10 +99,10 @@ them to your organizations repo manager.
 With the `JDBCTap` and `JDBCScheme` you can read from database tables, create
 new tables and write to them, write into existing tables and, update existing
 tables. All modes of operation are used in the test base class
-`cascading.provider.jdbc.JDBCTestingBase` and should be self explanatory. 
+`cascading.provider.jdbc.JDBCTestingBase` and should be self explanatory.
 
 Please note that updating a database table is supported, but not recommended for
-long running jobs. It is considered a convenience during testing/development. 
+long running jobs. It is considered a convenience during testing/development.
 
 Typical work loads write into a new table, which is afterwards made available to
 other parts of your system via a post process. You can achieve this by using the
@@ -153,16 +153,16 @@ JDBCTap.  The table has two columns `title` and `cnt`, which are of type
 `varchar(100)` and `int`. The command line interface uses `:` as a separator for
 properties, which contain multiple values.
 
-    > lingual catalog --schema working --protocol jdbc --add "--properties=tabledesc.tablename=title_counts,tabledesc.columnnames=title:cnt,tabledesc.columndefs=varchar(100) not null:int not null" --provider derby
+    > lingual catalog --schema working --protocol jdbc --add --properties="tabledesc.tablename=title_counts,tabledesc.columnnames=title:cnt,tabledesc.columndefs=varchar(100) not null:int not null" --provider derby
 
 __Tip__: If the `--properties` syntax becomes to complex for your use case, you
 can put them in a properties file and use
-`--properties-file=/path/to/my.properties` instead.
+`--properties-file /path/to/my.properties` instead.
 
 Finally we tell the derby provider, where it can find the derby server. The
 `create=true` is optional. If the database already exists, you can omit it.
 
-    > lingual catalog --schema working --table title_counts --stereotype titles --add "jdbc:derby://localhost:1527/mydb;create=true" --protocol jdbc  --format derby 
+    > lingual catalog --schema working --table title_counts --stereotype titles --add "jdbc:derby://localhost:1527/mydb;create=true" --protocol jdbc  --format derby
 
 Now the table `title_counts` is ready to be used from within lingual as a sink.
 You can now run a query over the employe data from the lingual tutorial on hdfs
