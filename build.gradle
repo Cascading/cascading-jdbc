@@ -49,11 +49,6 @@ ext.hadoopVersion = "1.1.2"
 ext.cascadingVersion = '2.2.0'
 ext.lingualVersion = '1.0.0-+'
 
-// set property to use locally installed cascading builds
-// otherwise wip releases will be pulled from conjars
-if( System.properties[ 'cascading-jdbc.release.local' ] )
-  cascadingVersion = '2.2.0-wip-dev'
-
 subprojects {
 
   group = 'cascading'
@@ -63,6 +58,7 @@ subprojects {
     mavenLocal()
     mavenCentral()
     mavenRepo name: 'conjars', url: 'http://conjars.org/repo/'
+    mavenRepo name: 'pentaho', url: 'http://repo.pentaho.org/artifactory/repo/'
   }
 
   apply plugin: 'java'
