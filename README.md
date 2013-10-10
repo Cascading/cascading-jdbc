@@ -177,6 +177,11 @@ directly into your derby server like this:
     +-----------+
     1 row selected (9,581 seconds)
 
+When lingual attempts to write into the underlying JDBC table, like in the
+example above, it will recreate the table by default. If you want to append to
+the table instead, you can use overwrite the SinkMode for the `JDBCTap` by
+setting `sinkmode=KEEP`, when registering the table.
+
 The provider can not only be used as a sink, but also as a source, meaning you
 can investigate the data, that was just written into the derby table directly
 from the lingual shell:
@@ -232,6 +237,7 @@ Below is an example from the `derby` subproject:
     cascading.bind.provider.derby.protocol.jdbc.tabledesc.columnnames=
     cascading.bind.provider.derby.protocol.jdbc.tabledesc.columndefs=
     cascading.bind.provider.derby.protocol.jdbc.tabledesc.primarykeys=
+    cascading.bind.provider.derby.protocol.jdbc.sinkmode=
 
     # define formats differentiated by properties
     cascading.bind.provider.derby.format.names=derby

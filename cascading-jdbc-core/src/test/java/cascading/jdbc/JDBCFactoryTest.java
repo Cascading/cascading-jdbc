@@ -83,7 +83,7 @@ public class JDBCFactoryTest
     }
 
 
-  @Test()
+  @Test
   public void testCreateTapFullyWorking()
     {
     String protocol = "jdbc";
@@ -104,10 +104,46 @@ public class JDBCFactoryTest
     props.setProperty( JDBCFactory.PROTOCOL_COLUMN_DEFS, "int:varchar(42):varchar(23)" );
     props.setProperty( JDBCFactory.PROTOCOL_PRIMARY_KEYS, "id" );
 
-    JDBCTap tap = (JDBCTap) factory.createTap( protocol, mockScheme, identifier, SinkMode.UPDATE, props );
+    JDBCTap tap = (JDBCTap) factory.createTap( protocol, mockScheme, identifier, SinkMode.REPLACE, props );
     assertEquals( mockScheme, tap.getScheme() );
     assertEquals( "myTable", tap.getTableName() );
-    assertEquals( SinkMode.UPDATE, tap.getSinkMode() );
+    assertEquals( SinkMode.REPLACE, tap.getSinkMode() );
+    TableDesc tdesc = tap.tableDesc;
+
+    assertEquals( "myTable", tdesc.getTableName() );
+    assertArrayEquals( new String[] { "id", "name", "lastname" }, tdesc.getColumnNames() );
+    assertArrayEquals( new String[] { "int", "varchar(42)", "varchar(23)" }, tdesc.getColumnDefs() );
+    assertArrayEquals( new String[] { "id" }, tdesc.getPrimaryKeys() );
+
+    }
+  
+  @Test
+  public void testCreateTapSinkModeOverwrite()
+    {
+    String protocol = "jdbc";
+    String identifier = "jdbc:some:stuf//database";
+    JDBCScheme mockScheme = mock( JDBCScheme.class );
+
+    JDBCFactory factory = new JDBCFactory();
+
+    Properties props = new Properties();
+    props.setProperty( JDBCFactory.PROTOCOL_FIELD_SEPARATOR, ":" );
+    props.setProperty( JDBCFactory.PROTOCOL_JDBC_DRIVER, "some.Driver" );
+    props.setProperty( JDBCFactory.PROTOCOL_JDBC_USER, "username" );
+    props.setProperty( JDBCFactory.PROTOCOL_JDBC_PASSWORD, "password" );
+
+    props.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, "myTable" );
+    props.setProperty( JDBCFactory.PROTOCOL_COLUMN_NAMES, "id:name:lastname" );
+
+    props.setProperty( JDBCFactory.PROTOCOL_COLUMN_DEFS, "int:varchar(42):varchar(23)" );
+    props.setProperty( JDBCFactory.PROTOCOL_PRIMARY_KEYS, "id" );
+    props.setProperty( JDBCFactory.PROTOCOL_SINK_MODE, "KEEP" );
+
+
+    JDBCTap tap = (JDBCTap) factory.createTap( protocol, mockScheme, identifier, SinkMode.REPLACE, props );
+    assertEquals( mockScheme, tap.getScheme() );
+    assertEquals( "myTable", tap.getTableName() );
+    assertEquals( SinkMode.KEEP, tap.getSinkMode() );
     TableDesc tdesc = tap.tableDesc;
 
     assertEquals( "myTable", tdesc.getTableName() );
@@ -117,7 +153,7 @@ public class JDBCFactoryTest
 
     }
 
-  @Test()
+  @Test
   public void testCreateTapFullyWorkingWithEmptyUserAndPass()
     {
     String protocol = "jdbc";

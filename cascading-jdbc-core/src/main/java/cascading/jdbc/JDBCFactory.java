@@ -54,6 +54,8 @@ public class JDBCFactory
   public static final String PROTOCOL_COLUMN_NAMES = "tabledesc.columnnames";
   public static final String PROTOCOL_COLUMN_DEFS = "tabledesc.columndefs";
   public static final String PROTOCOL_PRIMARY_KEYS = "tabledesc.primarykeys";
+  public static final String PROTOCOL_SINK_MODE = "sinkmode";
+  
 
   public static final String FORMAT_SEPARATOR = "separator";
   public static final String FORMAT_COLUMNS = "columnnames";
@@ -116,7 +118,13 @@ public class JDBCFactory
       ((JDBCScheme) scheme ).setColumns( tableDesc.getColumnNames());
       }
     
-    return new JDBCTap( identifier, jdbcUser, jdbcPassword, driver, tableDesc, jdbcScheme, mode );
+    // users can overwrite the sink mode.
+    String sinkModeProperty = properties.getProperty( PROTOCOL_SINK_MODE );
+    SinkMode userMode = mode;
+    if ( sinkModeProperty != null && !sinkModeProperty.isEmpty()  )
+      userMode = SinkMode.valueOf( sinkModeProperty );
+    
+    return new JDBCTap( identifier, jdbcUser, jdbcPassword, driver, tableDesc, jdbcScheme, userMode );
 
     }
 
