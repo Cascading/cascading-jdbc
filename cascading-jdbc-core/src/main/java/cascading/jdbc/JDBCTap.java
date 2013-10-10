@@ -188,7 +188,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     // "cannot have sink mode REPLACE or KEEP without TableDesc column defs, use UPDATE mode"
     // );
 
-    if( sinkMode != SinkMode.UPDATE )
+    if ( sinkMode != SinkMode.UPDATE && sinkMode != SinkMode.KEEP )
       LOG.warn( "using sink mode: {}, consider UPDATE to prevent DROP TABLE from being called during Flow or Cascade setup", sinkMode );
     }
 
