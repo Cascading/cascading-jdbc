@@ -123,9 +123,9 @@ All artifacts, except the ones for Oracle (see above) are in
 __NOTE__: The JDBC providers can only be used on the `hadoop` platform. The
 `local` platform is not supported.
 
-This assumes, that you have followed the
-[http://docs.cascading.org/lingual/1.0/](lingual tutorial), esp. the part, where
-a provider is used to write directly into a memcached server. To accomplish the
+This assumes, that you have followed the [lingual
+tutorial](http://docs.cascading.org/lingual/1.0/), esp. the part, where a
+provider is used to write directly into a memcached server. To accomplish the
 same, but with a [derby](http://db.apache.org/derby/) database, you can do the
 following:
 
