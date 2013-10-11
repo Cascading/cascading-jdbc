@@ -208,7 +208,7 @@ it to `settings.gradle`. Include the JDBC driver of your RDBMS in the
 `build.gradle` file of your sub-project and create a `TestCase` subclassing the
 `JDBCTestingBase` explained above. All you have to do, is setting the driver
 class and JDBC URL for your database. For an example see
-[H2Test](https://github.com/Cascading/cascading-jdbc/blob/wip-2.2/cascading-jdbc-mysql/src/test/java/cascading/jdbc/MysqlTest.java).
+[MysqlTest](https://github.com/Cascading/cascading-jdbc/blob/wip-2.2/cascading-jdbc-mysql/src/test/java/cascading/jdbc/MysqlTest.java).
 
 
 ## Provider mechanism
