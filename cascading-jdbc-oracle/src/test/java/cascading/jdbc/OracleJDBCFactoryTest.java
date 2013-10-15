@@ -19,23 +19,19 @@
  */
 package cascading.jdbc;
 
-import org.junit.Before;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 import cascading.jdbc.db.OracleDBInputFormat;
 
-/**
- * Tests against an oracle database.
- * */
-public class OracleTest extends JDBCTestingBase
+public class OracleJDBCFactoryTest
   {
-
-  @Before
-  public void setUp()
+  
+  @Test
+  public void testGetInputFormatClass()
     {
-    setDriverName( "oracle.jdbc.OracleDriver" );
-    setJdbcurl( System.getProperty( "cascading.jdbcurl" ) );
-    setInputFormatClass( OracleDBInputFormat.class );
-    setFactory( new OracleJDBCFactory() );
+    assertEquals(OracleDBInputFormat.class, new OracleJDBCFactory().getInputFormatClass());
     }
-
+  
   }

@@ -456,6 +456,18 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
+   * 
+   * @param inputFormatClass of type Class<? extends DBInputFormat>
+   * @param columnFields of type Fields
+   * @param columns of type String[]
+   */
+  public JDBCScheme( Class<? extends DBInputFormat> inputFormatClass, Fields columnFields, String[] columns )
+    {
+    this( inputFormatClass, null, columnFields, columns, null, null, null );
+    }
+
+  /**
+   * Constructor JDBCScheme creates a new JDBCScheme instance.
    * <p/>
    * Use this constructor if the data source may only be used as a source.
    * 
@@ -640,27 +652,22 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
     if( !result )
       return false;
+
     Tuple rawTuple = ( (TupleRecord) value ).getTuple();
-
-    int size = rawTuple.size();
-
-    // apply optional type coercions
-    if( getColumnFields().getTypes() != null )
+    Type[] types = getColumnFields().getTypes();
+    int size = getColumnFields().size();
+    
+    Tuple newTuple = Tuple.size( size );
+    for( int i = 0; i < size; i++ )
       {
-      Type[] types = columnFields.getTypes();
-      Tuple newTuple = Tuple.size( size );
-      for( int i = 0; i < size; i++ )
-        {
-        Object rawValue = rawTuple.getObject( i );
-        if( rawValue != null && types[ i ] instanceof CoercibleType<?> )
-          newTuple.set( i, ( (CoercibleType<?>) types[ i ] ).canonical( rawValue ) );
-        else
-          newTuple.set( i, rawValue );
-        }
-      sourceCall.getIncomingEntry().setTuple( newTuple );
+      Object rawValue = rawTuple.getObject( i );
+      if( rawValue != null && types != null && types[ i ] instanceof CoercibleType<?> )
+        newTuple.set( i, ( (CoercibleType<?>) types[ i ] ).canonical( rawValue ) );
+      else
+        newTuple.set( i, rawValue );
       }
-    else
-      sourceCall.getIncomingEntry().setTuple( rawTuple );
+    newTuple = cleanOutgoingTuple( newTuple );
+    sourceCall.getIncomingEntry().setTuple( newTuple );
 
     return true;
     }
@@ -677,20 +684,18 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     // it's ok to use NULL here so the collector does not write anything
     TupleEntry tupleEntry = sinkCall.getOutgoingEntry();
     OutputCollector outputCollector = sinkCall.getOutput();
-    
+
     Fields fields = getSinkFields();
-    if ( internalSinkFields != null && ! fields.equals( internalSinkFields ))
+    if( internalSinkFields != null && !fields.equals( internalSinkFields ) )
       fields = internalSinkFields;
-    
-    System.err.println("fields is " + fields);
+
     Tuple result = tupleEntry.getCoercedTuple( fields.getTypes() );
-    
-    System.err.println("result is " + result);
+
     if( updateBy != null )
       {
       Tuple allValues = result.get( fields, updateValueFields );
       Tuple updateValues = result.get( fields, updateByFields );
-      allValues = cleanTuple( allValues );
+      allValues = cleanIncomingTuple( allValues );
 
       TupleRecord key = new TupleRecord( allValues );
 
@@ -701,7 +706,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
       return;
       }
-    result = cleanTuple( result );
+    result = cleanIncomingTuple( result );
     outputCollector.collect( new TupleRecord( result ), null );
 
     }
@@ -712,17 +717,17 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     LOG.info( "receiving final sink fields {}", fields );
     super.presentSinkFields( flowProcess, tap, fields );
 
-    Comparable<?> [] comparables = new Comparable[ fields.size() ];
-    Type [] types = new Type[ fields.size() ];
-    
+    Comparable<?>[] comparables = new Comparable[fields.size()];
+    Type[] types = new Type[fields.size()];
+
     for( int i = 0; i < fields.size(); i++ )
       {
-      comparables [ i ] = fields.get( i );
-      types [ i ]= InternalTypeMapping.findInternalType( fields.getType( i ) );
+      comparables[ i ] = fields.get( i );
+      types[ i ] = InternalTypeMapping.findInternalType( fields.getType( i ) );
       }
-    
+
     this.internalSinkFields = new Fields( comparables, types );
-    
+
     // if the column names or types on the tabledesc instance are missing,
     // we can now add it. The method will throw an Exception, if the information
     // is still incomplete afterwards.
@@ -742,12 +747,24 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * Provides a hook for subclasses to escape or modify any values before
    * creating the final SQL statement.
    * 
-   * @param result
-   * @return
+   * @param tuple
+   * @return The cleaned tuple
    */
-  protected Tuple cleanTuple( Tuple result )
+  protected Tuple cleanIncomingTuple( Tuple tuple )
     {
-    return result;
+    return tuple;
+    }
+
+  /**
+   * Provides a hook for subclasses to escape or modify any values before
+   * returning the data.
+   * 
+   * @param tuple
+   * @return The cleaned tuple
+   */
+  protected Tuple cleanOutgoingTuple( Tuple tuple )
+    {
+    return tuple;
     }
 
   public void setColumns( String[] columns )

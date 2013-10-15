@@ -34,6 +34,7 @@ import cascading.jdbc.JDBCFactory;
 import cascading.jdbc.JDBCScheme;
 import cascading.jdbc.JDBCTap;
 import cascading.jdbc.TableDesc;
+import cascading.jdbc.db.DBInputFormat;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tuple.Fields;
@@ -282,7 +283,12 @@ public class JDBCFactoryTest
 
     Scheme<?, ?, ?, ?, ?> scheme = factory.createScheme( "someFormat", fields, schemeProperties );
     assertNotNull( scheme );
-
+    }
+  
+  @Test
+  public void testGetInputFormatClass()
+    {
+    assertEquals(DBInputFormat.class, new JDBCFactory().getInputFormatClass());
     }
 
   }

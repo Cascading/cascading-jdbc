@@ -27,11 +27,12 @@ import java.lang.reflect.Type;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import cascading.flow.Flow;
 import cascading.flow.hadoop.HadoopFlowConnector;
+import cascading.jdbc.db.DBInputFormat;
+import cascading.jdbc.db.DBWritable;
 import cascading.operation.Identity;
 import cascading.operation.regex.RegexSplitter;
 import cascading.pipe.Each;
@@ -57,6 +58,12 @@ public abstract class JDBCTestingBase
 
   /** the name of the JDBC driver to use. */
   private String driverName;
+  
+  /** The input format class to use. */
+  private Class<? extends DBInputFormat> inputFormatClass =  DBInputFormat.class;
+  
+  /** The jdbc factory to use. */
+  private JDBCFactory factory = new JDBCFactory();
 
   @Test
   public void testJDBC() throws IOException
@@ -73,8 +80,10 @@ public abstract class JDBCTestingBase
     String[] columnDefs = { "INT NOT NULL", "VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL" };
     String[] primaryKeys = { "num", "lwr" };
     TableDesc tableDesc = new TableDesc( tableName, columnNames, columnDefs, primaryKeys );
+    
+    JDBCScheme scheme = new JDBCScheme( inputFormatClass, fields, columnNames );
 
-    Tap<?, ?, ?> replaceTap = new JDBCTap( jdbcurl, driverName, tableDesc, new JDBCScheme( fields, columnNames ), SinkMode.REPLACE );
+    Tap<?, ?, ?> replaceTap = new JDBCTap( jdbcurl, driverName, tableDesc, scheme, SinkMode.REPLACE );
 
     Flow<?> parseFlow = new HadoopFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
 
@@ -204,8 +213,6 @@ public abstract class JDBCTestingBase
 
     String[] columnNames = new String[]{ "num", "lwr", "upr" };
 
-    JDBCFactory factory = new JDBCFactory();
-
     Properties schemeProperties = new Properties();
     schemeProperties.setProperty( JDBCFactory.FORMAT_COLUMNS, StringUtils.join( columnNames, ":" ) );
     JDBCScheme scheme = (JDBCScheme) factory.createScheme( "somename", columnFields, schemeProperties );
@@ -275,8 +282,6 @@ public abstract class JDBCTestingBase
     Properties tapProperties = new Properties();
     tapProperties.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, "testingtable" );
     tapProperties.setProperty( JDBCFactory.PROTOCOL_JDBC_DRIVER, driverName );
-
-    JDBCFactory factory = new JDBCFactory();
 
     Properties schemeProperties = new Properties();
     JDBCScheme scheme = (JDBCScheme) factory.createScheme( "somename", columnFields, schemeProperties );
@@ -366,4 +371,14 @@ public abstract class JDBCTestingBase
     this.driverName = driverName;
     }
 
+  
+  public void setInputFormatClass( Class<? extends DBInputFormat<DBWritable>> inputFormatClass )
+    {
+    this.inputFormatClass = inputFormatClass;
+    }
+  
+  public void setFactory( JDBCFactory factory )
+    {
+    this.factory = factory;
+    }
   }

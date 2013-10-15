@@ -21,10 +21,9 @@ package cascading.jdbc;
 
 import java.util.Properties;
 
+import org.apache.hadoop.mapred.InputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Preconditions;
 
 import cascading.jdbc.db.DBInputFormat;
 import cascading.jdbc.db.DBOutputFormat;
@@ -55,7 +54,6 @@ public class JDBCFactory
   public static final String PROTOCOL_COLUMN_DEFS = "tabledesc.columndefs";
   public static final String PROTOCOL_PRIMARY_KEYS = "tabledesc.primarykeys";
   public static final String PROTOCOL_SINK_MODE = "sinkmode";
-  
 
   public static final String FORMAT_SEPARATOR = "separator";
   public static final String FORMAT_COLUMNS = "columnnames";
@@ -110,20 +108,20 @@ public class JDBCFactory
      * JDBCScheme.
      */
     Fields sinkFields = jdbcScheme.getSinkFields();
-    if( !tableDesc.hasRequiredTableInformation() && sinkFields != Fields.UNKNOWN
-        && sinkFields != Fields.ALL && sinkFields != null && sinkFields.getTypes() != null )
+    if( !tableDesc.hasRequiredTableInformation() && sinkFields != Fields.UNKNOWN && sinkFields != Fields.ALL && sinkFields != null
+        && sinkFields.getTypes() != null )
       {
       LOG.debug( "tabledesc information incomplete, falling back to sink-fields {}", jdbcScheme.getSinkFields() );
       tableDesc.completeFromFields( jdbcScheme.getSinkFields() );
-      ((JDBCScheme) scheme ).setColumns( tableDesc.getColumnNames());
+      ( (JDBCScheme) scheme ).setColumns( tableDesc.getColumnNames() );
       }
-    
+
     // users can overwrite the sink mode.
     String sinkModeProperty = properties.getProperty( PROTOCOL_SINK_MODE );
     SinkMode userMode = mode;
-    if ( sinkModeProperty != null && !sinkModeProperty.isEmpty()  )
+    if( sinkModeProperty != null && !sinkModeProperty.isEmpty() )
       userMode = SinkMode.valueOf( sinkModeProperty );
-    
+
     return new JDBCTap( identifier, jdbcUser, jdbcPassword, driver, tableDesc, jdbcScheme, userMode );
 
     }
@@ -176,7 +174,7 @@ public class JDBCFactory
       if( countQuery == null )
         throw new IllegalArgumentException( "no count query for select query given" );
 
-      return new JDBCScheme( DBInputFormat.class, fields, columNames, selectQuery, countQuery, limit, tableAlias );
+      return createScheme( fields, selectQuery, countQuery, limit, columNames, tableAlias );
       }
 
     String conditions = properties.getProperty( FORMAT_CONDITIONS );
@@ -195,9 +193,21 @@ public class JDBCFactory
     if( orderByProperty != null && !orderByProperty.isEmpty() )
       orderBy = orderByProperty.split( separator );
 
-    return new JDBCScheme( DBInputFormat.class, DBOutputFormat.class, fields, columNames, orderBy, conditions, limit, updateByFields,
-        updateBy, tableAlias );
+    return createUpdatableScheme( fields, limit, columNames, tableAlias, conditions, updateBy, updateByFields, orderBy );
 
+    }
+
+  
+  protected Scheme createUpdatableScheme( Fields fields, long limit, String[] columNames, Boolean tableAlias, String conditions,
+      String[] updateBy, Fields updateByFields, String[] orderBy )
+    {
+    return new JDBCScheme( getInputFormatClass(), DBOutputFormat.class, fields, columNames, orderBy, conditions, limit, updateByFields,
+        updateBy, tableAlias );
+    }
+
+  protected Scheme createScheme( Fields fields, String selectQuery, String countQuery, long limit, String[] columNames, Boolean tableAlias )
+    {
+    return new JDBCScheme( getInputFormatClass(), fields, columNames, selectQuery, countQuery, limit, tableAlias );
     }
 
   /**
@@ -234,8 +244,19 @@ public class JDBCFactory
     if( primaryKeysProperty != null && !primaryKeysProperty.isEmpty() )
       primaryKeys = primaryKeysProperty.split( separator );
 
-    TableDesc desc = new TableDesc( tableName, columnNames, columnDefs, primaryKeys);
+    TableDesc desc = new TableDesc( tableName, columnNames, columnDefs, primaryKeys );
     return desc;
+    }
+
+  /**
+   * Returns {@link DBInputFormat} class. This can be overwritten in subclasses, if they 
+   * have a custom {@link DBInputFormat}.
+   * 
+   * @return the {@link InputFormat} ot use.
+   * */
+  protected Class<? extends DBInputFormat> getInputFormatClass()
+    {
+    return DBInputFormat.class;
     }
 
   }
