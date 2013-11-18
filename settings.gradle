@@ -23,7 +23,7 @@ include 'cascading-jdbc-derby'
 include 'cascading-jdbc-h2'
 
 
-def optional = ["mysql", "postgres", "oracle"]
+def optional = ["mysql", "postgresql", "oracle"]
 
 for ( dbsystem in optional ) {
   if (System.getProperty("cascading.jdbc.url.${dbsystem}"))

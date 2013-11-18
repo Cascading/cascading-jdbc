@@ -14,7 +14,7 @@ Currently five relational databases are supported in the build:
 * [derby](http://db.apache.org/derby/)
 * [h2](http://www.h2database.com/html/main.html)
 * [mysql](http://www.mysql.com/)
-* [postgres](http://www.postgresql.org/)
+* [postgresql](http://www.postgresql.org/)
 * [oracle](http://www.oracle.com/technetwork/database/enterprise-edition/overview/index.html) (see below)
 
 This code is based on previous work:
@@ -38,25 +38,25 @@ like starting and stopping an in-process server during `setUp()` and
 
 You can install the jars into a local maven repository with
 
-    > gralde install
+    > gradle install
 
 or you can use the ones deployed to [conjars](http://conjars.org).
 
 
-## mysql and postgres
+## mysql and postgresql
 
 Database systems like `mysql` require an external database server. In order to
 be able to test with an external server, the build uses system properties, which
 can be given on the command line.
 
-Due to this the sub-projects for `mysql` and `postgres` are only enabled, if the
+Due to this the sub-projects for `mysql` and `postgresql` are only enabled, if the
 connnection information is given to gradle like this:
 
     > gradle build -Dcascading.jdbc.url.mysql="jdbc:mysql://some-host/somedb?user=someuser&password=somepw" -i
 
 or this
 
-    > gradle build -Dcascading.jdbc.url.postgres='jdbc:postgresql://some-host/somedb?user=some-user&password=somepw' -i
+    > gradle build -Dcascading.jdbc.url.postgresql='jdbc:postgresql://some-host/somedb?user=some-user&password=somepw' -i
 
 If you want to build both, you can of course combine the properties.
 
