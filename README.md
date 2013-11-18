@@ -26,7 +26,7 @@ Both are based on code coming from [apache hadoop](http://hadoop.apache.org).
 
 # Building and Testing
 
-Building all jars is done with a simple `gradle build`. This produces "normal"
+Building all jars is done with a simple `gradle build` (Gradle version 1.8 required). This produces "normal"
 jar files, to be used within cascading applications as well as "fat" provider jars,
 that can be used within [lingual](http://docs.cascading.org/lingual/1.0/).
 
