@@ -201,7 +201,7 @@ from the lingual shell:
     7 rows selected (0,172 seconds)
 
 
-# Extending
+# Extending and Versioning
 
 Adding a new JDBC system is straight forward. Create a new sub-project and add
 it to `settings.gradle`. Include the JDBC driver of your RDBMS in the
@@ -210,6 +210,15 @@ it to `settings.gradle`. Include the JDBC driver of your RDBMS in the
 class and JDBC URL for your database. For an example see
 [MysqlTest](https://github.com/Cascading/cascading-jdbc/blob/wip-2.2/cascading-jdbc-mysql/src/test/java/cascading/jdbc/MysqlTest.java).
 
+## JDBC driver versions
+
+The JDBC driver version used for a particular provider should match the version for your database. To use a different version, edit
+the `build.gradle` file for the particular driver you're using, change the version specified by the `compile` line, and re-install the
+provider.
+
+By default [mavencentra](http://search.maven.org/), [conjars](http://conjars.org/), [pentaho](http://repository.pentaho.org/) and the
+local maven install are the only repos listed in the build script. If the particular version of a driver you need
+is hosted somewhere else, you will need to add this repo to the top level `build.gradle` file.
 
 ## Provider mechanism
 
