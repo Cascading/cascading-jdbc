@@ -1,6 +1,3 @@
-__NOTE:__ This is work in progress and can change any time. Please do not
-use it in production applications yet.
-
 # cascading-jdbc
 
 A set of Cascading (version 2.2 and above) Taps and Schemes which interact with
