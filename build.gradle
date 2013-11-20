@@ -47,7 +47,7 @@ version = releaseVersion
 ext.hadoopVersion = "1.1.2"
 
 ext.cascadingVersion = '2.2.0'
-ext.lingualVersion = '1.0.0-+'
+ext.lingualVersion = '1.0.0'
 
 allprojects {
 

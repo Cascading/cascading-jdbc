@@ -18,21 +18,21 @@
  * limitations under the License.
  */
 
-evaluationDependsOn(":cascading-jdbc-core")
+evaluationDependsOn( ":cascading-jdbc-core" )
 
 dependencies{
-  compile project(':cascading-jdbc-core')
+  compile project( ':cascading-jdbc-core' )
 
   compile( group: 'mysql', name: 'mysql-connector-java', version: '5.1.25' )
 
-  testCompile project(':cascading-jdbc-core').sourceSets.test.runtimeClasspath
+  testCompile project( ':cascading-jdbc-core' ).sourceSets.test.runtimeClasspath
 
   testRuntime ( group: 'mysql', name: 'mysql-connector-java', version: '5.1.25' )
 
 }
 
 test{
-  systemProperty("cascading.jdbcurl", System.getProperty("cascading.jdbc.url.mysql"))
+  systemProperty( "cascading.jdbcurl", System.getProperty( "cascading.jdbc.url.mysql" ) )
 }
 
 fatJar {

@@ -19,6 +19,6 @@
  */
 test{
   scanForTestClasses = false
-  exclude("**/*Check.class")
-  exclude("**/*Base.class")
+  exclude( "**/*Check.class" )
+  exclude( "**/*Base.class" )
 }

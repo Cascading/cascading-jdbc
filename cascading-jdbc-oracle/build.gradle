@@ -18,18 +18,18 @@
  * limitations under the License.
  */
 
-evaluationDependsOn(":cascading-jdbc-core")
+evaluationDependsOn( ":cascading-jdbc-core" )
 
 dependencies{
-  compile project(':cascading-jdbc-core')
+  compile project( ':cascading-jdbc-core' )
 
-  compile( group: 'com.oracle', name: 'ojdbc6', version: '11.2.0.4')
+  compile( group: 'com.oracle', name: 'ojdbc6', version: '11.2.0.4' )
 
-  testCompile project(':cascading-jdbc-core').sourceSets.test.runtimeClasspath
+  testCompile project( ':cascading-jdbc-core' ).sourceSets.test.runtimeClasspath
 }
 
 test{
-  systemProperty("cascading.jdbcurl", System.getProperty("cascading.jdbc.url.oracle"))
+  systemProperty( "cascading.jdbcurl", System.getProperty( "cascading.jdbc.url.oracle" ) )
 }
 
 fatJar {
