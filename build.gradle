@@ -44,9 +44,9 @@ apply from: 'etc/version.gradle'
 version = releaseVersion
 
 // the version of hadoop used for compiling and testing
-ext.hadoopVersion = "1.1.2"
+ext.hadoopVersion = "1.2.1"
 
-ext.cascadingVersion = '2.2.0'
+ext.cascadingVersion = '2.2.1'
 ext.lingualVersion = '1.0.0'
 
 allprojects {
@@ -68,7 +68,6 @@ allprojects {
   apply plugin: 'fatjar'
 
   dependencies {
-    compile group: 'com.google.guava', name: 'guava', version: "15.0"
     compile group: 'com.google.guava', name: 'guava', version: "15.0"
 
     provided group: 'xerces', name: 'xercesImpl', version: "2.9.1"
@@ -135,7 +134,7 @@ allprojects {
   }
   uploadArchives {
 
-    repositories.mavenDeployer {
+    def deployer = repositories.mavenDeployer {
       configuration = configurations.archives
 
       repository( url: repoUrl ) {
@@ -158,6 +157,10 @@ allprojects {
         }
       }
     }
+    [install.repositories.mavenInstaller, deployer]*.pom*.whenConfigured { pom ->
+      def scopeOrder = [test: 1, runtime: 2, provided: 3, compile: 4].withDefault { 100 }
+      pom.dependencies = pom.dependencies.sort { scopeOrder[it.scope] }
+    }
   }
   idea {
     module {
@@ -174,4 +177,3 @@ allprojects {
     }
   }
 }
-
