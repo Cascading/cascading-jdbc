@@ -18,17 +18,23 @@
  * limitations under the License.
  */
 
-include 'cascading-jdbc-core'
-include 'cascading-jdbc-derby'
-include 'cascading-jdbc-h2'
+package cascading.jdbc;
+
+/**
+ * Tests against Postgres database since that's the Redshift API .
+ **/
+
+import org.junit.Before;
+
+public class RedshiftTest extends JDBCTestingBase
+  {
+
+  @Before
+  public void setUp()
+    {
+    setDriverName( RedshiftTap.DB_DRIVER );
+    setJdbcurl( System.getProperty( "cascading.jdbcurl" ) );
+    }
+  }
 
 
-def optional = ["mysql", "postgresql", "oracle", "redshift"]
-
-for ( dbsystem in optional ) {
-  if (System.getProperty("cascading.jdbc.url.${dbsystem}"))
-    include "cascading-jdbc-${dbsystem}"
-  else
-    logger.warn("excluding cascading-jdbc-${dbsystem} due to missing cascading.jdbc.url.${dbsystem} property")
-
-}

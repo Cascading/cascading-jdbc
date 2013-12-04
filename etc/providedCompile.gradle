@@ -18,17 +18,25 @@
  * limitations under the License.
  */
 
-include 'cascading-jdbc-core'
-include 'cascading-jdbc-derby'
-include 'cascading-jdbc-h2'
-
-
-def optional = ["mysql", "postgresql", "oracle", "redshift"]
-
-for ( dbsystem in optional ) {
-  if (System.getProperty("cascading.jdbc.url.${dbsystem}"))
-    include "cascading-jdbc-${dbsystem}"
-  else
-    logger.warn("excluding cascading-jdbc-${dbsystem} due to missing cascading.jdbc.url.${dbsystem} property")
-
+configurations {
+  providedCompile
 }
+
+sourceSets {
+  main.compileClasspath += configurations.providedCompile
+}
+
+task mappings {
+  conf2ScopeMappings.addMapping( 0, configurations.providedCompile, Conf2ScopeMappingContainer.PROVIDED )
+}
+
+idea {
+  module {
+    scopes.PROVIDED.plus += configurations.providedCompile
+  }
+}
+
+javadoc {
+  classpath += configurations.providedCompile
+}
+

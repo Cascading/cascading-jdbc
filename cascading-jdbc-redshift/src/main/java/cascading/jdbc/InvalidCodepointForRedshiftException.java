@@ -18,17 +18,24 @@
  * limitations under the License.
  */
 
-include 'cascading-jdbc-core'
-include 'cascading-jdbc-derby'
-include 'cascading-jdbc-h2'
+package cascading.jdbc;
+
+/** Indicates that a line had a codepoint that */
 
 
-def optional = ["mysql", "postgresql", "oracle", "redshift"]
+public class InvalidCodepointForRedshiftException extends RuntimeException
+  {
 
-for ( dbsystem in optional ) {
-  if (System.getProperty("cascading.jdbc.url.${dbsystem}"))
-    include "cascading-jdbc-${dbsystem}"
-  else
-    logger.warn("excluding cascading-jdbc-${dbsystem} due to missing cascading.jdbc.url.${dbsystem} property")
+  private final String originalString;
 
-}
+  public InvalidCodepointForRedshiftException( String originalString )
+    {
+    this.originalString = originalString;
+    }
+
+  @Override
+  public String getMessage()
+    {
+    return String.format( "The string contains characters not allowed in a Redshift DB. Original string: \"%s\"", originalString );
+    }
+  }

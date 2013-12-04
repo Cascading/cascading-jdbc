@@ -62,6 +62,18 @@ signed certificates. If you want to connect to such a database, you have to add
 `sslfactory=org.postgresql.ssl.NonValidatingFactory` to the JDBC url, otherwise
 you will run into an exception.
 
+## Amazon Redshift
+
+Like the `mysql` and `postgresql` projects the `redshift` project requires a
+running external database for tests and is therefore disabled by default. To
+enable it, provide JDBC URL for a running [Redshift](http://aws.amazon.com/redshift/)
+instance to the build as follows:
+
+    > gradle build -Dcascading.jdbc.url.redshift='jdbc:postgresql://some-host/somedb?user=some-user&password=somepw' -i
+
+The Redshift data engine is API-compatible with PostgreSQL and uses the PostgreSQL
+ JDBC driver. Hence the JDBC URL for a Redshift connection begins with `jdbc:postgresql://`
+
 ## Oracle
 
 The `cascading-jdbc-oracle` project contains everything to create jar files to

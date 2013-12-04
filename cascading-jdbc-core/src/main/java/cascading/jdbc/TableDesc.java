@@ -21,15 +21,13 @@ import java.util.Map;
 
 import cascading.tuple.Fields;
 import cascading.util.Util;
-
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * Class TableDesc describes a SQL based table, this description is used by the
  * {@link JDBCTap} when creating a missing table and by the JDBCScheme, for the
  * correct type coercion.
- * 
+ *
  * @see JDBCTap
  * @see JDBCScheme
  */
@@ -51,7 +49,7 @@ public class TableDesc implements Serializable
 
   /**
    * Constructor TableDesc creates a new TableDesc instance.
-   * 
+   *
    * @param tableName of type String
    */
   public TableDesc( String tableName )
@@ -61,13 +59,12 @@ public class TableDesc implements Serializable
 
   /**
    * Constructor TableDesc creates a new TableDesc instance.
-   * 
+   *
    * @param tableName of type String
    * @param columnNames of type String[]
    * @param columnDefs of type String[]
    * @param primaryKeys of type String
-   * @param internalTypes The JVM "native" types of the fields
-   * 
+   *
    */
   public TableDesc( String tableName, String[] columnNames, String[] columnDefs, String[] primaryKeys )
     {
@@ -100,7 +97,7 @@ public class TableDesc implements Serializable
   /**
    * Method getTableCreateStatement returns the tableCreateStatement of this
    * TableDesc object.
-   * 
+   *
    * @return the tableCreateStatement (type String) of this TableDesc object.
    */
   public String getCreateTableStatement()
@@ -149,7 +146,7 @@ public class TableDesc implements Serializable
   /**
    * Method getTableDropStatement returns the tableDropStatement of this
    * TableDesc object.
-   * 
+   *
    * @return the tableDropStatement (type String) of this TableDesc object.
    */
   public String getTableDropStatement()
@@ -165,7 +162,7 @@ public class TableDesc implements Serializable
   /**
    * Method getTableExistsQuery returns the tableExistsQuery of this TableDesc
    * object.
-   * 
+   *
    * @return the tableExistsQuery (type String) of this TableDesc object.
    */
   public String getTableExistsQuery()
@@ -182,7 +179,7 @@ public class TableDesc implements Serializable
    * Determines if the instance has a useful tablename, columns and column
    * descriptions set. Useful means, that they are non-null and not empty and
    * for each column, there is a type definition.
-   * 
+   *
    * @return Returns <code>true</code> if all requirements are met, otherwise
    *         <code>false</code>.
    * */
@@ -199,11 +196,11 @@ public class TableDesc implements Serializable
    * used to simplify the usage of the {@link JDBCTap} and {@link JDBCScheme} as
    * a provider. The method may throw an {@link IllegalStateException} if the
    * fields are insufficient to determine the correct types.
-   * 
-   * 
+   *
+   *
    * @param fields The {@link Fields} instance to derive the table structure
    *          from.
-   * 
+   *
    * @throws IllegalArgumentException In case the instance is still incomplete,
    *           after trying to determine the table structure fromt he given
    *           fields.

@@ -13,11 +13,9 @@
 package cascading.jdbc;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
@@ -25,6 +23,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import cascading.flow.FlowProcess;
+import cascading.flow.hadoop.util.HadoopUtil;
+import cascading.jdbc.db.DBConfiguration;
+import cascading.tap.SinkMode;
+import cascading.tap.Tap;
+import cascading.tap.TapException;
+import cascading.tap.hadoop.io.HadoopTupleEntrySchemeIterator;
+import cascading.tuple.TupleEntryCollector;
+import cascading.tuple.TupleEntryIterator;
+import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.JobConf;
@@ -32,21 +40,6 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import cascading.flow.FlowProcess;
-import cascading.flow.hadoop.util.HadoopUtil;
-import cascading.jdbc.db.DBConfiguration;
-import cascading.scheme.Scheme;
-import cascading.tap.SinkMode;
-import cascading.tap.Tap;
-import cascading.tap.TapException;
-import cascading.tap.hadoop.io.HadoopTupleEntrySchemeIterator;
-import cascading.tuple.Fields;
-import cascading.tuple.TupleEntryCollector;
-import cascading.tuple.TupleEntryIterator;
-import cascading.tuple.type.CoercibleType;
-
-import com.google.common.collect.Lists;
 
 /**
  * Class JDBCTap is a {@link Tap} sub-class that provides read and write access
@@ -72,11 +65,11 @@ import com.google.common.collect.Lists;
  * Use {@link #executeQuery(String, int)} or {@link #executeUpdate(String)} to
  * invoke SQL statements against the underlying Table.
  * <p/>
- * Note that all classes under the {@link cascading.jdbc.db} package originated
+ * Note that all classes under the <pre>cascading.jdbc.db</pre> package originated
  * from the Hadoop project and retain their Apache 2.0 license though they have
  * been heavily modified to support INSERT/UPDATE and vendor specialization, and
  * a number of other features like 'limit'.
- * 
+ *
  * @see JDBCScheme
  * @see cascading.jdbc.db.DBInputFormat
  * @see cascading.jdbc.db.DBOutputFormat
@@ -109,7 +102,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * Use this constructor for connecting to existing tables that will be read
    * from, or will be inserted/updated into. By default it uses
    * {@link SinkMode#UPDATE}.
-   * 
+   *
    * @param connectionUrl of type String
    * @param username of type String
    * @param password of type String
@@ -124,7 +117,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
   /**
    * Constructor JDBCTap creates a new JDBCTap instance.
-   * 
+   *
    * @param connectionUrl of type String
    * @param driverClassName of type String
    * @param tableDesc of type TableDesc
@@ -148,7 +141,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * Use this constructor for connecting to existing tables that will be read
    * from, or will be inserted/updated into. By default it uses
    * {@link SinkMode#UPDATE}.
-   * 
+   *
    * @param connectionUrl of type String
    * @param username of type String
    * @param password of type String
@@ -163,7 +156,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
   /**
    * Constructor JDBCTap creates a new JDBCTap instance.
-   * 
+   *
    * @param connectionUrl of type String
    * @param username of type String
    * @param password of type String
@@ -198,7 +191,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * Use this constructor for connecting to existing tables that will be read
    * from, or will be inserted/updated into. By default it uses
    * {@link SinkMode#UPDATE}.
-   * 
+   *
    * @param connectionUrl of type String
    * @param driverClassName of type String
    * @param tableDesc of type TableDesc
@@ -212,7 +205,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
   /**
    * Constructor JDBCTap creates a new JDBCTap instance that may only used as a
    * data source.
-   * 
+   *
    * @param connectionUrl of type String
    * @param username of type String
    * @param password of type String
@@ -230,7 +223,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
   /**
    * Constructor JDBCTap creates a new JDBCTap instance.
-   * 
+   *
    * @param connectionUrl of type String
    * @param driverClassName of type String
    * @param scheme of type JDBCScheme
@@ -242,7 +235,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
   /**
    * Method getTableName returns the tableName of this JDBCTap object.
-   * 
+   *
    * @return the tableName (type String) of this JDBCTap object.
    */
   public String getTableName()
@@ -252,7 +245,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
   /**
    * Method setBatchSize sets the batchSize of this JDBCTap object.
-   * 
+   *
    * @param batchSize the batchSize of this JDBCTap object.
    */
   public void setBatchSize( int batchSize )
@@ -262,7 +255,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
   /**
    * Method getBatchSize returns the batchSize of this JDBCTap object.
-   * 
+   *
    * @return the batchSize (type int) of this JDBCTap object.
    */
   public int getBatchSize()
@@ -272,8 +265,8 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
   /**
    * Method getTableDesc returns the {@link TableDesc} of this {@link JDBCTap}.
-   * 
-   * @return
+   *
+   * @return the table description
    */
   public TableDesc getTableDesc()
     {
@@ -286,7 +279,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * <p/>
    * This value specifies the number of concurrent selects and thus the number
    * of mappers that may be used. A value of -1 uses the job default.
-   * 
+   *
    * @return the concurrentReads (type int) of this JDBCTap object.
    */
   public int getConcurrentReads()
@@ -299,7 +292,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * <p/>
    * This value specifies the number of concurrent selects and thus the number
    * of mappers that may be used. A value of -1 uses the job default.
-   * 
+   *
    * @param concurrentReads the concurrentReads of this JDBCTap object.
    */
   public void setConcurrentReads( int concurrentReads )
@@ -309,7 +302,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
   /**
    * Method getPath returns the path of this JDBCTap object.
-   * 
+   *
    * @return the path (type Path) of this JDBCTap object.
    */
   public Path getPath()
@@ -442,7 +435,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
   /**
    * Method executeUpdate allows for ad-hoc update statements to be sent to the
    * remote RDBMS. The number of rows updated will be returned, if applicable.
-   * 
+   *
    * @param updateString of type String
    * @return int
    */
@@ -495,7 +488,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * Method executeQuery allows for ad-hoc queries to be sent to the remove
    * RDBMS. A value of -1 for returnResults will return a List of all results
    * from the query, a value of 0 will return an empty List.
-   * 
+   *
    * @param queryString of type String
    * @param returnResults of type int
    * @return List

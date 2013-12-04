@@ -18,17 +18,29 @@
  * limitations under the License.
  */
 
-include 'cascading-jdbc-core'
-include 'cascading-jdbc-derby'
-include 'cascading-jdbc-h2'
+package cascading.jdbc;
 
+import java.io.Serializable;
 
-def optional = ["mysql", "postgresql", "oracle", "redshift"]
+/** Holder for the AWS credentials. {@link Serializable} is required for EMR use. */
+public class AWSCredentials implements Serializable
+  {
+  private String awsAccessKey;
+  private String awsSecretKey;
 
-for ( dbsystem in optional ) {
-  if (System.getProperty("cascading.jdbc.url.${dbsystem}"))
-    include "cascading-jdbc-${dbsystem}"
-  else
-    logger.warn("excluding cascading-jdbc-${dbsystem} due to missing cascading.jdbc.url.${dbsystem} property")
+  public AWSCredentials( String awsAccessKey, String awsSecretKey )
+    {
+    this.awsAccessKey = awsAccessKey;
+    this.awsSecretKey = awsSecretKey;
+    }
 
-}
+  public String getAwsAccessKey()
+    {
+    return awsAccessKey;
+    }
+
+  public String getAwsSecretKey()
+    {
+    return awsSecretKey;
+    }
+  }
