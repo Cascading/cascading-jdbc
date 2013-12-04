@@ -20,10 +20,12 @@
 
 package cascading.jdbc;
 
+import java.lang.String;
 import java.util.HashMap;
 import java.util.Map;
 
 import cascading.flow.FlowProcess;
+import cascading.jdbc.db.DBInputFormat;
 import cascading.scheme.Scheme;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.tap.Tap;
@@ -77,7 +79,7 @@ public class RedshiftScheme extends JDBCScheme
    */
   public RedshiftScheme( Fields fields, RedshiftTableDesc redshiftTableDesc, String delimiter, String quoteCharacter, Map<RedshiftFactory.CopyOption, String> copyOptions )
     {
-    super( fields, redshiftTableDesc.getColumnNames());
+    super( fields, redshiftTableDesc.getColumnNames() );
     // from the perspective of the JDBC-based parent class flag all fields as JDBC types.
     // for the internally managed S3 sink, use HFS tables (where Date is a String) so that the Tap doesn't
     // write out the integer representation.
@@ -93,6 +95,21 @@ public class RedshiftScheme extends JDBCScheme
       this.copyOptions.put( RedshiftFactory.CopyOption.DELIMITER, DEFAULT_DELIMITER );
 
     this.copyOptions.put( RedshiftFactory.CopyOption.REMOVEQUOTES, null );
+    }
+
+  public RedshiftScheme( String[] columns, String[] orderBy, String[] updateBy )
+    {
+    super( columns, orderBy, updateBy );
+    }
+
+  public RedshiftScheme( Class<? extends DBInputFormat> inputFormat, Fields fields, String[] columns )
+    {
+    super( inputFormat, fields, columns );
+    }
+
+  public RedshiftScheme( String[] columnsNames, String contentsQuery, String countStarQuery )
+    {
+    super( columnsNames, contentsQuery, countStarQuery );
     }
 
   public TextDelimited getTextDelimited()
@@ -124,44 +141,7 @@ public class RedshiftScheme extends JDBCScheme
       sinkScheme.sinkConfInit( flowProcess, tap, jobConf );
       }
     }
-  /*
-  @Override
-  public void sink( FlowProcess<JobConf> flowProcess, SinkCall<Object[], OutputCollector> sinkCall ) throws IOException
-    {
-    LOG.info( "sinking data" );
-    sinkScheme.sink( flowProcess, sinkCall );
-    }
 
-  @Override
-  public void presentSinkFields( FlowProcess<JobConf> flowProcess, Tap tap, Fields fields )
-    {
-    sinkScheme.presentSinkFields( flowProcess, tap, fields );
-    }
-
-  @Override
-  public Fields retrieveSinkFields( FlowProcess<JobConf> flowProcess, Tap tap )
-    {
-    return sinkScheme.retrieveSinkFields( flowProcess, tap );
-    }
-
-  @Override
-  public void sinkPrepare( FlowProcess<JobConf> flowProcess, SinkCall<Object[], OutputCollector> sinkCall ) throws IOException
-    {
-    sinkScheme.sinkPrepare( flowProcess, sinkCall );
-    }
-
-  @Override
-  public void sinkCleanup( FlowProcess<JobConf> flowProcess, SinkCall<Object[], OutputCollector> sinkCall ) throws IOException
-    {
-    sinkScheme.sinkCleanup( flowProcess, sinkCall );
-    }
-
-  @Override
-  public boolean isSymmetrical()
-    {
-    return false;
-    }
-  */
   @Override
   public String toString()
     {

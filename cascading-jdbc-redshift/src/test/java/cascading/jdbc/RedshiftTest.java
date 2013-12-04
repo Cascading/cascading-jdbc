@@ -25,7 +25,20 @@ package cascading.jdbc;
  **/
 
 import org.junit.Before;
+
 import java.io.IOException;
+import java.lang.Override;
+import java.util.Properties;
+
+import cascading.jdbc.RedshiftScheme;
+import cascading.jdbc.RedshiftTableDesc;
+import cascading.jdbc.JDBCTap;
+import cascading.jdbc.JDBCScheme;
+import cascading.jdbc.TableDesc;
+import cascading.jdbc.RedshiftTap;
+import cascading.tuple.Fields;
+import cascading.tap.SinkMode;
+
 import org.junit.Test;
 
 public class RedshiftTest extends JDBCTestingBase
@@ -36,33 +49,52 @@ public class RedshiftTest extends JDBCTestingBase
     {
     setDriverName( RedshiftTap.DB_DRIVER );
     setJdbcurl( System.getProperty( "cascading.jdbcurl" ) );
+    setJDBCFactory( new RedshiftFactory() );
     }
 
-
-  @Test
-  public void testJDBC() throws IOException
+  @Override
+  protected RedshiftScheme getNewJDBCScheme( Fields fields, String[] columnNames )
     {
-
+    return new RedshiftScheme( inputFormatClass, fields, columnNames );
     }
 
-  @Test
-  public void testJDBCAliased() throws IOException
+  @Override
+  protected RedshiftScheme getNewJDBCScheme( String[] columns, String[] orderBy, String[] updateBy )
     {
-
+    return new RedshiftScheme( columns, orderBy, updateBy );
     }
 
-  @Test
-  public void testJDBCWithFactory() throws IOException
+  @Override
+  protected RedshiftScheme getNewJDBCScheme( String[] columnsNames, String contentsQuery, String countStarQuery )
     {
-
+    return new RedshiftScheme( columnsNames, contentsQuery, countStarQuery );
     }
 
-  @Test
-  public void testJDBCWithFactoryMissingTypes() throws IOException
+  @Override
+  protected RedshiftTableDesc getNewTableDesc( String tableName, String[] columnNames, String[] columnDefs, String[] primaryKeys )
     {
-
+    return new RedshiftTableDesc( tableName, columnNames, columnDefs, null, null );
     }
 
+  @Override
+  protected RedshiftTap getNewJDBCTap( TableDesc tableDesc, JDBCScheme jdbcScheme, SinkMode sinkMode )
+    {
+    return new RedshiftTap( jdbcurl, (RedshiftTableDesc) tableDesc, (RedshiftScheme) jdbcScheme, sinkMode );
+    }
+
+  @Override
+  protected RedshiftTap getNewJDBCTap( JDBCScheme jdbcScheme )
+    {
+    return new RedshiftTap( jdbcurl, (RedshiftScheme) jdbcScheme );
+    }
+
+  @Override
+  protected Properties createProperties()
+    {
+    Properties properties = super.createProperties();
+    properties.put( RedshiftFactory.PROTOCOL_USE_DIRECT_INSERT, "true" );
+    return properties;
+    }
   }
 
 

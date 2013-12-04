@@ -59,7 +59,17 @@ public class RedshiftTap extends JDBCTap
 
   public RedshiftTap( String connectionUrl, String username, String password, String hfsStagingDir, AWSCredentials awsCredentials, RedshiftTableDesc redshiftTableDesc, RedshiftScheme redshiftScheme, SinkMode sinkMode )
     {
-    this( connectionUrl, username, password, hfsStagingDir, awsCredentials, redshiftTableDesc, redshiftScheme, sinkMode, false, false );
+    this( connectionUrl, username, password, hfsStagingDir, awsCredentials, redshiftTableDesc, redshiftScheme, sinkMode, false, true );
+    }
+
+  public RedshiftTap( String connectionUrl, RedshiftTableDesc redshiftTableDesc, RedshiftScheme redshiftScheme, SinkMode sinkMode )
+    {
+    this( connectionUrl, null, null, null, null, redshiftTableDesc, redshiftScheme, sinkMode, false, true );
+    }
+
+  public RedshiftTap( String connectionUrl, RedshiftScheme redshiftScheme )
+    {
+    this( connectionUrl, null, null, null, null, null, redshiftScheme, null, false, true );
     }
 
   /**
@@ -132,18 +142,21 @@ public class RedshiftTap extends JDBCTap
   @Override
   public boolean commitResource( JobConf jobConf ) throws IOException
     {
-    String copyCommand = buildCopyFromS3Command();
-    try
+    if( !useDirectInsert )
       {
-      int results = super.executeUpdate( copyCommand );
-      if( results != 0 )
-        LOG.info( "Copy return code: {} ( expected: 0 )", results );
-      }
-    finally
-      {
-      // clean scratch resources even if load failed.
-      if( !keepDebugHfsData && hfsStagingDir.resourceExists( jobConf ) )
-        hfsStagingDir.deleteResource( jobConf );
+      String copyCommand = buildCopyFromS3Command();
+      try
+        {
+        int results = super.executeUpdate( copyCommand );
+        if( results != 0 )
+          LOG.info( "Copy return code: {} ( expected: 0 )", results );
+        }
+      finally
+        {
+        // clean scratch resources even if load failed.
+        if( !keepDebugHfsData && hfsStagingDir.resourceExists( jobConf ) )
+          hfsStagingDir.deleteResource( jobConf );
+        }
       }
     return true;
     }

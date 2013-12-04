@@ -428,7 +428,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
       }
     catch ( SQLException exception )
       {
-      throw new TapException( "SQL error code: " + exception.getErrorCode() + " opening connection: " + connectionUrl, exception );
+      throw new TapException( exception.getMessage() + " (SQL error code: " + exception.getErrorCode() + ") opening connection: " + connectionUrl, exception );
       }
     }
 
@@ -578,8 +578,8 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
       }
     catch ( TapException exception )
       {
-      LOG.warn( "unable to create table: {}", tableDesc.tableName );
-      LOG.warn( "sql failure", exception.getCause() );
+      LOG.error( "unable to create table: {}", tableDesc.tableName );
+      LOG.error( "sql query failed: {}", tableDesc.getCreateTableStatement() , exception.getCause() );
 
       return false;
       }

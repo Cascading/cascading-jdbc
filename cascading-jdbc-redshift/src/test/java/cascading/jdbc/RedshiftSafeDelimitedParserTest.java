@@ -1,14 +1,11 @@
 package cascading.jdbc;
 
-import static junit.framework.Assert.*;
-
 import java.io.UnsupportedEncodingException;
 
-import cascading.jdbc.InvalidCodepointForRedshiftException;
-import cascading.jdbc.RedshiftSafeDelimitedParser;
+import cascading.tuple.Tuple;
 import org.junit.Test;
 
-import cascading.tuple.Tuple;
+import static junit.framework.Assert.assertEquals;
 
 public class RedshiftSafeDelimitedParserTest {
     @Test

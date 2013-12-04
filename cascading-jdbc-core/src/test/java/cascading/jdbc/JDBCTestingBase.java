@@ -53,13 +53,13 @@ public abstract class JDBCTestingBase
   String inputFile = "../cascading-jdbc-core/src/test/resources/data/small.txt";
 
   /** the JDBC url for the tests. subclasses have to set this */
-  private String jdbcurl;
+  protected String jdbcurl;
 
   /** the name of the JDBC driver to use. */
-  private String driverName;
+  protected String driverName;
 
   /** The input format class to use. */
-  private Class<? extends DBInputFormat> inputFormatClass =  DBInputFormat.class;
+  protected Class<? extends DBInputFormat> inputFormatClass = DBInputFormat.class;
 
   /** The jdbc factory to use. */
   private JDBCFactory factory = new JDBCFactory();
@@ -71,18 +71,19 @@ public abstract class JDBCTestingBase
     // CREATE NEW TABLE FROM SOURCE
 
     Tap<?, ?, ?> source = new Hfs( new TextLine(), inputFile );
-    Fields fields = new Fields( new Comparable[]{ "num", "lwr", "upr" }, new Type[]{ int.class, String.class, String.class } );
+    Fields fields = new Fields( new Comparable[]{"num", "lwr", "upr"}, new Type[]{int.class, String.class,
+                                                                                  String.class} );
     Pipe parsePipe = new Each( "insert", new Fields( "line" ), new RegexSplitter( fields, "\\s" ) );
 
     String tableName = "testingtable";
-    String[] columnNames = { "num", "lwr", "upr" };
-    String[] columnDefs = { "INT NOT NULL", "VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL" };
-    String[] primaryKeys = { "num", "lwr" };
-    TableDesc tableDesc = new TableDesc( tableName, columnNames, columnDefs, primaryKeys );
+    String[] columnNames = {"num", "lwr", "upr"};
+    String[] columnDefs = {"INT NOT NULL", "VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL"};
+    String[] primaryKeys = {"num", "lwr"};
+    TableDesc tableDesc = getNewTableDesc( tableName, columnNames, columnDefs, primaryKeys );
 
-    JDBCScheme scheme = new JDBCScheme( inputFormatClass, fields, columnNames );
+    JDBCScheme scheme = getNewJDBCScheme( fields, columnNames );
 
-    Tap<?, ?, ?> replaceTap = new JDBCTap( jdbcurl, driverName, tableDesc, scheme, SinkMode.REPLACE );
+    Tap<?, ?, ?> replaceTap = getNewJDBCTap( tableDesc, scheme, SinkMode.REPLACE );
 
     Flow<?> parseFlow = new HadoopFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
 
@@ -104,9 +105,10 @@ public abstract class JDBCTestingBase
 
     // READ DATA FROM TEXT FILE AND UPDATE TABLE
 
-    JDBCScheme jdbcScheme = new JDBCScheme( columnNames, null, new String[]{ "num", "lwr" } );
+    JDBCScheme jdbcScheme = getNewJDBCScheme( columnNames, null, new String[]{"num", "lwr"} );
     jdbcScheme.setSinkFields( fields );
-    Tap<?, ?, ?> updateTap = new JDBCTap( jdbcurl, driverName, tableDesc, jdbcScheme, SinkMode.UPDATE );
+    Tap<?, ?, ?> updateTap = getNewJDBCTap( tableDesc, jdbcScheme, SinkMode.UPDATE );
+    ;
 
     Flow<?> updateFlow = new HadoopFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
 
@@ -116,8 +118,8 @@ public abstract class JDBCTestingBase
 
     // READ DATA FROM TABLE INTO TEXT FILE, USING CUSTOM QUERY
 
-    Tap<?, ?, ?> sourceTap = new JDBCTap( jdbcurl, driverName, new JDBCScheme( columnNames,
-        "select num, lwr, upr from testingtable testingtable", "select count(*) from testingtable" ) );
+    Tap<?, ?, ?> sourceTap = getNewJDBCTap( getNewJDBCScheme( columnNames,
+      "select num, lwr, upr from testingtable testingtable", "select count(*) from testingtable" ) );
 
     Pipe readPipe = new Each( "read", new Identity() );
 
@@ -134,16 +136,17 @@ public abstract class JDBCTestingBase
     // CREATE NEW TABLE FROM SOURCE
 
     Tap<?, ?, ?> source = new Hfs( new TextLine(), inputFile );
-    Fields fields = new Fields( new Comparable[]{ "num", "lwr", "upr" }, new Type[]{ int.class, String.class, String.class } );
+    Fields fields = new Fields( new Comparable[]{"num", "lwr", "upr"}, new Type[]{int.class, String.class,
+                                                                                  String.class} );
     Pipe parsePipe = new Each( "insert", new Fields( "line" ), new RegexSplitter( fields, "\\s" ) );
 
     String tableName = "testingtablealias";
-    String[] columnNames = { "num", "lwr", "upr" };
-    String[] columnDefs = { "INT NOT NULL", "VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL" };
-    String[] primaryKeys = { "num", "lwr" };
-    TableDesc tableDesc = new TableDesc( tableName, columnNames, columnDefs, primaryKeys );
+    String[] columnNames = {"num", "lwr", "upr"};
+    String[] columnDefs = {"INT NOT NULL", "VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL"};
+    String[] primaryKeys = {"num", "lwr"};
+    TableDesc tableDesc = getNewTableDesc( tableName, columnNames, columnDefs, primaryKeys );
 
-    Tap<?, ?, ?> replaceTap = new JDBCTap( jdbcurl, driverName, tableDesc, new JDBCScheme(fields, columnNames ), SinkMode.REPLACE );
+    Tap<?, ?, ?> replaceTap = getNewJDBCTap( tableDesc, getNewJDBCScheme( fields, columnNames ), SinkMode.REPLACE );
 
     Flow<?> parseFlow = new HadoopFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
 
@@ -165,9 +168,9 @@ public abstract class JDBCTestingBase
 
     // READ DATA FROM TEXT FILE AND UPDATE TABLE
 
-    JDBCScheme jdbcScheme = new JDBCScheme( columnNames, null, new String[]{ "num", "lwr" } );
+    JDBCScheme jdbcScheme = getNewJDBCScheme( columnNames, null, new String[]{"num", "lwr"} );
     jdbcScheme.setSinkFields( fields );
-    Tap<?, ?, ?> updateTap = new JDBCTap( jdbcurl, driverName, tableDesc, jdbcScheme, SinkMode.UPDATE );
+    Tap<?, ?, ?> updateTap = getNewJDBCTap( tableDesc, jdbcScheme, SinkMode.UPDATE );
 
     Flow<?> updateFlow = new HadoopFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
 
@@ -177,8 +180,8 @@ public abstract class JDBCTestingBase
 
     // READ DATA FROM TABLE INTO TEXT FILE, USING CUSTOM QUERY
 
-    Tap<?, ?, ?> sourceTap = new JDBCTap( jdbcurl, driverName, new JDBCScheme( columnNames,
-        "select num, lwr, upr from testingtablealias testingtable", "select count(*) from testingtablealias" ) );
+    Tap<?, ?, ?> sourceTap = getNewJDBCTap( getNewJDBCScheme( columnNames,
+      "select num, lwr, upr from testingtablealias testingtable", "select count(*) from testingtablealias" ) );
 
     Pipe readPipe = new Each( "read", new Identity() );
 
@@ -199,7 +202,8 @@ public abstract class JDBCTestingBase
 
     Tap<?, ?, ?> source = new Hfs( new TextLine(), inputFile );
 
-    Fields columnFields = new Fields( new Comparable[]{ "num", "lwr", "upr" }, new Type[]{ int.class, String.class, String.class } );
+    Fields columnFields = new Fields( new Comparable[]{"num", "lwr", "upr"}, new Type[]{int.class, String.class,
+                                                                                        String.class} );
 
     Pipe parsePipe = new Each( "insert", new Fields( "line" ), new RegexSplitter( columnFields, "\\s" ) );
 
@@ -210,7 +214,7 @@ public abstract class JDBCTestingBase
     tapProperties.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, "testingtable" );
     tapProperties.setProperty( JDBCFactory.PROTOCOL_JDBC_DRIVER, driverName );
 
-    String[] columnNames = new String[]{ "num", "lwr", "upr" };
+    String[] columnNames = new String[]{"num", "lwr", "upr"};
 
     Properties schemeProperties = new Properties();
     schemeProperties.setProperty( JDBCFactory.FORMAT_COLUMNS, StringUtils.join( columnNames, ":" ) );
@@ -274,7 +278,8 @@ public abstract class JDBCTestingBase
 
     Tap<?, ?, ?> source = new Hfs( new TextLine(), inputFile );
 
-    Fields columnFields = new Fields( new Comparable[]{ "num", "lwr", "upr" }, new Type[]{ int.class, String.class, String.class } );
+    Fields columnFields = new Fields( new Comparable[]{"num", "lwr", "upr"}, new Type[]{int.class, String.class,
+                                                                                        String.class} );
 
     Pipe parsePipe = new Each( "insert", new Fields( "line" ), new RegexSplitter( columnFields, "\\s" ) );
 
@@ -352,7 +357,38 @@ public abstract class JDBCTestingBase
     assertEquals( "wrong number of values", expects, count );
     }
 
-  private Properties createProperties()
+  protected JDBCScheme getNewJDBCScheme( Fields fields, String[] columnNames )
+    {
+    return new JDBCScheme( inputFormatClass, fields, columnNames );
+    }
+
+  protected JDBCScheme getNewJDBCScheme( String[] columns, String[] orderBy, String[] updateBy )
+    {
+    return new JDBCScheme( columns, orderBy, updateBy );
+    }
+
+  protected JDBCScheme getNewJDBCScheme( String[] columnsNames, String contentsQuery, String countStarQuery )
+    {
+    return new JDBCScheme( columnsNames, contentsQuery, countStarQuery );
+    }
+
+  protected TableDesc getNewTableDesc( String tableName, String[] columnNames, String[] columnDefs, String[] primaryKeys )
+    {
+    return new TableDesc( tableName, columnNames, columnDefs, primaryKeys );
+    }
+
+  protected JDBCTap getNewJDBCTap( TableDesc tableDesc, JDBCScheme jdbcScheme, SinkMode sinkMode )
+    {
+    return new JDBCTap( jdbcurl, driverName, tableDesc, jdbcScheme, sinkMode );
+    }
+
+  protected JDBCTap getNewJDBCTap( JDBCScheme jdbcScheme )
+    {
+    return new JDBCTap( jdbcurl, driverName, jdbcScheme );
+    }
+
+
+  protected Properties createProperties()
     {
     Properties props = new Properties();
     props.put( "mapred.reduce.tasks.speculative.execution", "false" );
@@ -370,6 +406,10 @@ public abstract class JDBCTestingBase
     this.driverName = driverName;
     }
 
+  public void setJDBCFactory( JDBCFactory factory )
+    {
+    this.factory = factory;
+    }
 
   public void setInputFormatClass( Class<? extends DBInputFormat<DBWritable>> inputFormatClass )
     {
