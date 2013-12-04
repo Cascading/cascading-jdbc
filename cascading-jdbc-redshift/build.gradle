@@ -20,15 +20,23 @@
 
 evaluationDependsOn( ":cascading-jdbc-core" )
 
+ext.redshiftPostgresVersion = '8.0-318.jdbc3'
+
+//apply from: "../etc/providedCompile.gradle"
+
 dependencies {
 
   compile project( ':cascading-jdbc-core' )
+  compile group: 'postgresql', name: 'postgresql', version: redshiftPostgresVersion
 
-  compile group: 'postgresql', name: 'postgresql', version:'8.0-318.jdbc3'
-  compile group: 'cascading', name: 'cascading-core', version: cascadingVersion, changing: true
-  compile group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, changing: true
-  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
-  compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
+  testCompile ( group: 'postgresql', name: 'postgresql', version: redshiftPostgresVersion )
+  testCompile project( ':cascading-jdbc-core' ).sourceSets.test.runtimeClasspath
+}
+
+configurations {
+  sampleCode {
+    extendsFrom compile
+  }
 }
 
 test{
@@ -54,6 +62,7 @@ task sampleCode(type: Jar, dependsOn: ['fatJar']) {
   from ( "${sourceSets.main.compileClasspath}" ) {
     include '**/*'
   }
+
   manifest {
     attributes( "Main-Class": "redshift/SampleFlow" )
   }

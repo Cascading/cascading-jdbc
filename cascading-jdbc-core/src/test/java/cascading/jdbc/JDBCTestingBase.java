@@ -20,14 +20,9 @@
 
 package cascading.jdbc;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Properties;
-
-import org.apache.commons.lang.StringUtils;
-import org.junit.Test;
 
 import cascading.flow.Flow;
 import cascading.flow.hadoop.HadoopFlowConnector;
@@ -43,6 +38,10 @@ import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntryIterator;
+import org.apache.commons.lang.StringUtils;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Base class for the various database tests. This class contains the actual
@@ -58,10 +57,10 @@ public abstract class JDBCTestingBase
 
   /** the name of the JDBC driver to use. */
   private String driverName;
-  
+
   /** The input format class to use. */
   private Class<? extends DBInputFormat> inputFormatClass =  DBInputFormat.class;
-  
+
   /** The jdbc factory to use. */
   private JDBCFactory factory = new JDBCFactory();
 
@@ -80,7 +79,7 @@ public abstract class JDBCTestingBase
     String[] columnDefs = { "INT NOT NULL", "VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL" };
     String[] primaryKeys = { "num", "lwr" };
     TableDesc tableDesc = new TableDesc( tableName, columnNames, columnDefs, primaryKeys );
-    
+
     JDBCScheme scheme = new JDBCScheme( inputFormatClass, fields, columnNames );
 
     Tap<?, ?, ?> replaceTap = new JDBCTap( jdbcurl, driverName, tableDesc, scheme, SinkMode.REPLACE );
@@ -371,12 +370,12 @@ public abstract class JDBCTestingBase
     this.driverName = driverName;
     }
 
-  
+
   public void setInputFormatClass( Class<? extends DBInputFormat<DBWritable>> inputFormatClass )
     {
     this.inputFormatClass = inputFormatClass;
     }
-  
+
   public void setFactory( JDBCFactory factory )
     {
     this.factory = factory;

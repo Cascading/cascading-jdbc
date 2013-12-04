@@ -25,6 +25,8 @@ package cascading.jdbc;
  **/
 
 import org.junit.Before;
+import java.io.IOException;
+import org.junit.Test;
 
 public class RedshiftTest extends JDBCTestingBase
   {
@@ -35,6 +37,33 @@ public class RedshiftTest extends JDBCTestingBase
     setDriverName( RedshiftTap.DB_DRIVER );
     setJdbcurl( System.getProperty( "cascading.jdbcurl" ) );
     }
+
+
+  @Test
+  public void testJDBC() throws IOException
+    {
+
+    }
+
+  @Test
+  public void testJDBCAliased() throws IOException
+    {
+
+    }
+
+  @Test
+  public void testJDBCWithFactory() throws IOException
+    {
+
+    }
+
+  @Test
+  public void testJDBCWithFactoryMissingTypes() throws IOException
+    {
+
+    }
+
+
   }
 
 
