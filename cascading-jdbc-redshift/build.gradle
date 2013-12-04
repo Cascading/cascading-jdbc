@@ -22,8 +22,6 @@ evaluationDependsOn( ":cascading-jdbc-core" )
 
 ext.redshiftPostgresVersion = '8.0-318.jdbc3'
 
-//apply from: "../etc/providedCompile.gradle"
-
 dependencies {
 
   compile project( ':cascading-jdbc-core' )

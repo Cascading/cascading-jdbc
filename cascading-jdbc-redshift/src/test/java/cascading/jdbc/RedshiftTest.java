@@ -63,7 +63,6 @@ public class RedshiftTest extends JDBCTestingBase
 
     }
 
-
   }
 
 

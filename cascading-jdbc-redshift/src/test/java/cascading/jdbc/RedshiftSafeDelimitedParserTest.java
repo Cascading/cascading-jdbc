@@ -1,4 +1,4 @@
-package org.pingles.cascading.redshift;
+package cascading.jdbc;
 
 import static junit.framework.Assert.*;
 
