@@ -63,7 +63,7 @@ public class RedshiftScheme extends JDBCScheme
    */
   public RedshiftScheme( Fields fields, RedshiftTableDesc redshiftTableDesc )
     {
-    this( fields, redshiftTableDesc, DEFAULT_DELIMITER, DEFAULT_QUOTE, null );
+    this( fields, redshiftTableDesc, DEFAULT_DELIMITER, DEFAULT_QUOTE, null, false );
     }
 
   /**
@@ -77,14 +77,14 @@ public class RedshiftScheme extends JDBCScheme
    * @param copyOptions       custom arguments passed to the COPY command for processing. In most cases, proper cleaning of the data
    *                          before sending it to this Tap is a better alternative.
    */
-  public RedshiftScheme( Fields fields, RedshiftTableDesc redshiftTableDesc, String delimiter, String quoteCharacter, Map<RedshiftFactory.CopyOption, String> copyOptions )
+  public RedshiftScheme( Fields fields, RedshiftTableDesc redshiftTableDesc, String delimiter, String quoteCharacter, Map<RedshiftFactory.CopyOption, String> copyOptions, Boolean tableAlias )
     {
     super( fields, redshiftTableDesc.getColumnNames() );
+    super.tableAlias = tableAlias;
     // from the perspective of the JDBC-based parent class flag all fields as JDBC types.
     // for the internally managed S3 sink, use HFS tables (where Date is a String) so that the Tap doesn't
     // write out the integer representation.
     this.redshiftTableDesc = redshiftTableDesc;
-    //this.jdbcScheme = new JDBCScheme( redshiftTableDesc.getJDBCFields(), redshiftTableDesc.getColumnNames() );
     this.textDelimited = new TextDelimited( redshiftTableDesc.getHFSFields(), false, new RedshiftSafeDelimitedParser( delimiter, quoteCharacter ) );
     textDelimited.setSinkFields( getSinkFields() );
     this.sinkScheme = this;

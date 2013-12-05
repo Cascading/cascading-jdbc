@@ -108,7 +108,6 @@ public abstract class JDBCTestingBase
     JDBCScheme jdbcScheme = getNewJDBCScheme( columnNames, null, new String[]{"num", "lwr"} );
     jdbcScheme.setSinkFields( fields );
     Tap<?, ?, ?> updateTap = getNewJDBCTap( tableDesc, jdbcScheme, SinkMode.UPDATE );
-    ;
 
     Flow<?> updateFlow = new HadoopFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
 
@@ -246,7 +245,7 @@ public abstract class JDBCTestingBase
 
     JDBCScheme updateScheme = (JDBCScheme) factory.createScheme( "somename", columnFields, schemeProperties );
 
-    Tap<?, ?, ?> updateTap = factory.createTap( "jdbc", updateScheme, jdbcurl, SinkMode.UPDATE, tapProperties );
+    Tap<?, ?, ?> updateTap = factory.createTap( "jdbc", updateScheme, jdbcurl, getSinkModeForReset(), tapProperties );
 
     Flow<?> updateFlow = new HadoopFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
 
@@ -262,7 +261,6 @@ public abstract class JDBCTestingBase
     Tap<?, ?, ?> sourceTap = factory.createTap( "jdbc", sourceScheme, jdbcurl, SinkMode.KEEP, tapProperties );
 
     Pipe readPipe = new Each( "read", new Identity() );
-
     Flow<?> readFlow = new HadoopFlowConnector( createProperties() ).connect( sourceTap, sink, readPipe );
 
     readFlow.complete();
@@ -316,7 +314,7 @@ public abstract class JDBCTestingBase
 
     JDBCScheme updateScheme = (JDBCScheme) factory.createScheme( "somename", columnFields, schemeProperties );
 
-    Tap<?, ?, ?> updateTap = factory.createTap( "jdbc", updateScheme, jdbcurl, SinkMode.UPDATE, tapProperties );
+    Tap<?, ?, ?> updateTap = factory.createTap( "jdbc", updateScheme, jdbcurl, getSinkModeForReset(), tapProperties );
 
     Flow<?> updateFlow = new HadoopFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
 
@@ -386,6 +384,14 @@ public abstract class JDBCTestingBase
     {
     return new JDBCTap( jdbcurl, driverName, jdbcScheme );
     }
+
+  /**
+   * SinkMode.UPDATE is not intended for production use so allow data sources that have different semantics for data
+   * swapping to override this.
+   */
+  protected SinkMode getSinkModeForReset() {
+    return SinkMode.UPDATE;
+  }
 
 
   protected Properties createProperties()

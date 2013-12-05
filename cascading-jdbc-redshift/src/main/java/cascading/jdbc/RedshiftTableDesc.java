@@ -79,6 +79,9 @@ public class RedshiftTableDesc extends TableDesc
   public Fields getHFSFields()
     {
     String[] columnDefs = getColumnDefs();
+    if (columnDefs == null)
+      return Fields.ALL;
+
     Type[] types = new Type[ columnDefs.length ];
 
     for( int i = 0; i < columnDefs.length; i++ )

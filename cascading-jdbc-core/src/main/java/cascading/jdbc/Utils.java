@@ -20,6 +20,8 @@
 
 package cascading.jdbc;
 
+import com.google.common.base.Strings;
+
 /**
  *
  */
@@ -32,25 +34,24 @@ public class Utils
    *
    * @param string The string to check.
    * @return <code>true</code> if any of the above is true, otherwise
-   *         <code>false</code>.
+   * <code>false</code>.
    */
-  public static boolean isNullOrEmpty(String string)
+  public static boolean isNullOrEmpty( String string )
     {
-    return ( string == null || string.isEmpty() || string.matches( "^\\s*$" ) );
+    return string == null || Strings.isNullOrEmpty( string.trim() );
     }
 
   /**
    * Checks if the given String is null, empty or only contains whitespace
    * characeters and if that is a case, throws an IllegalArgumentException.
    *
-   * @param string The string to check.
+   * @param string           The string to check.
    * @param exceptionMessage The message to be used in the Exception.
-   *
    * @throws IllegalArgumentException.
-   * */
-  public static String throwIfNullOrEmpty(String string, String exceptionMessage)
+   */
+  public static String throwIfNullOrEmpty( String string, String exceptionMessage )
     {
-    if ( isNullOrEmpty( string ) )
+    if( isNullOrEmpty( string ) )
       throw new IllegalArgumentException( exceptionMessage );
     return string;
     }

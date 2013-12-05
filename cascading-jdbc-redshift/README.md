@@ -1,4 +1,4 @@
-# cascading.redshift
+# cascading-jdbc-redshift
 
 This code provides support for Amazon's [Redshift](http://aws.amazon.com/redshift/) for [Cascading](http://cascading.org) and [Lingual](http://cascading.org/lingual). This allows users
 to treat Redshift as a Cascading Tap or register Redshift as a Provider in Lingual.

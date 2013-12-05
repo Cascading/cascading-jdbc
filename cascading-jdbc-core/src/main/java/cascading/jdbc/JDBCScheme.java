@@ -70,14 +70,14 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
   private String selectQuery;
   private String countQuery;
   private long limit = -1;
-  private Boolean tableAlias = true;
+  protected Boolean tableAlias = true;
   private Fields internalSinkFields;
 
   private static final Logger LOG = LoggerFactory.getLogger( JDBCScheme.class );
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param inputFormatClass of type Class<? extends DBInputFormat>
    * @param outputFormatClass of type Class<? extends DBOutputFormat>
    * @param columns of type String[]
@@ -95,7 +95,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param inputFormatClass of type Class<? extends DBInputFormat>
    * @param outputFormatClass of type Class<? extends DBOutputFormat>
    * @param columns of type String[]
@@ -114,7 +114,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param inputFormatClass of type Class<? extends DBInputFormat>
    * @param outputFormatClass of type Class<? extends DBOutputFormat>
    * @param columnFields of type Fields
@@ -162,7 +162,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param inputFormatClass of type Class<? extends DBInputFormat>
    * @param outputFormatClass of type Class<? extends DBOutputFormat>
    * @param columnFields of type Fields
@@ -188,7 +188,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param inputFormatClass of type Class<? extends DBInputFormat>
    * @param outputFormatClass of type Class<? extends DBOutputFormat>
    * @param columns of type String[]
@@ -204,7 +204,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param inputFormatClass of type Class<? extends DBInputFormat>
    * @param outputFormatClass of type Class<? extends DBOutputFormat>
    * @param columnFields of type Fields
@@ -222,7 +222,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param inputFormatClass of type Class<? extends DBInputFormat>
    * @param outputFormatClass of type Class<? extends DBOutputFormat>
    * @param columns of type String[]
@@ -237,7 +237,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param inputFormatClass of type Class<? extends DBInputFormat>
    * @param outputFormatClass of type Class<? extends DBOutputFormat>
    * @param columnFields of type Fields
@@ -254,7 +254,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columns of type String[]
    * @param orderBy of type String[]
    * @param updateBy of type String[]
@@ -266,7 +266,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columnFields of type Fields
    * @param columns of type String[]
    * @param orderBy of type String[]
@@ -280,7 +280,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columns of type String[]
    * @param orderBy of type String[]
    * @param conditions of type String
@@ -293,7 +293,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columnFields of type Fields
    * @param columns of type String[]
    * @param orderBy of type String[]
@@ -307,7 +307,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columns of type String[]
    * @param orderBy of type String[]
    * @param conditions of type String
@@ -324,7 +324,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columns of type String[]
    * @param orderBy of type String[]
    * @param limit of type long
@@ -341,7 +341,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columns of type String[]
    * @param orderBy of type String[]
    */
@@ -352,7 +352,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columnFields of type Fields
    * @param columns of type String[]
    * @param orderBy of type String[]
@@ -364,7 +364,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columns of type String[]
    * @param conditions of type String
    * @param limit of type long
@@ -376,7 +376,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columnFields of type Fields
    * @param columns of type String[]
    * @param conditions of type String
@@ -389,7 +389,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columns of type String[]
    * @param conditions of type String
    */
@@ -400,7 +400,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columnFields of type Fields
    * @param columns of type String[]
    * @param conditions of type String
@@ -412,7 +412,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columns of type String[]
    * @param limit of type long
    */
@@ -423,7 +423,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columnFields of type Fields
    * @param columns of type String[]
    * @param limit of type long
@@ -435,7 +435,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columns of type String[]
    */
   public JDBCScheme( String[] columns )
@@ -445,7 +445,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columnFields of type Fields
    * @param columns of type String[]
    */
@@ -456,7 +456,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param inputFormatClass of type Class<? extends DBInputFormat>
    * @param columnFields of type Fields
    * @param columns of type String[]
@@ -470,7 +470,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * Constructor JDBCScheme creates a new JDBCScheme instance.
    * <p/>
    * Use this constructor if the data source may only be used as a source.
-   * 
+   *
    * @param inputFormatClass of type Class<? extends DBInputFormat>
    * @param columns of type String[]
    * @param selectQuery of type String
@@ -484,7 +484,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param inputFormatClass of type Class<? extends DBInputFormat>
    * @param columnFields of type Fields
    * @param columns of type String[]
@@ -513,7 +513,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param inputFormatClass of type Class<? extends DBInputFormat>
    * @param columnFields of type Fields
    * @param columns of type String[]
@@ -531,7 +531,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * Constructor JDBCScheme creates a new JDBCScheme instance.
    * <p/>
    * Use this constructor if the data source may only be used as a source.
-   * 
+   *
    * @param columns of type String[]
    * @param selectQuery of type String
    * @param countQuery of type String
@@ -544,7 +544,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columnFields of type Fields
    * @param columns of type String[]
    * @param selectQuery of type String
@@ -560,7 +560,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    * Constructor JDBCScheme creates a new JDBCScheme instance.
    * <p/>
    * Use this constructor if the data source may only be used as a source.
-   * 
+   *
    * @param columns of type String[]
    * @param selectQuery of type String
    * @param countQuery of type String
@@ -572,7 +572,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Constructor JDBCScheme creates a new JDBCScheme instance.
-   * 
+   *
    * @param columnFields of type Fields
    * @param columns of type String[]
    * @param selectQuery of type String
@@ -585,7 +585,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Method getColumns returns the columns of this JDBCScheme object.
-   * 
+   *
    * @return the columns (type String[]) of this JDBCScheme object.
    */
   public String[] getColumns()
@@ -595,7 +595,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Method getOrderBy returns the orderBy of this JDBCScheme object.
-   * 
+   *
    * @return the orderBy (type String[]) of this JDBCScheme object.
    */
   public String[] getOrderBy()
@@ -656,7 +656,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     Tuple rawTuple = ( (TupleRecord) value ).getTuple();
     Type[] types = getColumnFields().getTypes();
     int size = getColumnFields().size();
-    
+
     Tuple newTuple = Tuple.size( size );
     for( int i = 0; i < size; i++ )
       {
@@ -738,7 +738,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
   /**
    * Private utility method to map the fields to types that the underlying RDBMS can understand.
-   * 
+   *
    * @param fields The sink fields coming from the outer world
    */
   private void deriveInternalSinkFields( Fields fields )
@@ -758,7 +758,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
   /**
    * Provides a hook for subclasses to escape or modify any values before
    * creating the final SQL statement.
-   * 
+   *
    * @param tuple
    * @return The cleaned tuple
    */
@@ -770,7 +770,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
   /**
    * Provides a hook for subclasses to escape or modify any values before
    * returning the data.
-   * 
+   *
    * @param tuple
    * @return The cleaned tuple
    */

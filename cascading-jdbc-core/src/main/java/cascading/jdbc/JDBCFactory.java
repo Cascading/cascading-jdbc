@@ -35,7 +35,7 @@ import cascading.tuple.Fields;
 /**
  * {@link JDBCFactory} is a factory class that can be used by the lingual
  * provider mechanism to create {@link JDBCScheme}s and {@link JDBCTap}s.
- * 
+ *
  * */
 public class JDBCFactory
   {
@@ -68,7 +68,7 @@ public class JDBCFactory
 
   /**
    * Creates a new Tap for the given arguments.
-   * 
+   *
    * @param protocol name of the protocol, only accepts "jdbc".
    * @param scheme a {@link JDBCScheme} instance.
    * @param identifier The identifier of the tap, which is assumed to be the
@@ -129,7 +129,7 @@ public class JDBCFactory
   /**
    * Creates a new {@link JDBCScheme} instance for the given format, fields and
    * properties.
-   * 
+   *
    * @param format The format of the scheme. This is JDBC driver dependent.
    * @param fields The fields to interact with.
    * @param properties The {@link Properties} object containing the necessary
@@ -150,24 +150,9 @@ public class JDBCFactory
     if( limitProperty != null && !limitProperty.isEmpty() )
       limit = Long.parseLong( limitProperty );
 
-    String[] columNames;
-    String columnNamesProperty = properties.getProperty( FORMAT_COLUMNS );
-    if( columnNamesProperty != null && !columnNamesProperty.isEmpty() )
-      columNames = columnNamesProperty.split( separator );
-    else
-      {
-      columNames = new String[fields.size()];
-      for( int i = 0; i < fields.size(); i++ )
-        {
-        Comparable<?> cmp = fields.get( i );
-        columNames[ i ] = cmp.toString();
-        }
-      }
+    String[] columNames = getColumnNames(fields, properties, separator);
 
-    Boolean tableAlias = false;
-    String tableAliasProperty = properties.getProperty( FORMAT_TABLE_ALIAS );
-    if( tableAliasProperty != null )
-      tableAlias = new Boolean( tableAliasProperty );
+    Boolean tableAlias = getTableAlias(properties);
 
     if( selectQuery != null )
       {
@@ -197,7 +182,6 @@ public class JDBCFactory
 
     }
 
-  
   protected Scheme createUpdatableScheme( Fields fields, long limit, String[] columNames, Boolean tableAlias, String conditions,
       String[] updateBy, Fields updateByFields, String[] orderBy )
     {
@@ -213,10 +197,10 @@ public class JDBCFactory
   /**
    * Private helper method to extract values representing a {@link TableDesc}
    * instance from the properties passed to the createTap method.
-   * 
+   *
    * @param properties A properties instance.
    * @return A {@link TableDesc} instance.
-   * 
+   *
    */
   private TableDesc createTableDescFromProperties( Properties properties )
     {
@@ -249,14 +233,42 @@ public class JDBCFactory
     }
 
   /**
-   * Returns {@link DBInputFormat} class. This can be overwritten in subclasses, if they 
+   * Returns {@link DBInputFormat} class. This can be overwritten in subclasses, if they
    * have a custom {@link DBInputFormat}.
-   * 
+   *
    * @return the {@link InputFormat} ot use.
    * */
   protected Class<? extends DBInputFormat> getInputFormatClass()
     {
     return DBInputFormat.class;
+    }
+
+  protected String[] getColumnNames( Fields fields, Properties properties, String separator )
+    {
+    String[] columNames = null;
+    String columnNamesProperty = properties.getProperty( FORMAT_COLUMNS );
+    if( columnNamesProperty != null && !columnNamesProperty.isEmpty() )
+      columNames = columnNamesProperty.split( separator );
+    else if( fields != null )
+      {
+      columNames = new String[ fields.size() ];
+      for( int i = 0; i < fields.size(); i++ )
+        {
+        Comparable<?> cmp = fields.get( i );
+        columNames[ i ] = cmp.toString();
+        }
+      }
+    return columNames;
+    }
+
+  protected Boolean getTableAlias( Properties properties )
+    {
+    Boolean tableAlias = false;
+    String tableAliasProperty = properties.getProperty( FORMAT_TABLE_ALIAS );
+    if( tableAliasProperty != null )
+      tableAlias = new Boolean( tableAliasProperty );
+
+    return tableAlias;
     }
 
   }

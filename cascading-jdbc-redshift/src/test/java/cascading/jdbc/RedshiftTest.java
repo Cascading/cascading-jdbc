@@ -89,6 +89,12 @@ public class RedshiftTest extends JDBCTestingBase
     }
 
   @Override
+  protected SinkMode getSinkModeForReset()
+    {
+    return SinkMode.REPLACE;
+    }
+
+  @Override
   protected Properties createProperties()
     {
     Properties properties = super.createProperties();

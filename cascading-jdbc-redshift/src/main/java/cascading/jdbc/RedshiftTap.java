@@ -25,12 +25,14 @@ import java.util.Collection;
 import java.util.UUID;
 
 import cascading.flow.FlowProcess;
+import cascading.jdbc.db.DBConfiguration;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
 import cascading.tuple.TupleEntryCollector;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.slf4j.Logger;
@@ -92,18 +94,34 @@ public class RedshiftTap extends JDBCTap
     }
 
   @Override
+  public void sourceConfInit( FlowProcess<JobConf> process, JobConf conf )
+    {
+    // a hack for MultiInputFormat to see that there is a child format
+    FileInputFormat.setInputPaths( conf, getPath() );
+
+    if( username == null )
+      DBConfiguration.configureDB( conf, driverClassName, connectionUrl );
+    else
+      DBConfiguration.configureDB( conf, driverClassName, connectionUrl, username, password );
+
+    super.sourceConfInit( process, conf );
+    }
+
+  @Override
   public void sinkConfInit( FlowProcess<JobConf> process, JobConf conf )
     {
-    // if we haven't set the credentials beforehand try to set them from the job conf
-    if( awsCredentials.equals( AWSCredentials.RUNTIME_DETERMINED ) )
-      {
-      String accessKey = conf.get( "fs.s3n.awsAccessKeyId", null );
-      String secretKey = conf.get( "fs.s3n.awsSecretAccessKey", null );
-      awsCredentials = new AWSCredentials( accessKey, secretKey );
-      }
-    // make the credentials to be used available to the JobConf if they were set differently
-    conf.set( "fs.s3n.awsAccessKeyId", awsCredentials.getAwsAccessKey() );
-    conf.set( "fs.s3n.awsSecretAccessKey", awsCredentials.getAwsSecretKey() );
+    if (!useDirectInsert) {
+      // if we haven't set the credentials beforehand try to set them from the job conf
+      if( awsCredentials.equals( AWSCredentials.RUNTIME_DETERMINED ) )
+        {
+        String accessKey = conf.get( "fs.s3n.awsAccessKeyId", null );
+        String secretKey = conf.get( "fs.s3n.awsSecretAccessKey", null );
+        awsCredentials = new AWSCredentials( accessKey, secretKey );
+        }
+      // make the credentials to be used available to the JobConf if they were set differently
+      conf.set( "fs.s3n.awsAccessKeyId", awsCredentials.getAwsAccessKey() );
+      conf.set( "fs.s3n.awsSecretAccessKey", awsCredentials.getAwsSecretKey() );
+    }
     super.sinkConfInit( process, conf );
     }
 

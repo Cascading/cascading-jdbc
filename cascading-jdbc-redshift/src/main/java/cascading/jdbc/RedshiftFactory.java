@@ -28,7 +28,6 @@ import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
-import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,11 +77,13 @@ public class RedshiftFactory extends JDBCFactory
     String delimiter = formatProperties.getProperty( FORMAT_FIELD_DELIMITER, RedshiftScheme.DEFAULT_DELIMITER );
     String quoteCharacter = formatProperties.getProperty( FORMAT_QUOTE_CHARACTER, RedshiftScheme.DEFAULT_QUOTE );
 
-    RedshiftTableDesc redshiftTableDesc = createTableDescFromProperties( formatProperties );
+    RedshiftTableDesc redshiftTableDesc = createTableDescFromProperties( fields, formatProperties, true );
 
     Map<CopyOption, String> copyOptions = extractCopyOptions( formatProperties, FORMAT_COPY_OPTIONS_PREFIX );
 
-    return new RedshiftScheme( fields, redshiftTableDesc, delimiter, quoteCharacter, copyOptions );
+    Boolean tableAlias = getTableAlias( formatProperties );
+
+    return new RedshiftScheme( fields, redshiftTableDesc, delimiter, quoteCharacter, copyOptions, tableAlias );
     }
 
   @SuppressWarnings("rawtypes")
@@ -108,7 +109,8 @@ public class RedshiftFactory extends JDBCFactory
     boolean keepDebugHdfsData = Boolean.parseBoolean( protocolProperties.getProperty( PROTOCOL_KEEP_DEBUG_HFS_DATA ) );
     boolean useDirectInsert = Boolean.parseBoolean( protocolProperties.getProperty( PROTOCOL_USE_DIRECT_INSERT, "true" ) );
 
-    RedshiftTableDesc redshiftTableDesc = createTableDescFromProperties( protocolProperties ) ;
+    // source fields will be the JDBC-typed fields so use them as defaults.
+    RedshiftTableDesc redshiftTableDesc = createTableDescFromProperties( scheme.getSourceFields(), protocolProperties, false );
     JDBCScheme jdbcScheme = (JDBCScheme) scheme;
 
     Fields sinkFields = jdbcScheme.getSinkFields();
@@ -125,29 +127,20 @@ public class RedshiftFactory extends JDBCFactory
     if( sinkModeProperty != null && !sinkModeProperty.isEmpty() )
       sinkMode = SinkMode.valueOf( sinkModeProperty );
 
-    //return new JDBCTap( identifier, jdbcUser, jdbcPassword, RedshiftTap.DB_DRIVER, redshiftTableDesc, jdbcScheme, sinkMode );
-    //  RedshiftTableDesc redshiftTableDesc, RedshiftScheme redshiftScheme, SinkMode sinkMode, boolean keepDebugHfsData, boolean useDirectInsert, JDBCScheme jdbcScheme )=
-
-    //RedshiftScheme redshiftScheme = new RedshiftScheme( redshiftTableDesc );
-
-    return new RedshiftTap( identifier, jdbcUser, jdbcPassword, hfsStagingDir, credentials, redshiftTableDesc, (RedshiftScheme)jdbcScheme, sinkMode, keepDebugHdfsData, useDirectInsert );
+    return new RedshiftTap( identifier, jdbcUser, jdbcPassword, hfsStagingDir, credentials, redshiftTableDesc, (RedshiftScheme) jdbcScheme, sinkMode, keepDebugHdfsData, useDirectInsert );
     }
 
-
-
-  private RedshiftTableDesc createTableDescFromProperties( Properties properties )
+  private RedshiftTableDesc createTableDescFromProperties( Fields fields, Properties properties, boolean allowNullName )
     {
     String tableName = properties.getProperty( PROTOCOL_TABLE_NAME );
 
-    if( tableName == null || tableName.isEmpty() )
-      throw new IllegalArgumentException( "no tablename given" );
+    if( !allowNullName )
+      if( tableName == null || tableName.isEmpty() )
+        throw new IllegalArgumentException( "no tablename given" );
 
     String separator = properties.getProperty( PROTOCOL_FIELD_SEPARATOR, DEFAULT_SEPARATOR );
 
-    String[] columnNames = null;
-    String columnNamesProperty = properties.getProperty( PROTOCOL_COLUMN_NAMES );
-    if( columnNamesProperty != null && !columnNamesProperty.isEmpty() )
-      columnNames = columnNamesProperty.split( separator );
+    String[] columnNames = getColumnNames( fields, properties, separator );
 
     String[] columnDefs = null;
     String columnDefsProperty = properties.getProperty( PROTOCOL_COLUMN_DEFS );
@@ -163,7 +156,6 @@ public class RedshiftFactory extends JDBCFactory
     RedshiftTableDesc desc = new RedshiftTableDesc( tableName, columnNames, columnDefs, distributionKey, sortKeys );
     return desc;
     }
-
 
   /**
    * Helper method that tries to determine the AWS credentials. It first tries
@@ -186,7 +178,7 @@ public class RedshiftFactory extends JDBCFactory
     String awsAccessKey = properties.getProperty( PROTOCOL_AWS_ACCESS_KEY );
     String awsSecretKey = properties.getProperty( PROTOCOL_AWS_SECRET_KEY );
 
-    if( !isPropertyNullOrEmpty( awsAccessKey ) && !isPropertyNullOrEmpty( awsSecretKey ) )
+    if( !Utils.isNullOrEmpty( awsAccessKey ) && !Utils.isNullOrEmpty( awsSecretKey ) )
       awsCredentials = new AWSCredentials( awsAccessKey, awsSecretKey );
 
     // next try environment variables
@@ -194,25 +186,13 @@ public class RedshiftFactory extends JDBCFactory
       {
       awsAccessKey = System.getenv( SYSTEM_AWS_ACCESS_KEY );
       awsSecretKey = System.getenv( SYSTEM_AWS_SECRET_KEY );
-      if( !isPropertyNullOrEmpty( awsAccessKey ) && !isPropertyNullOrEmpty( awsSecretKey ) )
+      if( !Utils.isNullOrEmpty( awsAccessKey ) && !Utils.isNullOrEmpty( awsSecretKey ) )
         awsCredentials = new AWSCredentials( awsAccessKey, awsSecretKey );
       }
 
     return awsCredentials;
     }
 
-  /**
-   * Determines if a given string is <code>null</code> empty or only consists of
-   * whitespace characters.
-   *
-   * @param string The string to check.
-   * @return <code>true</code> if any of the above is true, otherwise
-   *         <code>false</code>.
-   */
-  public static boolean isPropertyNullOrEmpty( String string )
-    {
-    return string == null || Strings.isNullOrEmpty( string.trim() );
-    }
 
   public static Map<CopyOption, String> extractCopyOptions( Properties properties, String copyOptionsPrefix )
     {
