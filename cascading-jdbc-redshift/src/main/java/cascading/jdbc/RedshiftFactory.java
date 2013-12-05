@@ -108,11 +108,6 @@ public class RedshiftFactory extends JDBCFactory
     boolean keepDebugHdfsData = Boolean.parseBoolean( protocolProperties.getProperty( PROTOCOL_KEEP_DEBUG_HFS_DATA ) );
     boolean useDirectInsert = Boolean.parseBoolean( protocolProperties.getProperty( PROTOCOL_USE_DIRECT_INSERT, "true" ) );
 
-    //return new RedshiftTap( identifier, jdbcUser, jdbcPassword, hfsStagingDir, credentials, (RedshiftScheme)scheme, mode, keepDebugHdfsData, useDirectInsert );
-    //String connectionUrl, String username, String password, String driverClassName, TableDesc tableDesc, JDBCScheme
-   // scheme,
-   //   SinkMode sinkMode
-
     RedshiftTableDesc redshiftTableDesc = createTableDescFromProperties( protocolProperties ) ;
     JDBCScheme jdbcScheme = (JDBCScheme) scheme;
 
@@ -183,8 +178,9 @@ public class RedshiftFactory extends JDBCFactory
    */
   private AWSCredentials determineAwsCredentials( Properties properties )
     {
-    // try to determine the aws credentials, using the default unknown
-    AWSCredentials awsCredentials = null;
+    // try to determine the aws credentials starting with the assumption
+    // that they are available from the AWS environment
+    AWSCredentials awsCredentials = AWSCredentials.RUNTIME_DETERMINED;
 
     // first try the properties
     String awsAccessKey = properties.getProperty( PROTOCOL_AWS_ACCESS_KEY );
@@ -201,7 +197,7 @@ public class RedshiftFactory extends JDBCFactory
       if( !isPropertyNullOrEmpty( awsAccessKey ) && !isPropertyNullOrEmpty( awsSecretKey ) )
         awsCredentials = new AWSCredentials( awsAccessKey, awsSecretKey );
       }
-    // return empty credentials on the assumption that the S3 target writeable without these
+
     return awsCredentials;
     }
 

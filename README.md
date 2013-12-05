@@ -74,6 +74,8 @@ instance to the build as follows:
 The Redshift data engine is API-compatible with PostgreSQL and uses the PostgreSQL
  JDBC driver. Hence the JDBC URL for a Redshift connection begins with `jdbc:postgresql://`
 
+See the [cascading-redshift](/cascading-jdbc-redshift) for full details.
+
 ## Oracle
 
 The `cascading-jdbc-oracle` project contains everything to create jar files to

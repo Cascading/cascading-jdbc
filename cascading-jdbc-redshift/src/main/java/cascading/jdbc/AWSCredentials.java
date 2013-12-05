@@ -28,6 +28,8 @@ public class AWSCredentials implements Serializable
   private String awsAccessKey;
   private String awsSecretKey;
 
+  public final static AWSCredentials RUNTIME_DETERMINED = new AWSCredentials( AWSCredentials.class.getName(), AWSCredentials.class.getName() );
+
   public AWSCredentials( String awsAccessKey, String awsSecretKey )
     {
     this.awsAccessKey = awsAccessKey;
@@ -43,4 +45,43 @@ public class AWSCredentials implements Serializable
     {
     return awsSecretKey;
     }
+
+  public boolean isBlank() {
+    return awsAccessKey == null && awsSecretKey == null;
+  }
+
+  @Override
+  public boolean equals( Object object )
+    {
+    if( this == object )
+      {
+      return true;
+      }
+    if( !( object instanceof AWSCredentials ) )
+      {
+      return false;
+      }
+
+    AWSCredentials that = (AWSCredentials) object;
+
+    if( awsAccessKey != null ? !awsAccessKey.equals( that.awsAccessKey ) : that.awsAccessKey != null )
+      {
+      return false;
+      }
+    if( awsSecretKey != null ? !awsSecretKey.equals( that.awsSecretKey ) : that.awsSecretKey != null )
+      {
+      return false;
+      }
+
+    return true;
+    }
+
+  @Override
+  public int hashCode()
+    {
+    int result = awsAccessKey != null ? awsAccessKey.hashCode() : 0;
+    result = 31 * result + ( awsSecretKey != null ? awsSecretKey.hashCode() : 0 );
+    return result;
+    }
+
   }

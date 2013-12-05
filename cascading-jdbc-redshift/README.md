@@ -20,7 +20,7 @@ Maven:
 <dependency>
   <groupId>cascading</groupId>
   <artifactId>cascading-redshift</artifactId>
-  <version>0.16</version>
+  <version>2.2</version>
 </dependency>
 ```
 Gradle:

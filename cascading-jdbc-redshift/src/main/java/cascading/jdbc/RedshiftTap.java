@@ -92,6 +92,22 @@ public class RedshiftTap extends JDBCTap
     }
 
   @Override
+  public void sinkConfInit( FlowProcess<JobConf> process, JobConf conf )
+    {
+    // if we haven't set the credentials beforehand try to set them from the job conf
+    if( awsCredentials.equals( AWSCredentials.RUNTIME_DETERMINED ) )
+      {
+      String accessKey = conf.get( "fs.s3n.awsAccessKeyId", null );
+      String secretKey = conf.get( "fs.s3n.awsSecretAccessKey", null );
+      awsCredentials = new AWSCredentials( accessKey, secretKey );
+      }
+    // make the credentials to be used available to the JobConf if they were set differently
+    conf.set( "fs.s3n.awsAccessKeyId", awsCredentials.getAwsAccessKey() );
+    conf.set( "fs.s3n.awsSecretAccessKey", awsCredentials.getAwsSecretKey() );
+    super.sinkConfInit( process, conf );
+    }
+
+  @Override
   public TupleEntryCollector openForWrite( FlowProcess<JobConf> flowProcess, OutputCollector outputCollector ) throws IOException
     {
     // force a table creation if one does not exist
