@@ -202,7 +202,7 @@ public class JDBCFactory
    * @return A {@link TableDesc} instance.
    *
    */
-  private TableDesc createTableDescFromProperties( Properties properties )
+  protected TableDesc createTableDescFromProperties( Properties properties )
     {
     String tableName = properties.getProperty( PROTOCOL_TABLE_NAME );
 

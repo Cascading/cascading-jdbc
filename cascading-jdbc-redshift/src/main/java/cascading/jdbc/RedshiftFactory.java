@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  */
 public class RedshiftFactory extends JDBCFactory
   {
-  /** LOGGER */
+
   private static final Logger LOG = LoggerFactory.getLogger( RedshiftFactory.class );
 
   /** environment variable for the aws access key */
@@ -95,14 +95,14 @@ public class RedshiftFactory extends JDBCFactory
     String jdbcPasswordProperty = protocolProperties.getProperty( PROTOCOL_JDBC_PASSWORD );
 
     String jdbcUser = null;
-    if( jdbcUserProperty != null && !jdbcUserProperty.isEmpty() )
+    if( !Utils.isNullOrEmpty( jdbcUserProperty ) )
       jdbcUser = jdbcUserProperty;
 
     String jdbcPassword = null;
-    if( jdbcPasswordProperty != null && !jdbcPasswordProperty.isEmpty() )
+    if( !Utils.isNullOrEmpty( jdbcPasswordProperty ) )
       jdbcPassword = jdbcPasswordProperty;
 
-    String hfsStagingDir = "/tmp";
+    String hfsStagingDir = protocolProperties.getProperty( PROTOCOL_S3_OUTPUT_PATH, "/tmp" );
 
     AWSCredentials credentials = determineAwsCredentials( protocolProperties );
 
@@ -111,31 +111,30 @@ public class RedshiftFactory extends JDBCFactory
 
     // source fields will be the JDBC-typed fields so use them as defaults.
     RedshiftTableDesc redshiftTableDesc = createTableDescFromProperties( scheme.getSourceFields(), protocolProperties, false );
-    JDBCScheme jdbcScheme = (JDBCScheme) scheme;
 
-    Fields sinkFields = jdbcScheme.getSinkFields();
+    Fields sinkFields = scheme.getSinkFields();
     if( !redshiftTableDesc.hasRequiredTableInformation() && sinkFields != Fields.UNKNOWN && sinkFields != Fields.ALL && sinkFields != null
       && sinkFields.getTypes() != null )
       {
-      LOG.debug( "tabledesc information incomplete, falling back to sink-fields {}", jdbcScheme.getSinkFields() );
-      redshiftTableDesc.completeFromFields( jdbcScheme.getSinkFields() );
+      LOG.debug( "tabledesc information incomplete, falling back to sink-fields {}", scheme.getSinkFields() );
+      redshiftTableDesc.completeFromFields( scheme.getSinkFields() );
       ( (JDBCScheme) scheme ).setColumns( redshiftTableDesc.getColumnNames() );
       }
 
     // users can overwrite the sink mode.
     String sinkModeProperty = protocolProperties.getProperty( PROTOCOL_SINK_MODE );
-    if( sinkModeProperty != null && !sinkModeProperty.isEmpty() )
+    if( !Utils.isNullOrEmpty( sinkModeProperty ) )
       sinkMode = SinkMode.valueOf( sinkModeProperty );
 
-    return new RedshiftTap( identifier, jdbcUser, jdbcPassword, hfsStagingDir, credentials, redshiftTableDesc, (RedshiftScheme) jdbcScheme, sinkMode, keepDebugHdfsData, useDirectInsert );
+    return new RedshiftTap( identifier, jdbcUser, jdbcPassword, hfsStagingDir, credentials, redshiftTableDesc, (RedshiftScheme) scheme, sinkMode, keepDebugHdfsData, useDirectInsert );
     }
 
   private RedshiftTableDesc createTableDescFromProperties( Fields fields, Properties properties, boolean allowNullName )
     {
-    String tableName = properties.getProperty( PROTOCOL_TABLE_NAME );
+    String tableName = properties.getProperty( PROTOCOL_TABLE_NAME, null );
 
     if( !allowNullName )
-      if( tableName == null || tableName.isEmpty() )
+      if( Utils.isNullOrEmpty( tableName ) )
         throw new IllegalArgumentException( "no tablename given" );
 
     String separator = properties.getProperty( PROTOCOL_FIELD_SEPARATOR, DEFAULT_SEPARATOR );
@@ -143,8 +142,8 @@ public class RedshiftFactory extends JDBCFactory
     String[] columnNames = getColumnNames( fields, properties, separator );
 
     String[] columnDefs = null;
-    String columnDefsProperty = properties.getProperty( PROTOCOL_COLUMN_DEFS );
-    if( columnDefsProperty != null && !columnDefsProperty.isEmpty() )
+    String columnDefsProperty = properties.getProperty( PROTOCOL_COLUMN_DEFS, null );
+    if( !Utils.isNullOrEmpty( columnDefsProperty ) )
       columnDefs = columnDefsProperty.split( separator );
 
     String distributionKey = properties.getProperty( FORMAT_DISTRIBUTION_KEY );
@@ -182,7 +181,7 @@ public class RedshiftFactory extends JDBCFactory
       awsCredentials = new AWSCredentials( awsAccessKey, awsSecretKey );
 
     // next try environment variables
-    if( awsCredentials == null )
+    if( awsCredentials == AWSCredentials.RUNTIME_DETERMINED )
       {
       awsAccessKey = System.getenv( SYSTEM_AWS_ACCESS_KEY );
       awsSecretKey = System.getenv( SYSTEM_AWS_SECRET_KEY );
@@ -192,7 +191,6 @@ public class RedshiftFactory extends JDBCFactory
 
     return awsCredentials;
     }
-
 
   public static Map<CopyOption, String> extractCopyOptions( Properties properties, String copyOptionsPrefix )
     {

@@ -24,22 +24,11 @@ package cascading.jdbc;
  * Tests against Postgres database since that's the Redshift API .
  **/
 
-import org.junit.Before;
-
-import java.io.IOException;
-import java.lang.Override;
 import java.util.Properties;
 
-import cascading.jdbc.RedshiftScheme;
-import cascading.jdbc.RedshiftTableDesc;
-import cascading.jdbc.JDBCTap;
-import cascading.jdbc.JDBCScheme;
-import cascading.jdbc.TableDesc;
-import cascading.jdbc.RedshiftTap;
-import cascading.tuple.Fields;
 import cascading.tap.SinkMode;
-
-import org.junit.Test;
+import cascading.tuple.Fields;
+import org.junit.Before;
 
 public class RedshiftTest extends JDBCTestingBase
   {

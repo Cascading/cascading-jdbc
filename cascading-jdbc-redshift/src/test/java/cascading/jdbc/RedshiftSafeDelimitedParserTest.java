@@ -5,7 +5,7 @@ import java.io.UnsupportedEncodingException;
 import cascading.tuple.Tuple;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 public class RedshiftSafeDelimitedParserTest {
     @Test

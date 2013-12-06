@@ -59,20 +59,6 @@ public class RedshiftTap extends JDBCTap
   private boolean keepDebugHfsData;
   private boolean useDirectInsert;
 
-  public RedshiftTap( String connectionUrl, String username, String password, String hfsStagingDir, AWSCredentials awsCredentials, RedshiftTableDesc redshiftTableDesc, RedshiftScheme redshiftScheme, SinkMode sinkMode )
-    {
-    this( connectionUrl, username, password, hfsStagingDir, awsCredentials, redshiftTableDesc, redshiftScheme, sinkMode, false, true );
-    }
-
-  public RedshiftTap( String connectionUrl, RedshiftTableDesc redshiftTableDesc, RedshiftScheme redshiftScheme, SinkMode sinkMode )
-    {
-    this( connectionUrl, null, null, null, null, redshiftTableDesc, redshiftScheme, sinkMode, false, true );
-    }
-
-  public RedshiftTap( String connectionUrl, RedshiftScheme redshiftScheme )
-    {
-    this( connectionUrl, null, null, null, null, null, redshiftScheme, null, false, true );
-    }
 
   /**
    * Redshift tap to stage data to S3 and then issue a JDBC COPY command to specified Redshift table
@@ -91,6 +77,33 @@ public class RedshiftTap extends JDBCTap
     this.keepDebugHfsData = keepDebugHfsData;
     this.useDirectInsert = useDirectInsert;
     LOG.info( "created {} ", toString() );
+    }
+
+  /**
+   * Redshift tap to stage data to S3 and then issue a JDBC COPY command to specified Redshift table
+   *
+   * @param sinkMode use {@link SinkMode#REPLACE} to drop Redshift table before loading;
+   *                 {@link SinkMode#UPDATE} to not drop table for incremental loading
+   */
+  public RedshiftTap( String connectionUrl, String username, String password, String hfsStagingDir, AWSCredentials awsCredentials, RedshiftTableDesc redshiftTableDesc, RedshiftScheme redshiftScheme, SinkMode sinkMode )
+    {
+    this( connectionUrl, username, password, hfsStagingDir, awsCredentials, redshiftTableDesc, redshiftScheme, sinkMode, false, true );
+    }
+
+  /**
+   * Simplified constructor for testing
+   */
+  protected RedshiftTap( String connectionUrl, RedshiftTableDesc redshiftTableDesc, RedshiftScheme redshiftScheme, SinkMode sinkMode )
+    {
+    this( connectionUrl, null, null, null, null, redshiftTableDesc, redshiftScheme, sinkMode, false, true );
+    }
+
+  /**
+   * Simplified constructor for testing
+   */
+  protected RedshiftTap( String connectionUrl, RedshiftScheme redshiftScheme )
+    {
+    this( connectionUrl, null, null, null, null, null, redshiftScheme, null, false, true );
     }
 
   @Override
@@ -147,9 +160,12 @@ public class RedshiftTap extends JDBCTap
   public boolean createResource( JobConf jobConf ) throws IOException
     {
     LOG.info( "creating resources" );
-    boolean createSuccess;
-    LOG.info( "creating hfs scratch space: {}", hfsStagingDir.getIdentifier() );
-    createSuccess = hfsStagingDir.createResource( jobConf );
+    boolean createSuccess = true;
+    if( !useDirectInsert )
+      {
+      LOG.info( "creating hfs scratch space: {}", hfsStagingDir.getIdentifier() );
+      createSuccess = hfsStagingDir.createResource( jobConf );
+      }
     if( createSuccess )
       {
       LOG.info( "creating DB table: {}", super.getIdentifier() );
