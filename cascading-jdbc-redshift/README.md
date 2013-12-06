@@ -75,23 +75,23 @@ An example with Cascading to sink data to Redshift, coping data from one Redshif
 Before running this code, make sure that you have set up AWS and that you have installed the [EMR Command Line Tools](http://docs.aws.amazon.com/ElasticMapReduce/latest/DeveloperGuide/emr-cli-install.html).
 
 The file SampleFlow.java contains three flows to demonstrate integration with Cascading and Cascading's HFS Tap.
-You can compile the code and launch an EMR instance by running:
-`./src/main/resources/emrExample.sh [JDBC URL] [Redshift DB user] [Redshift DB password] [S3 bucket to read and write data in] [AWS availability zone]`
+You can compile the code and launch an EMR instance by running the following from the `cascading-jdbc` base directory:
+`./cascading-jdbc-redshift/src/main/resources/emrExample.sh [JDBC URL] [Redshift DB user] [Redshift DB password] [S3 bucket to read and write data in] [AWS availability zone]`
 
 If the task completes succesfully, you will have two tables in S3 "results" and "results2" a file in your S3 bucket name sampleData.csv and a directory in your S3 bucket named sampleData.csv.out containing
 the part-XXXX files from the M/R job that extracted and transformed the DB data.
 
 ### Example: Running Redshift as a Lingual Provider
 
-The Redshift code can also be used as a Lingual provider. This requires a install of  [Lingual
+The Redshift code can also be used as a Lingual provider. This requires a install of [Lingual
 ](http://docs.cascading.org/lingual/1.0/), the AWS tools described above, and a run of the Cascading Sample
 to populate the database with some information.
 
 Running the sample assumes that you do not have an existing Lingual catalog that you need to preserve. If you do, back up your catalog before running it
 since this sample will re-initialize the catalog from scratch.
 
-To compile and run the lingual example execute.
-`/src/main/resources/lingualShellExample.sh [JDBC URL] [Redshift DB user] [Redshift DB password]`
+To compile and run the lingual example execute the following from the `cascading-jdbc` base directory:
+`/cascading-jdbc-redshift/src/main/resources/lingualShellExample.sh [JDBC URL] [Redshift DB user] [Redshift DB password]`
 
 This script registers the provider and issues a "SELECT * FROM results" query to the command line.
 

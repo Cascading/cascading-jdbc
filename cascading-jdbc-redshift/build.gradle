@@ -27,6 +27,16 @@ dependencies {
   compile project( ':cascading-jdbc-core' )
   compile group: 'postgresql', name: 'postgresql', version: redshiftPostgresVersion
 
+  runtime group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion
+  runtime group: 'org.slf4j', name: 'slf4j-api', version: '1.7.2'
+
+  runtime( group: 'org.apache.hadoop', name: 'hadoop-core', version: hadoopVersion ) {
+      exclude group: 'ant'
+      exclude group: 'junit'
+      exclude group: 'hsqldb'
+      exclude group: 'oro' // causes transient build maven failures, ftw
+  }
+
   testCompile ( group: 'postgresql', name: 'postgresql', version: redshiftPostgresVersion )
   testCompile project( ':cascading-jdbc-core' ).sourceSets.test.runtimeClasspath
 }
