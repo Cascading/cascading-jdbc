@@ -1,3 +1,5 @@
+import redshift.SampleFlow
+
 /*
  * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
  *
@@ -41,12 +43,6 @@ dependencies {
   testCompile project( ':cascading-jdbc-core' ).sourceSets.test.runtimeClasspath
 }
 
-configurations {
-  sampleCode {
-    extendsFrom compile
-  }
-}
-
 test{
   systemProperty( "cascading.jdbcurl", System.getProperty( "cascading.jdbc.url.redshift" ) )
 }
@@ -58,21 +54,28 @@ fatJar {
   exclude '**/SampleFlow.class'
 }
 
-task sampleCode(type: Jar, dependsOn: ['fatJar']) {
-  archiveName = 'lingual-redshift-sample.jar'
-  from zipTree("${fatJar.archivePath}")
-  from ( sourceSets.main.output ) {
-    include '**/SampleFlow.class'
-  }
-  from ( "${sourceSets.main.runtimeClasspath}" ) {
-    include '**/*'
-  }
-  from ( "${sourceSets.main.compileClasspath}" ) {
-    include '**/*'
-  }
+//configurations {
+//  sampleCode {
+//    extendsFrom compile
+//  }
+//}
+//
+//task sampleCode(type: Jar, dependsOn: ['fatJar']) {
+//  archiveName = 'lingual-redshift-sample.jar'
+//  from zipTree("${fatJar.archivePath}")
+//  from ( sourceSets.main.output ) {
+//    include '**/SampleFlow.class'
+//  }
+//  from ( "${sourceSets.main.runtimeClasspath}" ) {
+//    include '**/*'
+//  }
+//  from ( "${sourceSets.main.compileClasspath}" ) {
+//    include '**/*'
+//  }
+//
+//  manifest {
+//    attributes( "Main-Class": "redshift/SampleFlow" )
+//  }
+//}
 
-  manifest {
-    attributes( "Main-Class": "redshift/SampleFlow" )
-  }
-}
 
