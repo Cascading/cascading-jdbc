@@ -20,12 +20,12 @@ Maven:
 <dependency>
   <groupId>cascading</groupId>
   <artifactId>cascading-jdbc-redshift</artifactId>
-  <version>2.2</version>
+  <version>2.2.0</version>
 </dependency>
 ```
 Gradle:
 
-`compile group: 'cascading', name: 'cascading-redshift', version: '2.2'`
+`compile group: 'cascading', name: 'cascading-redshift', version: '2.2.0'`
 
 The source code in the following files should be sufficient for Cascading and Lingual users who want to know cascading-redshift specific features. All other users should
 see the steps in the more detailed Example Code sections below.
