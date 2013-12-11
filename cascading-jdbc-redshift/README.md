@@ -12,20 +12,20 @@ See the specific projects for details and see [cascding-jdbc](https://github.com
 
 Users who are already familiar with Redshift, Cascading and Lingual can make use of this by adding the compiled library to their existing projects.
 
-[cascading-redshift](http://conjars.org/cascading/cascading-redshift) is hosted on [conjars.org](http://conjars.org) and can be included in an existing Maven or Gradle project by
+Libraries for `cascading-redshift` are hosted on [conjars.org](http://conjars.org) and can be included in an existing Maven or Gradle project by
 adding the conjars repo `http://conjars.org/repo/` to your repo list and then adding either
 
 Maven:
 ```xml
 <dependency>
   <groupId>cascading</groupId>
-  <artifactId>cascading-redshift</artifactId>
+  <artifactId>cascading-jdbc-redshift</artifactId>
   <version>2.2</version>
 </dependency>
 ```
 Gradle:
 
-`compile group: 'cascading', name: 'cascading-redshift', version: '0.16'`
+`compile group: 'cascading', name: 'cascading-redshift', version: '2.2'`
 
 The source code in the following files should be sufficient for Cascading and Lingual users who want to know cascading-redshift specific features. All other users should
 see the steps in the more detailed Example Code sections below.
@@ -53,7 +53,7 @@ Redshift is an AWS-specific tool and hence all the example code makes use of AWS
 See the [Redshift Documentation](http://aws.amazon.com/redshift/) for details on how to set that up. In particular, if you are using EMR to run the flow your EMR instances will need to be in a
 security group that has access to the database and it is strongly suggested that you run your EMR instances in the same availability zone your Redshift database is running in.
 
-Before proceding with the tutorial you should verify your Redshift setup is complete and accessible using the "psql" tool to log in to Redshift and should run a basic EMR job to confirm that your
+Before proceeding with the tutorial you should verify your Redshift setup is complete and accessible using the "psql" tool to log in to Redshift and should run a basic EMR job to confirm that your
 EMR setup is valid.
 
 ### Set AWS Credentials
@@ -78,7 +78,7 @@ The file SampleFlow.java contains three flows to demonstrate integration with Ca
 You can compile the code and launch an EMR instance by running the following from the `cascading-jdbc` base directory:
 `./cascading-jdbc-redshift/src/main/resources/emrExample.sh [JDBC URL] [Redshift DB user] [Redshift DB password] [S3 bucket to read and write data in] [AWS availability zone]`
 
-If the task completes succesfully, you will have two tables in S3 "results" and "results2" a file in your S3 bucket name sampleData.csv and a directory in your S3 bucket named sampleData.csv.out containing
+If the task completes successfully, you will have two tables in S3 "results" and "results2" a file in your S3 bucket name sampleData.csv and a directory in your S3 bucket named sampleData.csv.out containing
 the part-XXXX files from the M/R job that extracted and transformed the DB data.
 
 ### Example: Running Redshift as a Lingual Provider
@@ -93,7 +93,7 @@ since this sample will re-initialize the catalog from scratch.
 To compile and run the lingual example execute the following from the `cascading-jdbc` base directory:
 `/cascading-jdbc-redshift/src/main/resources/lingualShellExample.sh [JDBC URL] [Redshift DB user] [Redshift DB password]`
 
-This script registers the provider and issues a "SELECT * FROM results" query to the command line.
+This script registers the provider and issues a `"SELECT * FROM results"` query to the command line.
 
 
 
