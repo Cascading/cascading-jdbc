@@ -6,12 +6,13 @@ RDBMS systems via JDBC. The project consists of a generic part
 projects have dependencies to their respective JDBC drivers and run tests
 against those systems during build.
 
-Currently five relational databases are supported in the build:
+Currently six relational databases are supported in the build:
 
 * [derby](http://db.apache.org/derby/)
 * [h2](http://www.h2database.com/html/main.html)
 * [mysql](http://www.mysql.com/)
 * [postgresql](http://www.postgresql.org/)
+* [Amazon Redshift](http://aws.amazon.com/redshift/)
 * [oracle](http://www.oracle.com/technetwork/database/enterprise-edition/overview/index.html) (see below)
 
 This code is based on previous work:
@@ -74,7 +75,6 @@ instance to the build as follows:
 The Redshift data engine is API-compatible with PostgreSQL and uses the PostgreSQL
  JDBC driver. Hence the JDBC URL for a Redshift connection begins with `jdbc:postgresql://`
 
-See the [cascading-redshift](/cascading-jdbc-redshift) for full details.
 
 ## Oracle
 
