@@ -1,0 +1,4 @@
+Cascading-jdbc Change Log
+
+2.2.0
+initial release of Cascading 2.2 compatible version
