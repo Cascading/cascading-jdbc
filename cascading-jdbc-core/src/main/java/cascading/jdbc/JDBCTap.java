@@ -14,11 +14,14 @@ package cascading.jdbc;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -393,7 +396,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
       }
     catch ( IOException e )
       {
-      throw new TapException( "error while trying to modify table: " + tableDesc.getTableName() );
+      throw new TapException( "error '" + e.getMessage() + "'  while trying to modify table: " + tableDesc.getTableName(), e );
       }
 
     if( username == null )
@@ -422,14 +425,23 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
       return connection;
       }
-    catch ( ClassNotFoundException exception )
+    catch( SQLException exception )
       {
-      throw new TapException( "unable to load driver class: " + driverClassName, exception );
-      }
-    catch ( SQLException exception )
-      {
+      if( exception.getMessage().startsWith( "No suitable driver found for" ) )
+        {
+        List<String> availableDrivers = new ArrayList<String>();
+        Enumeration<Driver> drivers = DriverManager.getDrivers();
+        while( drivers.hasMoreElements() )
+          availableDrivers.add( drivers.nextElement().getClass().getName() );
+        LOG.error( "Driver not found: {} because {}. Available drivers are: {}", driverClassName, exception.getMessage(), availableDrivers );
+        }
       throw new TapException( exception.getMessage() + " (SQL error code: " + exception.getErrorCode() + ") opening connection: " + connectionUrl, exception );
       }
+    catch( Exception exception )
+      {
+      throw new TapException( "unable to load driver class: " + driverClassName + " because: " + exception.getMessage(), exception);
+      }
+
     }
 
   /**
@@ -442,6 +454,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
   public int executeUpdate( String updateString )
     {
     Connection connection = null;
+    Statement statement = null;
     int result;
 
     try
@@ -451,7 +464,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
         {
         LOG.info( "executing update: {}", updateString );
 
-        Statement statement = connection.createStatement();
+        statement = connection.createStatement();
 
         result = statement.executeUpdate( updateString );
 
@@ -471,13 +484,15 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
         if( connection != null && !connection.isClosed() )
           {
           connection.commit();
+          if ( statement != null)
+            statement.close();
           connection.close();
           }
         }
       catch ( SQLException exception )
         {
         // ignore
-        LOG.warn( "ignoring connection close exception. SQL error code: " + exception.getErrorCode(), exception );
+        LOG.error( "Error closing connection but Flow will still continue. SQL error code: " + exception.getErrorCode(), exception );
         }
       }
 
@@ -493,7 +508,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * @param returnResults of type int
    * @return List
    */
-  public List<Object[]> executeQuery( String queryString, int returnResults )
+  public List<Object[]> executeQuery( String queryString, int returnResults ) throws SQLException
     {
     Connection connection = null;
     List<Object[]> result = Collections.emptyList();
@@ -501,26 +516,19 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     try
       {
       connection = createConnection();
+      LOG.info( "executing query: {}", queryString );
 
-      try
-        {
-        LOG.info( "executing query: {}", queryString );
+      Statement statement = connection.createStatement();
 
-        Statement statement = connection.createStatement();
+      ResultSet resultSet = statement.executeQuery( queryString );
 
-        ResultSet resultSet = statement.executeQuery( queryString );
+      if( returnResults != 0 )
+        result = copyResultSet( resultSet, returnResults );
 
-        if( returnResults != 0 )
-          result = copyResultSet( resultSet, returnResults );
-
-        statement.close();
-        connection.commit();
-        connection.close();
-        }
-      catch ( SQLException exception )
-        {
-        throw new TapException( "SQL error code: " + exception.getErrorCode() + " executing query statement: " + queryString, exception );
-        }
+      statement.close();
+      connection.commit();
+      connection.close();
+      return result;
       }
     finally
       {
@@ -532,14 +540,12 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
           connection.close();
           }
         }
-      catch ( SQLException exception )
+      catch( SQLException exception )
         {
         // ignore
         LOG.warn( "ignoring connection close exception. SQL error code: " + exception.getErrorCode(), exception );
         }
       }
-
-    return result;
     }
 
   private List<Object[]> copyResultSet( ResultSet resultSet, int length ) throws SQLException
@@ -573,13 +579,27 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
     try
       {
+      if( !tableDesc.canQueryExistence() )
+        {
+        LOG.info( "undiscoverable resource. trying a drop of table: {}", tableDesc );
+        try
+          {
+          executeUpdate( tableDesc.getTableDropStatement() );
+          }
+        catch( Throwable t )
+          {
+          // it's likely that a drop on a pseudo-DB will fail. ignore it unless debugging.
+          LOG.debug( "drop failed", t );
+          }
+        }
+
       LOG.info( "creating table: {}", tableDesc );
       executeUpdate( tableDesc.getCreateTableStatement() );
       }
-    catch ( TapException exception )
+    catch( Exception exception )
       {
-      LOG.error( "unable to create table: {}", tableDesc.tableName );
-      LOG.error( "sql query failed: {}", tableDesc.getCreateTableStatement() , exception.getCause() );
+      LOG.error( "unable to create table: {}", tableDesc.tableName, exception );
+      LOG.error( "sql query failed: {}", tableDesc.getCreateTableStatement(), exception.getCause() );
 
       return false;
       }
@@ -593,7 +613,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     if( !isSink() )
       return false;
 
-    if( !resourceExists( conf ) )
+    if( !resourceExists( conf )  )
       return true;
 
     try
@@ -602,8 +622,14 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
       executeUpdate( tableDesc.getTableDropStatement() );
       }
-    catch ( TapException exception )
+    catch ( Exception exception )
       {
+      // For things like Derby that pretend to be a SQL system but offer no real
+      // table discovery these have to be ignored since they throw "table does not exist"
+      // problems.
+      if ( !tableDesc.canQueryExistence() )
+        return true;
+
       LOG.warn( "unable to drop table: {}", tableDesc.tableName );
       LOG.warn( "sql failure", exception.getCause() );
 
@@ -619,18 +645,44 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     if( !isSink() )
       return true;
 
-    try
-      {
-      LOG.info( "test table exists: {}", tableDesc.tableName );
+    String tableExistsQuery = tableDesc.getTableExistsQuery();
+    LOG.info( "testing table exists with {}", tableExistsQuery );
 
-      executeQuery( tableDesc.getTableExistsQuery(), 0 );
-      }
-    catch ( TapException exception )
+    if( tableDesc.canQueryExistence() )
       {
-      return false;
+      try
+        {
+        List foundResults = executeQuery( tableExistsQuery, 1 );
+        boolean tableExists = ( foundResults.size() == 1 );
+        LOG.info( "'{}' exists? {}", tableDesc.tableName, tableExists );
+        return tableExists;
+        }
+      catch( SQLException exception )
+        {
+        LOG.error( "Error: '{}' with resource  {}", exception.getMessage(), this.toString() );
+        throw new IOException( exception.getMessage(), exception );
+        }
+      }
+    else
+      {
+      {
+      // try to do a SELECT from the table assuming it exists.
+      // errors with connections or overall issues are handled elsewhere
+      boolean tableExists = false;
+      try
+        {
+        executeQuery( tableExistsQuery, 0 );
+        tableExists = true;
+        }
+      catch( Exception e )
+        {
+        LOG.debug( "error reading from pseudo-DB", e );
+        }
+      LOG.info( "'{}' exists? {}", tableDesc.tableName, tableExists );
+      return tableExists;
+      }
       }
 
-    return true;
     }
 
   @Override

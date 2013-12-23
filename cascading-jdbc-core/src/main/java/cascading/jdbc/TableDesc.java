@@ -45,6 +45,8 @@ public class TableDesc implements Serializable
   /** Field primaryKeys */
   String[] primaryKeys;
 
+  String tableExistsQuery;
+
   private Map<Comparable<?>, Type> internalColumnTypeMapping;
 
   /**
@@ -66,12 +68,13 @@ public class TableDesc implements Serializable
    * @param primaryKeys of type String
    *
    */
-  public TableDesc( String tableName, String[] columnNames, String[] columnDefs, String[] primaryKeys )
+  public TableDesc( String tableName, String[] columnNames, String[] columnDefs, String[] primaryKeys, String tableExistsQuery )
     {
     this.tableName = tableName;
     this.columnNames = columnNames;
     this.columnDefs = columnDefs;
     this.primaryKeys = primaryKeys;
+    this.tableExistsQuery = tableExistsQuery;
     }
 
   public String getTableName()
@@ -167,7 +170,15 @@ public class TableDesc implements Serializable
    */
   public String getTableExistsQuery()
     {
-    return String.format( "select 1 from %s where 1 = 0", tableName );
+    if( canQueryExistence() )
+      return String.format( tableExistsQuery, tableName );
+    else
+      return String.format( JDBCFactory.DEFAULT_TABLE_EXISTS_QUERY, tableName );
+    }
+
+  public boolean canQueryExistence()
+    {
+    return ( !Utils.isNullOrEmpty( tableExistsQuery ) && !tableExistsQuery.equals( JDBCFactory.TABLE_EXISTS_UNSUPPORTED ) );
     }
 
   private boolean hasPrimaryKey()
@@ -186,7 +197,7 @@ public class TableDesc implements Serializable
   public boolean hasRequiredTableInformation()
     {
     return tableName != null && !tableName.isEmpty() && columnNames != null && columnNames.length > 0 && columnDefs != null
-        && columnNames.length > 0 && columnDefs.length == columnNames.length;
+        && columnNames.length > 0 && columnDefs.length == columnNames.length ;
     }
 
   /**

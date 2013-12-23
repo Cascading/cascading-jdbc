@@ -18,16 +18,21 @@
 
 package cascading.jdbc;
 
+import java.io.IOException;
+
 import cascading.flow.FlowProcess;
 import cascading.flow.hadoop.HadoopFlowProcess;
 import cascading.tap.Tap;
 import cascading.tap.TapException;
 import cascading.tuple.TupleEntrySchemeCollector;
-import org.apache.hadoop.mapred.*;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.RecordWriter;
+import org.apache.hadoop.mapred.Reporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 /**
  * Class JDBCTapCollector is a kind of {@link cascading.tuple.TupleEntrySchemeCollector} that writes tuples to the resource managed by
@@ -90,17 +95,23 @@ public class JDBCTapCollector extends TupleEntrySchemeCollector implements Outpu
     }
 
     @Override
-    public void close() {
-        try {
-            LOG.info( "closing tap collector for: {}", tap );
-            writer.close( reporter );
-        } catch( IOException exception ) {
-            LOG.warn( "exception closing: {}", exception );
-            throw new TapException( "exception closing JDBCTapCollector", exception );
-        } finally {
-            super.close();
+    public void close()
+      {
+      try
+        {
+        LOG.info( "closing tap collector for: {}", tap );
+        writer.close( reporter );
         }
-    }
+      catch( IOException exception )
+        {
+        LOG.error( "exception closing: {}", exception.getMessage(), exception );
+        throw new TapException( "exception closing JDBCTapCollector", exception );
+        }
+      finally
+        {
+        super.close();
+        }
+      }
 
     /**
      * Method collect writes the given values to the {@link Tap} this instance encapsulates.

@@ -29,6 +29,15 @@
 
 package cascading.jdbc.db;
 
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -37,15 +46,6 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
-import org.apache.hadoop.util.StringUtils;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * A OutputFormat that sends the reduce output to a SQL table.
@@ -82,33 +82,20 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
     /** {@inheritDoc} */
     public void close( Reporter reporter ) throws IOException
       {
-      executeBatch();
-
       try
         {
-        if( insertStatement != null )
-          {
-          insertStatement.close();
-          }
+        if (insertStatement != null)
+          executeBatch(insertStatement, insertStatementsCurrent);
+        if (updateStatement != null)
+          executeBatch( updateStatement, updateStatementsCurrent );
 
-        if( updateStatement != null )
-          {
-          updateStatement.close();
-          }
-
-        connection.commit();
-        }
-      catch ( SQLException exception )
-        {
-        rollBack();
-
-        createThrowMessage( "unable to commit batch", 0, exception );
         }
       finally
         {
         try
           {
-          connection.close();
+          if (!connection.isClosed())
+            connection.close();
           }
         catch ( SQLException exception )
           {
@@ -117,72 +104,49 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
         }
       }
 
-    private void executeBatch() throws IOException
+    private void executeBatch(PreparedStatement preparedStatement, long currentCount) throws IOException
       {
-      try
-        {
-        if( insertStatementsCurrent != 0 )
-          {
-          LOG.info( "executing insert batch " + createBatchMessage( insertStatementsCurrent ) );
-
-          insertStatement.executeBatch();
-          }
-
-        insertStatementsCurrent = 0;
-        }
-      catch ( SQLException exception )
-        {
-        rollBack();
-
-        createThrowMessage( "unable to execute insert batch", insertStatementsCurrent, exception );
-        }
 
       try
         {
-        if( updateStatementsCurrent != 0 )
+        if( currentCount != 0 )
           {
-          LOG.info( "executing update batch " + createBatchMessage( updateStatementsCurrent ) );
+          LOG.info( "executing batch " + createBatchMessage( currentCount ) );
 
-          int[] result = updateStatement.executeBatch();
-
-          int count = 0;
+          int[] result = preparedStatement.executeBatch();
+          preparedStatement.close();
+          int updatedRecords = 0;
+          boolean hasUpdateCount = true;
 
           for( int value : result )
             {
-            count += value;
+            if (value == Statement.EXECUTE_FAILED)
+              manageBatchProcessingError("update failed", 0, new BatchProcessingException(  ));
+            else if ( value == Statement.SUCCESS_NO_INFO)
+              hasUpdateCount = false;
+
+            updatedRecords =+ value;
             }
 
-          if( count != updateStatementsCurrent
-          // oracle returns PreparedStatement.SUCCESS_NO_INFO for each entry,
-          // which
-          // means it worked, but we cannot check the count
-              && ! ( count == PreparedStatement.SUCCESS_NO_INFO * result.length ) )
-            {
-            throw new IOException( "update did not update same number of statements executed in batch, batch: " + updateStatementsCurrent
-                + " updated: " + count );
-            }
-          }
+          if (hasUpdateCount)
+            LOG.info( "records:" + updatedRecords );
 
-        updateStatementsCurrent = 0;
+          // If no records matched the update query it's still a success. But if the number of updated statements
+          // that ran isn't the expected count there's a problem.
+          if( result.length != currentCount )
+            manageBatchProcessingError("update did not update same number of statements executed in batch, batch: " + currentCount
+              + " updated: " + result.length, 0, new BatchProcessingException(  ));
+            }
+
+        connection.commit();
+
+        currentCount = 0;
         }
       catch ( SQLException exception )
         {
-        rollBack();
+        manageBatchProcessingError( "unable to execute update batch", currentCount, exception );
+        }
 
-        createThrowMessage( "unable to execute update batch", updateStatementsCurrent, exception );
-        }
-      }
-
-    private void rollBack()
-      {
-      try
-        {
-        connection.rollback();
-        }
-      catch ( SQLException sqlException )
-        {
-        LOG.warn( StringUtils.stringifyException( sqlException ) );
-        }
       }
 
     private String createBatchMessage( long currentStatements )
@@ -190,7 +154,7 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
       return String.format( "[totstmts: %d][crntstmts: %d][batch: %d]", statementsAdded, currentStatements, statementsBeforeExecute );
       }
 
-    private void createThrowMessage( String stateMessage, long currentStatements, SQLException exception ) throws IOException
+    private void manageBatchProcessingError( String stateMessage, long currentStatements, SQLException exception ) throws IOException
       {
       String message = exception.getMessage();
 
@@ -202,6 +166,16 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
       String errorMessage = String.format( template, stateMessage, messageLength, batchMessage, message );
 
       LOG.error( errorMessage, exception.getNextException() );
+
+      try
+        {
+        connection.rollback();
+        connection.commit();
+        }
+      catch( SQLException sqlException )
+        {
+        LOG.error( "unable to rollback batch", sqlException );
+        }
 
       throw new IOException( errorMessage, exception.getNextException() );
       }
@@ -233,14 +207,15 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
 
       if( statementsAdded % statementsBeforeExecute == 0 )
         {
-        executeBatch();
+        executeBatch(insertStatement, insertStatementsCurrent);
+        executeBatch(updateStatement, updateStatementsCurrent);
         }
       }
     }
 
   /**
    * Constructs the query used as the prepared statement to insert data.
-   * 
+   *
    * @param table the table to insert into
    * @param fieldNames the fields to insert into. If field names are unknown,
    *          supply an array of nulls.
@@ -415,7 +390,7 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
 
   /**
    * Initializes the reduce-part of the job with the appropriate output settings
-   * 
+   *
    * @param job The job
    * @param dbOutputFormatClass
    * @param tableName The table to insert data into

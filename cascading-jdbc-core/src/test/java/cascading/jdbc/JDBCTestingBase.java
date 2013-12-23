@@ -21,13 +21,18 @@
 package cascading.jdbc;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.Properties;
+import java.util.Set;
 
 import cascading.flow.Flow;
 import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.jdbc.db.DBInputFormat;
 import cascading.jdbc.db.DBWritable;
+import cascading.lingual.catalog.provider.ProviderDefinition;
 import cascading.operation.Identity;
 import cascading.operation.regex.RegexSplitter;
 import cascading.pipe.Each;
@@ -41,6 +46,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.TupleEntryIterator;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
 
@@ -65,6 +71,10 @@ public abstract class JDBCTestingBase
   /** The jdbc factory to use. */
   private JDBCFactory factory = new JDBCFactory();
 
+  protected org.slf4j.Logger LOG = LoggerFactory.getLogger( getClass() );
+
+  protected static final String TESTING_TABLE_NAME = "testingtable";
+
   @Test
   public void testJDBC() throws IOException
     {
@@ -76,11 +86,10 @@ public abstract class JDBCTestingBase
                                                                                   String.class} );
     Pipe parsePipe = new Each( "insert", new Fields( "line" ), new RegexSplitter( fields, "\\s" ) );
 
-    String tableName = "testingtable";
     String[] columnNames = {"num", "lwr", "upr"};
     String[] columnDefs = {"INT NOT NULL", "VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL"};
     String[] primaryKeys = {"num", "lwr"};
-    TableDesc tableDesc = getNewTableDesc( tableName, columnNames, columnDefs, primaryKeys );
+    TableDesc tableDesc = getNewTableDesc( TESTING_TABLE_NAME, columnNames, columnDefs, primaryKeys );
 
     JDBCScheme scheme = getNewJDBCScheme( fields, columnNames );
 
@@ -113,13 +122,14 @@ public abstract class JDBCTestingBase
     Flow<?> updateFlow = new HadoopFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
 
     updateFlow.complete();
+    updateFlow.cleanup();
 
     verifySink( updateFlow, 13 );
 
     // READ DATA FROM TABLE INTO TEXT FILE, USING CUSTOM QUERY
 
     Tap<?, ?, ?> sourceTap = getNewJDBCTap( getNewJDBCScheme( columnNames,
-      "select num, lwr, upr from testingtable testingtable", "select count(*) from testingtable" ) );
+      String.format( "select num, lwr, upr from %s %s", TESTING_TABLE_NAME, TESTING_TABLE_NAME), "select count(*) from " + TESTING_TABLE_NAME ) );
 
     Pipe readPipe = new Each( "read", new Identity() );
 
@@ -140,11 +150,11 @@ public abstract class JDBCTestingBase
                                                                                   String.class} );
     Pipe parsePipe = new Each( "insert", new Fields( "line" ), new RegexSplitter( fields, "\\s" ) );
 
-    String tableName = "testingtablealias";
+    String tableAlias = TESTING_TABLE_NAME + "alias";
     String[] columnNames = {"num", "lwr", "upr"};
     String[] columnDefs = {"INT NOT NULL", "VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL"};
     String[] primaryKeys = {"num", "lwr"};
-    TableDesc tableDesc = getNewTableDesc( tableName, columnNames, columnDefs, primaryKeys );
+    TableDesc tableDesc = getNewTableDesc( tableAlias, columnNames, columnDefs, primaryKeys );
 
     Tap<?, ?, ?> replaceTap = getNewJDBCTap( tableDesc, getNewJDBCScheme( fields, columnNames ), SinkMode.REPLACE );
 
@@ -181,7 +191,7 @@ public abstract class JDBCTestingBase
     // READ DATA FROM TABLE INTO TEXT FILE, USING CUSTOM QUERY
 
     Tap<?, ?, ?> sourceTap = getNewJDBCTap( getNewJDBCScheme( columnNames,
-      "select num, lwr, upr from testingtablealias testingtable", "select count(*) from testingtablealias" ) );
+      String.format( "select num, lwr, upr from %s %s", tableAlias, TESTING_TABLE_NAME), "select count(*) from " + tableAlias ) );
 
     Pipe readPipe = new Each( "read", new Identity() );
 
@@ -211,8 +221,9 @@ public abstract class JDBCTestingBase
     tapProperties.setProperty( JDBCFactory.PROTOCOL_COLUMN_DEFS, "int not null:varchar(100) not null: varchar(100) not null" );
     tapProperties.setProperty( JDBCFactory.PROTOCOL_COLUMN_NAMES, "num:lwr:upr" );
     tapProperties.setProperty( JDBCFactory.PROTOCOL_PRIMARY_KEYS, "num:lwr" );
-    tapProperties.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, "testingtable" );
+    tapProperties.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, TESTING_TABLE_NAME );
     tapProperties.setProperty( JDBCFactory.PROTOCOL_JDBC_DRIVER, driverName );
+    tapProperties.setProperty( JDBCFactory.PROTOCOL_TABLE_EXISTS_QUERY, getTableExistsQuery() );
 
     String[] columnNames = new String[]{"num", "lwr", "upr"};
 
@@ -283,8 +294,9 @@ public abstract class JDBCTestingBase
     Pipe parsePipe = new Each( "insert", new Fields( "line" ), new RegexSplitter( columnFields, "\\s" ) );
 
     Properties tapProperties = new Properties();
-    tapProperties.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, "testingtable" );
+    tapProperties.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, TESTING_TABLE_NAME );
     tapProperties.setProperty( JDBCFactory.PROTOCOL_JDBC_DRIVER, driverName );
+    tapProperties.setProperty( JDBCFactory.PROTOCOL_TABLE_EXISTS_QUERY, getTableExistsQuery() );
 
     Properties schemeProperties = new Properties();
     JDBCScheme scheme = (JDBCScheme) factory.createScheme( "somename", columnFields, schemeProperties );
@@ -373,7 +385,7 @@ public abstract class JDBCTestingBase
 
   protected TableDesc getNewTableDesc( String tableName, String[] columnNames, String[] columnDefs, String[] primaryKeys )
     {
-    return new TableDesc( tableName, columnNames, columnDefs, primaryKeys );
+    return new TableDesc( tableName, columnNames, columnDefs, primaryKeys, getTableExistsQuery() );
     }
 
   protected JDBCTap getNewJDBCTap( TableDesc tableDesc, JDBCScheme jdbcScheme, SinkMode sinkMode )
@@ -401,8 +413,36 @@ public abstract class JDBCTestingBase
     props.put( "mapred.reduce.tasks.speculative.execution", "false" );
     props.put( "mapred.map.tasks.speculative.execution", "false" );
     AppProps.setApplicationJarClass( props, getClass() );
+    LOG.info( "running with properties {}", props);
     return props;
     }
+
+  public String getTableExistsQuery() {
+
+  Enumeration<URL> resources = null;
+  try
+    {
+    resources = this.getClass().getClassLoader().getResources( ProviderDefinition.CASCADING_BIND_PROVIDER_PROPERTIES );
+    URL url = resources.nextElement();
+    LOG.debug( "loading properties from: {}", url );
+    InputStream inputStream = url.openStream();
+    Properties properties = new Properties();
+    properties.load( inputStream );
+    inputStream.close();
+    String tableExistsQuery = JDBCFactory.DEFAULT_TABLE_EXISTS_QUERY;
+    Set<String> keySet = properties.stringPropertyNames();
+    for (String keyName : keySet)
+      if (keyName.toString().endsWith( JDBCFactory.PROTOCOL_TABLE_EXISTS_QUERY ))
+        tableExistsQuery = properties.getProperty( keyName ) ;
+
+    return tableExistsQuery;
+    }
+  catch( IOException exception )
+    {
+    LOG.error( "unable to read {}. using default query", ProviderDefinition.CASCADING_BIND_PROVIDER_PROPERTIES, exception );
+    return JDBCFactory.DEFAULT_TABLE_EXISTS_QUERY;
+    }
+  }
 
   public void setJdbcurl( String jdbcurl )
     {

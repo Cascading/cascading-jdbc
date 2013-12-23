@@ -27,20 +27,18 @@ import org.apache.derby.drda.NetworkServerControl;
 import org.junit.After;
 import org.junit.Before;
 
-import cascading.jdbc.JDBCTestingBase;
-
 /**
  * This class runs the tests against an in network instance of apache derby:
  * http://db.apache.org/derby/
  * */
 public class DerbyTest extends JDBCTestingBase
   {
-  
+
   private final int PORT = 9006;
   private NetworkServerControl serverControl;
-  
 
-  
+
+
   @Before
   public void setUp() throws Exception
     {
@@ -51,13 +49,18 @@ public class DerbyTest extends JDBCTestingBase
 
     serverControl = new NetworkServerControl(InetAddress.getByName("localhost"), PORT);
     serverControl.start(new PrintWriter(System.out,true));
-    
+
     setDriverName( "org.apache.derby.jdbc.ClientDriver" );
     setJdbcurl( String.format("jdbc:derby://localhost:%s/testing;create=true", PORT) );
 
     }
 
-  
+  @Override
+  public String getTableExistsQuery()
+    {
+      return JDBCFactory.TABLE_EXISTS_UNSUPPORTED;
+    }
+
   @After
   public void tearDown() throws Exception
     {

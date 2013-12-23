@@ -18,28 +18,31 @@
  * limitations under the License.
  */
 
-package cascading.jdbc;
+package cascading.jdbc.db;
 
-import org.junit.Before;
+import java.sql.SQLException;
 
 /**
- * Runs the tests against an instance of h2:
- * http://www.h2database.com/html/main.html
- * */
-public class H2Test extends JDBCTestingBase
+ *
+ */
+public class BatchProcessingException extends SQLException
   {
-
-  @Before
-  public void setUp()
+  public BatchProcessingException()
     {
-    setDriverName( "org.h2.Driver" );
-    setJdbcurl( "jdbc:h2:mem:testing;DB_CLOSE_DELAY=-1;MVCC=true" );
     }
 
-  @Override
-  public String getTableExistsQuery()
+  public BatchProcessingException( String message )
     {
-    return JDBCFactory.TABLE_EXISTS_UNSUPPORTED;
+    super( message );
     }
 
+  public BatchProcessingException( String message, Throwable cause )
+    {
+    super( message, cause );
+    }
+
+  public BatchProcessingException( Throwable cause )
+    {
+    super( cause );
+    }
   }

@@ -20,14 +20,11 @@
 
 package cascading.jdbc;
 
-import static org.junit.Assert.*;
-
-import java.lang.reflect.Type;
-
-import org.junit.Test;
-
 import cascading.lingual.type.SQLDateCoercibleType;
 import cascading.tuple.Fields;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class TableDescTest
   {
@@ -38,13 +35,13 @@ public class TableDescTest
     TableDesc desc = new TableDesc( "name" );
     assertFalse( desc.hasRequiredTableInformation() );
 
-    desc = new TableDesc( "name", null, null, null );
+    desc = new TableDesc( "name", null, null, null, null );
     assertFalse( desc.hasRequiredTableInformation() );
 
-    desc = new TableDesc( "name", new String[]{ "id" }, null, null );
+    desc = new TableDesc( "name", new String[]{ "id" }, null, null, null );
     assertFalse( desc.hasRequiredTableInformation() );
 
-    desc = new TableDesc( "name", new String[]{ "id" }, new String[]{ "int" }, null );
+    desc = new TableDesc( "name", new String[]{ "id" }, new String[]{ "int" }, null, "foo" );
     assertTrue( desc.hasRequiredTableInformation() );
 
     }
@@ -81,7 +78,6 @@ public class TableDescTest
     assertArrayEquals( new String[]{ "date" }, desc.getColumnDefs() );
 
     }
-
 
   @Test(expected = IllegalArgumentException.class)
   public void testCompleteFromFieldsMissingType()
