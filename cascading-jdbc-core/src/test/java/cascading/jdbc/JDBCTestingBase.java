@@ -32,6 +32,7 @@ import cascading.operation.Identity;
 import cascading.operation.regex.RegexSplitter;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
+import cascading.property.AppProps;
 import cascading.scheme.hadoop.TextLine;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
@@ -399,6 +400,7 @@ public abstract class JDBCTestingBase
     Properties props = new Properties();
     props.put( "mapred.reduce.tasks.speculative.execution", "false" );
     props.put( "mapred.map.tasks.speculative.execution", "false" );
+    AppProps.setApplicationJarClass( props, getClass() );
     return props;
     }
 

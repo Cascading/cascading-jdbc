@@ -107,7 +107,7 @@ allprojects {
   }
 
   task testsJar( type: Jar, dependsOn: testClasses ) {
-    from sourceSets.test.output
+    from sourceSets.test.runtimeClasspath
     classifier = 'tests'
   }
 
