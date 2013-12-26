@@ -83,11 +83,11 @@ talk to oracle, but due to the fact, that the oracle jdbc driver is not
 available on any public maven repository, you have to build it yourself. Here is
 how:
 
-1. Download the `odbc6.jar` file from [oracle technet](http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html)
+1. Download the `ojdbc6.jar` file from [oracle technet](http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html)
 2. Install it in your local maven repo
 
     > mvn install:install-file -DgroupId=com.oracle -DartifactId=ojdbc6
-           -Dversion=11.2.0.4 -Dpackaging=jar -Dfile=ojdbc6.jar -DgeneratePom=true
+           -Dversion=11.2.0.4 -Dpackaging=jar -Dfile=/path/to/ojdbc6.jar -DgeneratePom=true
 
 3. Build the project against an existing oracle database. The user has to be
    able to create and delete tables, in order for the tests to work.
