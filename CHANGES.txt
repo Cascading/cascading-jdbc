@@ -1,4 +1,10 @@
 Cascading-jdbc Change Log
 
+2.5.0
+- Support for Cascading 2.5.x
+- More robust batch processing
+- More robust check if a table exists
+- full support for SinkMode.UPDATE
+
 2.2.0
-initial release of Cascading 2.2 compatible version
+- initial release of Cascading 2.2 compatible version
