@@ -1,6 +1,6 @@
 # cascading-jdbc
 
-A set of Cascading (version 2.2 and above) Taps and Schemes which interact with
+A set of Cascading (version 2.5 and above) Taps and Schemes which interact with
 RDBMS systems via JDBC. The project consists of a generic part
 `cascading-jdbc-core` and database specific sub-projects. The database specific
 projects have dependencies to their respective JDBC drivers and run tests
@@ -145,7 +145,7 @@ Setup your lingual catalog with the derby provider:
     # only hadoop platform is supported
     > export LINGUAL_PLATFORM=hadoop
 
-    > lingual catalog --provider --add cascading:cascading-jdbc-derby:2.2.0-+:provider
+    > lingual catalog --provider --add cascading:cascading-jdbc-derby:2.5.0:provider
 
 This will register the provider `derby` for the `hadoop` platform. The provider
 supports one protocol (`jdbc`) and one format (`derby`). The provider is
@@ -227,7 +227,7 @@ The JDBC driver version used for a particular provider should match the version 
 the `build.gradle` file for the particular driver you're using, change the version specified by the `compile` line, and re-install the
 provider.
 
-By default [mavencentra](http://search.maven.org/), [conjars](http://conjars.org/), [pentaho](http://repository.pentaho.org/) and the
+By default [mavencentral](http://search.maven.org/), [conjars](http://conjars.org/), [pentaho](http://repository.pentaho.org/) and the
 local maven install are the only repos listed in the build script. If the particular version of a driver you need
 is hosted somewhere else, you will need to add this repo to the top level `build.gradle` file.
 
