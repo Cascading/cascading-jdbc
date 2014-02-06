@@ -93,7 +93,10 @@ public abstract class JDBCTestingBase
 
     JDBCScheme scheme = getNewJDBCScheme( fields, columnNames );
 
-    Tap<?, ?, ?> replaceTap = getNewJDBCTap( tableDesc, scheme, SinkMode.REPLACE );
+    JDBCTap replaceTap = getNewJDBCTap( tableDesc, scheme, SinkMode.REPLACE );
+
+    // forcing commits to test the batch behaviour
+    replaceTap.setBatchSize( 2 );
 
     Flow<?> parseFlow = new HadoopFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
 

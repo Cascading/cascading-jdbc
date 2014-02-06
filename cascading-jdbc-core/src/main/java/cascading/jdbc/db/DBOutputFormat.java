@@ -114,7 +114,6 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
           LOG.info( "executing batch " + createBatchMessage( currentCount ) );
 
           int[] result = preparedStatement.executeBatch();
-          preparedStatement.close();
           int updatedRecords = 0;
           boolean hasUpdateCount = true;
 
@@ -139,8 +138,6 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
             }
 
         connection.commit();
-
-        currentCount = 0;
         }
       catch ( SQLException exception )
         {
@@ -209,6 +206,9 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
         {
         executeBatch(insertStatement, insertStatementsCurrent);
         executeBatch(updateStatement, updateStatementsCurrent);
+        // reset counters after each batch
+        insertStatementsCurrent = 0;
+        updateStatementsCurrent = 0;
         }
       }
     }
