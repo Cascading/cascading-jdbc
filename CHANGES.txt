@@ -1,5 +1,9 @@
 Cascading-jdbc Change Log
 
+2.5.1
+- update to cascading 2.5.2
+- fix issue in batch processing
+
 2.5.0
 - Support for Cascading 2.5.x
 - More robust batch processing
