@@ -46,7 +46,7 @@ public class RedshiftTableDesc extends TableDesc
 
   public RedshiftTableDesc( String tableName, String[] columnNames, String[] columnDefs, String distributionkey, String[] sortKeys )
     {
-    super( tableName, columnNames, columnDefs, null );
+    super( tableName, columnNames, columnDefs, null, null );
     this.distributionkey = distributionkey;
     this.sortKeys = sortKeys;
     }
