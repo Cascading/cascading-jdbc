@@ -131,8 +131,8 @@ All artifacts, except the ones for Oracle (see above) are in
 
 ## In Lingual
 
-__NOTE__: The JDBC providers can only be used on the `hadoop` platform. The
-`local` platform is not supported.
+__NOTE__: The JDBC providers can only be used on the `hadoop` and `hadoop2-mr1`
+platforms. The `local` platform is not supported.
 
 This assumes, that you have followed the [lingual
 tutorial](http://docs.cascading.org/lingual/1.0/), esp. the part, where a
@@ -145,7 +145,7 @@ Setup your lingual catalog with the derby provider:
     # only hadoop platform is supported
     > export LINGUAL_PLATFORM=hadoop
 
-    > lingual catalog --provider --add cascading:cascading-jdbc-derby:2.5.0:provider
+    > lingual catalog --provider --add cascading:cascading-jdbc-derby:2.5.1:provider
 
 This will register the provider `derby` for the `hadoop` platform. The provider
 supports one protocol (`jdbc`) and one format (`derby`). The provider is
@@ -242,7 +242,7 @@ Below is an example from the `derby` subproject:
 
     # default name of provider
     cascading.bind.provider.names=derby
-    cascading.bind.provider.derby.platforms=hadoop
+    cascading.bind.provider.derby.platforms=hadoop,hadoop2-mr1
 
     cascading.bind.provider.derby.factory.classname=cascading.jdbc.JDBCFactory
 
