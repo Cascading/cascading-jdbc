@@ -1,4 +1,6 @@
 Cascading-jdbc Change Log
+2.5.2 (unreleased)
+- upgrade redshift jdbc driver to 8.4-702.jdbc4
 
 2.5.1
 - update to cascading 2.5.2
