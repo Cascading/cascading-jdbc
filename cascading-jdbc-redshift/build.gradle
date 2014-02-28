@@ -20,7 +20,7 @@
 
 evaluationDependsOn( ":cascading-jdbc-core" )
 
-ext.redshiftPostgresVersion = '8.0-318.jdbc3'
+ext.redshiftPostgresVersion = '9.1-901.jdbc4'
 
 dependencies {
 
