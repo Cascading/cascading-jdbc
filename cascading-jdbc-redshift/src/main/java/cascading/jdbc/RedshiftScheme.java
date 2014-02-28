@@ -67,6 +67,17 @@ public class RedshiftScheme extends JDBCScheme
     }
 
   /**
+   * Like primary constructor, but also takes a String conditions allowing the query to be restricted to a subset of the table.
+   *
+   * @param redshiftTableDesc description of the table structure.
+   * @param conditions        where clause to restrict the query.
+   */
+  public RedshiftScheme( Fields fields, RedshiftTableDesc redshiftTableDesc, String conditions )
+    {
+    this( fields, redshiftTableDesc, DEFAULT_DELIMITER, DEFAULT_QUOTE, null, conditions, false );
+    }
+
+  /**
    * Use this constructor if you need fine-grained control over the temporary file used to stage data for uploading. You
    * almost certainly don't want to do this unless you know for a fact that your data contains, ex. binary data that might
    * cause issues with default column detection (ex. if you use the \001 character).
@@ -79,7 +90,12 @@ public class RedshiftScheme extends JDBCScheme
    */
   public RedshiftScheme( Fields fields, RedshiftTableDesc redshiftTableDesc, String delimiter, String quoteCharacter, Map<RedshiftFactory.CopyOption, String> copyOptions, Boolean tableAlias )
     {
-    super( fields, redshiftTableDesc.getColumnNames() );
+    this(fields, redshiftTableDesc, delimiter, quoteCharacter, copyOptions, null, tableAlias);
+    }
+
+  public RedshiftScheme( Fields fields, RedshiftTableDesc redshiftTableDesc, String delimiter, String quoteCharacter, Map<RedshiftFactory.CopyOption, String> copyOptions, String conditions, Boolean tableAlias )
+    {
+    super( fields, redshiftTableDesc.getColumnNames(), conditions );
     super.tableAlias = tableAlias;
     // from the perspective of the JDBC-based parent class flag all fields as JDBC types.
     // for the internally managed S3 sink, use HFS tables (where Date is a String) so that the Tap doesn't
