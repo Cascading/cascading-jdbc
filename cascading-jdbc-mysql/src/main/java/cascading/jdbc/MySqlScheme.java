@@ -20,6 +20,16 @@
 
 package cascading.jdbc;
 
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.RecordReader;
+
+import cascading.flow.FlowProcess;
+import cascading.jdbc.db.DBInputFormat;
+import cascading.jdbc.db.MySqlDBOutputFormat;
+import cascading.jdbc.db.MySqlDBConfiguration;
+import cascading.tap.Tap;
+
 public class MySqlScheme extends JDBCScheme
   {
 
@@ -41,7 +51,7 @@ public class MySqlScheme extends JDBCScheme
    * @param updateBy of type String[]
    * @param replaceOnInsert of type boolean
    */
-  public JDBCScheme( Class<? extends DBInputFormat> inputFormatClass, String[] columns, String[] orderBy,
+  public MySqlScheme( Class<? extends DBInputFormat> inputFormatClass, String[] columns, String[] orderBy,
       String conditions, String[] updateBy, boolean replaceOnInsert )
     {
     super( inputFormatClass, MySqlDBOutputFormat.class, columns, orderBy, conditions, -1, updateBy );

@@ -20,20 +20,29 @@
 
 package cascading.jdbc.db;
 
+import org.apache.hadoop.conf.Configuration;
+
 public class MySqlDBConfiguration
   {
 
   /** Boolean to use ON DUPLICATE KEY UPDATE for INSERTs when outputting tuples to MySQL. */
   public static final String REPLACE_ON_INSERT = "mapred.jdbc.output.replace.on.insert";
 
-  boolean getReplaceOnInsert()
+  private Configuration job;
+
+  public MySqlDBConfiguration( Configuration job )
     {
-    return job.getBoolean(DBConfiguration.REPLACE_ON_INSERT, false);
+    this.job = job;
     }
 
-  void setReplaceOnInsert(boolean replaceOnInsert)
+  public boolean getReplaceOnInsert()
     {
-    job.setBoolean(DBConfiguration.REPLACE_ON_INSERT, replaceOnInsert);
+    return job.getBoolean( MySqlDBConfiguration.REPLACE_ON_INSERT, false );
+    }
+
+  public void setReplaceOnInsert( boolean replaceOnInsert )
+    {
+    job.setBoolean( MySqlDBConfiguration.REPLACE_ON_INSERT, replaceOnInsert );
     }
 
   }
