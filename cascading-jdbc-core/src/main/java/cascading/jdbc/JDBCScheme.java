@@ -72,11 +72,6 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
   private long limit = -1;
   protected Boolean tableAlias = true;
   private Fields internalSinkFields;
-  /**
-   * If true, will use mysql's 'ON DUPLICATE KEY UPDATE' to update existing rows with the same key
-   * with the new data. See http://dev.mysql.com/doc/refman/5.0/en/insert-on-duplicate.html.
-   */
-  private boolean replaceOnInsert = false;
 
   private static final Logger LOG = LoggerFactory.getLogger( JDBCScheme.class );
 
@@ -205,26 +200,6 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
       String[] orderBy, String conditions, String[] updateBy )
     {
     this( inputFormatClass, outputFormatClass, columns, orderBy, conditions, -1, updateBy );
-    }
-
-  /**
-   * Constructor JDBCScheme creates a new JDBCScheme instance.
-   *
-   * Specify replaceOnInsert if you want to change the default insert behavior.
-   *
-   * @param inputFormatClass of type Class<? extends DBInputFormat>
-   * @param outputFormatClass of type Class<? extends DBOutputFormat>
-   * @param columns of type String[]
-   * @param orderBy of type String[]
-   * @param conditions of type String
-   * @param updateBy of type String[]
-   * @param replaceOnInsert of type boolean
-   */
-  public JDBCScheme( Class<? extends DBInputFormat> inputFormatClass, Class<? extends DBOutputFormat> outputFormatClass, String[] columns,
-      String[] orderBy, String conditions, String[] updateBy, boolean replaceOnInsert )
-    {
-    this( inputFormatClass, outputFormatClass, columns, orderBy, conditions, -1, updateBy );
-    this.replaceOnInsert = replaceOnInsert;
     }
 
   /**
@@ -654,7 +629,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
     String tableName = ( (JDBCTap) tap ).getTableName();
     int batchSize = ( (JDBCTap) tap ).getBatchSize();
-    DBOutputFormat.setOutput( conf, DBOutputFormat.class, tableName, columns, updateBy, batchSize, replaceOnInsert );
+    DBOutputFormat.setOutput( conf, DBOutputFormat.class, tableName, columns, updateBy, batchSize );
 
     if( outputFormatClass != null )
       conf.setOutputFormat( outputFormatClass );

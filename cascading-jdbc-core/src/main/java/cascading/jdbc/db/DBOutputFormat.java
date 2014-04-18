@@ -220,7 +220,7 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
    * @param fieldNames the fields to insert into. If field names are unknown,
    *          supply an array of nulls.
    */
-  protected String constructInsertQuery( String table, String[] fieldNames, boolean replaceOnInsert )
+  protected String constructInsertQuery( String table, String[] fieldNames )
     {
     if( fieldNames == null )
       {
@@ -261,15 +261,7 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
         }
       }
 
-    query.append(")");
-
-    if (replaceOnInsert) {
-      query.append(" ON DUPLICATE KEY UPDATE ");
-      for (int i = 0; i < fieldNames.length; i++) {
-        query.append(String.format("%s=VALUES(%s)", fieldNames[i], fieldNames[i]));
-        if (i != fieldNames.length - 1) { query.append(","); }
-      }
-    }
+    query.append( ")" );
 
     return query.toString();
     }
@@ -345,13 +337,12 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
     String[] fieldNames = dbConf.getOutputFieldNames();
     String[] updateNames = dbConf.getOutputUpdateFieldNames();
     int batchStatements = dbConf.getBatchStatementsNum();
-    boolean replaceOnInsert = dbConf.getReplaceOnInsert();
 
     Connection connection = dbConf.getConnection();
 
     configureConnection( connection );
 
-    String sqlInsert = constructInsertQuery( tableName, fieldNames, replaceOnInsert );
+    String sqlInsert = constructInsertQuery( tableName, fieldNames );
     PreparedStatement insertPreparedStatement;
 
     try
@@ -376,14 +367,6 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
       {
       throw new IOException( "unable to create statement for: " + sqlUpdate, exception );
       }
-
-
-    if (insertPreparedStatement != null) {
-      LOG.info("Executing insert statement:\n " + sqlInsert);
-    }
-    if (updatePreparedStatement != null) {
-      LOG.info("Executing update statement:\n " + sqlUpdate);
-    }
 
     return new DBRecordWriter( connection, insertPreparedStatement, updatePreparedStatement, batchStatements );
     }
@@ -413,12 +396,9 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
    * @param tableName The table to insert data into
    * @param fieldNames The field names in the table. If unknown, supply the
    *          appropriate
-   * @param updateFields
-   * @param batchSize
-   * @param replaceOnInsert     Boolean which says whether inserts should replace.
    */
   public static void setOutput( JobConf job, Class<? extends DBOutputFormat> dbOutputFormatClass, String tableName, String[] fieldNames,
-      String[] updateFields, int batchSize, boolean replaceOnInsert )
+      String[] updateFields, int batchSize )
     {
     if( dbOutputFormatClass == null )
       {
@@ -437,7 +417,6 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
 
     dbConf.setOutputTableName( tableName );
     dbConf.setOutputFieldNames( fieldNames );
-    dbConf.setReplaceOnInsert(replaceOnInsert);
 
     if( updateFields != null )
       {
