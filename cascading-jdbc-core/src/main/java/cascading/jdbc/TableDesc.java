@@ -171,14 +171,24 @@ public class TableDesc implements Serializable
   public String getTableExistsQuery()
     {
     if( canQueryExistence() )
-      return String.format( tableExistsQuery, tableName );
+      {
+      if( !Utils.isNullOrEmpty( tableExistsQuery ) )
+        return String.format( tableExistsQuery, tableName );
+      else
+        return String.format( JDBCFactory.DEFAULT_TABLE_EXISTS_QUERY, tableName );
+      }
     else
+      {
       return String.format( JDBCFactory.DEFAULT_TABLE_EXISTS_QUERY, tableName );
+      }
     }
 
   public boolean canQueryExistence()
     {
-    return ( !Utils.isNullOrEmpty( tableExistsQuery ) && !tableExistsQuery.equals( JDBCFactory.TABLE_EXISTS_UNSUPPORTED ) );
+    if( Utils.isNullOrEmpty( tableExistsQuery ) )
+      return true; // default to assuming we can query the table
+    else
+      return ( !tableExistsQuery.equals( JDBCFactory.TABLE_EXISTS_UNSUPPORTED ) );
     }
 
   private boolean hasPrimaryKey()

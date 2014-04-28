@@ -542,7 +542,6 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
         }
       catch( SQLException exception )
         {
-        // ignore
         LOG.warn( "ignoring connection close exception. SQL error code: " + exception.getErrorCode(), exception );
         }
       }
@@ -674,9 +673,9 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
         executeQuery( tableExistsQuery, 0 );
         tableExists = true;
         }
-      catch( Exception e )
+      catch( Exception exception )
         {
-        LOG.debug( "error reading from pseudo-DB", e );
+        LOG.info( "error reading from pseudo-DB", exception );
         }
       LOG.info( "'{}' exists? {}", tableDesc.tableName, tableExists );
       return tableExists;
