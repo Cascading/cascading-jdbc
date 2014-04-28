@@ -18,21 +18,31 @@
  * limitations under the License.
  */
 
-package cascading.jdbc;
+package cascading.jdbc.db;
 
-import org.junit.Before;
+import org.apache.hadoop.conf.Configuration;
 
-/**
- * Runs the tests against an instance of mysql
- * */
-public class MysqlTest extends JDBCTestingBase
+public class MySqlDBConfiguration
   {
 
-  @Before
-  public void setUp()
+  /** Boolean to use ON DUPLICATE KEY UPDATE for INSERTs when outputting tuples to MySQL. */
+  public static final String REPLACE_ON_INSERT = "mapred.jdbc.output.replace.on.insert";
+
+  private Configuration job;
+
+  public MySqlDBConfiguration( Configuration job )
     {
-    setDriverName( "com.mysql.jdbc.Driver" );
-    setJdbcurl( System.getProperty( "cascading.jdbcurl" ) );
-    setFactory( new MySqlFactory() );
+    this.job = job;
     }
+
+  public boolean getReplaceOnInsert()
+    {
+    return job.getBoolean( MySqlDBConfiguration.REPLACE_ON_INSERT, false );
+    }
+
+  public void setReplaceOnInsert( boolean replaceOnInsert )
+    {
+    job.setBoolean( MySqlDBConfiguration.REPLACE_ON_INSERT, replaceOnInsert );
+    }
+
   }

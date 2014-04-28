@@ -153,7 +153,7 @@ public class JDBCFactory
     if( limitProperty != null && !limitProperty.isEmpty() )
       limit = Long.parseLong( limitProperty );
 
-    String[] columNames = getColumnNames(fields, properties, separator);
+    String[] columnNames = getColumnNames(fields, properties, separator);
 
     Boolean tableAlias = getTableAlias(properties);
 
@@ -162,7 +162,7 @@ public class JDBCFactory
       if( countQuery == null )
         throw new IllegalArgumentException( "no count query for select query given" );
 
-      return createScheme( fields, selectQuery, countQuery, limit, columNames, tableAlias );
+      return createScheme( fields, selectQuery, countQuery, limit, columnNames, tableAlias );
       }
 
     String conditions = properties.getProperty( FORMAT_CONDITIONS );
@@ -181,20 +181,26 @@ public class JDBCFactory
     if( orderByProperty != null && !orderByProperty.isEmpty() )
       orderBy = orderByProperty.split( separator );
 
-    return createUpdatableScheme( fields, limit, columNames, tableAlias, conditions, updateBy, updateByFields, orderBy );
+    return createUpdatableScheme( fields, limit, columnNames, tableAlias, conditions, updateBy, updateByFields, orderBy );
 
     }
 
-  protected Scheme createUpdatableScheme( Fields fields, long limit, String[] columNames, Boolean tableAlias, String conditions,
+  protected Scheme createUpdatableScheme( Fields fields, long limit, String[] columnNames, Boolean tableAlias, String conditions,
+                                          String[] updateBy, Fields updateByFields, String[] orderBy, Properties properties )
+    {
+    return new JDBCScheme( getInputFormatClass(), getOutputFormClass(), fields, columnNames, orderBy, conditions, limit, updateByFields,
+      updateBy, tableAlias );
+    }
+
+  protected Scheme createUpdatableScheme( Fields fields, long limit, String[] columnNames, Boolean tableAlias, String conditions,
       String[] updateBy, Fields updateByFields, String[] orderBy )
     {
-    return new JDBCScheme( getInputFormatClass(), DBOutputFormat.class, fields, columNames, orderBy, conditions, limit, updateByFields,
-        updateBy, tableAlias );
+    return createUpdatableScheme( fields, limit, columnNames, tableAlias, conditions, updateBy, updateByFields, orderBy, new Properties() );
     }
 
-  protected Scheme createScheme( Fields fields, String selectQuery, String countQuery, long limit, String[] columNames, Boolean tableAlias )
+  protected Scheme createScheme( Fields fields, String selectQuery, String countQuery, long limit, String[] columnNames, boolean tableAlias )
     {
-    return new JDBCScheme( getInputFormatClass(), fields, columNames, selectQuery, countQuery, limit, tableAlias );
+    return new JDBCScheme( getInputFormatClass(), fields, columnNames, selectQuery, countQuery, limit, tableAlias );
     }
 
   /**
@@ -241,11 +247,22 @@ public class JDBCFactory
    * Returns {@link DBInputFormat} class. This can be overwritten in subclasses, if they
    * have a custom {@link DBInputFormat}.
    *
-   * @return the {@link InputFormat} ot use.
+   * @return the {@link InputFormat} to use.
    * */
   protected Class<? extends DBInputFormat> getInputFormatClass()
     {
     return DBInputFormat.class;
+    }
+
+  /**
+   * Returns {@link DBOutputFormat} class. This can be overwritten in subclasses, if they
+   * have a custom {@link DBInputFormat}.
+   *
+   * @return the {@link InputFormat} to use.
+   * */
+  protected Class<? extends DBOutputFormat> getOutputFormClass()
+    {
+    return DBOutputFormat.class;
     }
 
   protected String[] getColumnNames( Fields fields, Properties properties, String separator )
