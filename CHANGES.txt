@@ -1,6 +1,6 @@
 Cascading-jdbc Change Log
 
-2.5.2 (unreleased)
+2.5.2 
 - upgrade redshift jdbc driver to 8.4-702.jdbc4
 - reduce size of test jars
 - replaceOnInsert support for MySQL
