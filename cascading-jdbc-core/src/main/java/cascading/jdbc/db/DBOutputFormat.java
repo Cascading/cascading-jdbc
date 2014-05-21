@@ -88,7 +88,6 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
           executeBatch(insertStatement, insertStatementsCurrent);
         if (updateStatement != null)
           executeBatch( updateStatement, updateStatementsCurrent );
-
         }
       finally
         {
@@ -106,13 +105,11 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
 
     private void executeBatch(PreparedStatement preparedStatement, long currentCount) throws IOException
       {
-
       try
         {
         if( currentCount != 0 )
           {
           LOG.info( "executing batch " + createBatchMessage( currentCount ) );
-
           int[] result = preparedStatement.executeBatch();
           int updatedRecords = 0;
           boolean hasUpdateCount = true;
@@ -120,7 +117,7 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
           for( int value : result )
             {
             if (value == Statement.EXECUTE_FAILED)
-              manageBatchProcessingError("update failed", 0, new BatchProcessingException(  ));
+              manageBatchProcessingError("update failed", 0, new BatchProcessingException( "value=Statement.EXECUTE_FAILED" ));
             else if ( value == Statement.SUCCESS_NO_INFO)
               hasUpdateCount = false;
 
@@ -134,7 +131,7 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
           // that ran isn't the expected count there's a problem.
           if( result.length != currentCount )
             manageBatchProcessingError("update did not update same number of statements executed in batch, batch: " + currentCount
-              + " updated: " + result.length, 0, new BatchProcessingException(  ));
+              + " updated: " + result.length, 0, new BatchProcessingException( "" ));
             }
 
         connection.commit();
@@ -223,44 +220,28 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
   protected String constructInsertQuery( String table, String[] fieldNames )
     {
     if( fieldNames == null )
-      {
       throw new IllegalArgumentException( "Field names may not be null" );
-      }
 
     StringBuilder query = new StringBuilder();
-
     query.append( "INSERT INTO " ).append( table );
-
     if( fieldNames.length > 0 && fieldNames[ 0 ] != null )
       {
       query.append( " (" );
-
       for( int i = 0; i < fieldNames.length; i++ )
         {
         query.append( fieldNames[ i ] );
-
         if( i != fieldNames.length - 1 )
-          {
           query.append( "," );
-          }
         }
-
       query.append( ")" );
-
       }
-
     query.append( " VALUES (" );
-
     for( int i = 0; i < fieldNames.length; i++ )
       {
       query.append( "?" );
-
       if( i != fieldNames.length - 1 )
-        {
         query.append( "," );
-        }
       }
-
     query.append( ")" );
 
     return query.toString();
@@ -269,9 +250,7 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
   protected String constructUpdateQuery( String table, String[] fieldNames, String[] updateNames )
     {
     if( fieldNames == null )
-      {
       throw new IllegalArgumentException( "field names may not be null" );
-      }
 
     Set<String> updateNamesSet = new HashSet<String>();
     Collections.addAll( updateNamesSet, updateNames );
@@ -279,28 +258,21 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
     StringBuilder query = new StringBuilder();
 
     query.append( "UPDATE " ).append( table );
-
     query.append( " SET " );
 
     if( fieldNames.length > 0 && fieldNames[ 0 ] != null )
       {
       int count = 0;
-
       for( int i = 0; i < fieldNames.length; i++ )
         {
         if( updateNamesSet.contains( fieldNames[ i ] ) )
-          {
           continue;
-          }
 
         if( count != 0 )
-          {
           query.append( "," );
-          }
 
         query.append( fieldNames[ i ] );
         query.append( " = ?" );
-
         count++;
         }
       }
@@ -315,9 +287,7 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
         query.append( " = ?" );
 
         if( i != updateNames.length - 1 )
-          {
           query.append( " and " );
-          }
         }
       }
     return query.toString();
@@ -348,8 +318,7 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
     try
       {
       insertPreparedStatement = connection.prepareStatement( sqlInsert );
-      insertPreparedStatement.setEscapeProcessing( true ); // should be on by
-                                                           // default
+      insertPreparedStatement.setEscapeProcessing( true ); // should be on by default
       }
     catch ( SQLException exception )
       {
@@ -401,13 +370,9 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
       String[] updateFields, int batchSize )
     {
     if( dbOutputFormatClass == null )
-      {
       job.setOutputFormat( DBOutputFormat.class );
-      }
     else
-      {
       job.setOutputFormat( dbOutputFormatClass );
-      }
 
     // writing doesn't always happen in reduce
     job.setReduceSpeculativeExecution( false );
@@ -419,13 +384,9 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
     dbConf.setOutputFieldNames( fieldNames );
 
     if( updateFields != null )
-      {
       dbConf.setOutputUpdateFieldNames( updateFields );
-      }
 
     if( batchSize != -1 )
-      {
       dbConf.setBatchStatementsNum( batchSize );
-      }
     }
   }

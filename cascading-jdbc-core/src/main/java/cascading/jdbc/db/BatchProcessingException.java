@@ -27,10 +27,6 @@ import java.sql.SQLException;
  */
 public class BatchProcessingException extends SQLException
   {
-  public BatchProcessingException()
-    {
-    }
-
   public BatchProcessingException( String message )
     {
     super( message );
