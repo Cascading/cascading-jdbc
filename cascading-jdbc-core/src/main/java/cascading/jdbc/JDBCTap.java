@@ -14,6 +14,7 @@ package cascading.jdbc;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -644,44 +645,44 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     if( !isSink() )
       return true;
 
-    String tableExistsQuery = tableDesc.getTableExistsQuery();
-    LOG.info( "testing table exists with {}", tableExistsQuery );
-
-    if( tableDesc.canQueryExistence() )
+    Connection connection = null;
+    ResultSet tables = null;
+    LOG.info( "testing if table exists with DatabaseMetaData" );
+    try
       {
-      try
+      connection = createConnection();
+      DatabaseMetaData dbm = connection.getMetaData();
+      tables = dbm.getTables( null, null, tableDesc.getTableName(), null );
+      if ( tables.next() )
+        return true;
+      tables.close();
+      // try again with upper case for oracle compatibility:
+      // see http://stackoverflow.com/questions/2942788/check-if-table-exists
+      tables = dbm.getTables( null, null, tableDesc.getTableName().toUpperCase(), null );
+      if ( tables.next() )
+        return true;
+      }
+    catch( SQLException exception )
+      {
+      throw new IOException( exception );
+      }
+    finally
+      {
+      if ( connection != null )
         {
-        List foundResults = executeQuery( tableExistsQuery, 1 );
-        boolean tableExists = ( foundResults.size() == 1 );
-        LOG.info( "'{}' exists? {}", tableDesc.tableName, tableExists );
-        return tableExists;
-        }
-      catch( SQLException exception )
-        {
-        LOG.error( "Error: '{}' with resource  {}", exception.getMessage(), this.toString() );
-        throw new IOException( exception.getMessage(), exception );
+        try
+          {
+          tables.close();
+          connection.rollback();
+          connection.close();
+          }
+        catch( SQLException exception )
+          {
+          throw new IOException( exception );
+          }
         }
       }
-    else
-      {
-      {
-      // try to do a SELECT from the table assuming it exists.
-      // errors with connections or overall issues are handled elsewhere
-      boolean tableExists = false;
-      try
-        {
-        executeQuery( tableExistsQuery, 0 );
-        tableExists = true;
-        }
-      catch( Exception exception )
-        {
-        LOG.info( "error reading from pseudo-DB", exception );
-        }
-      LOG.info( "'{}' exists? {}", tableDesc.tableName, tableExists );
-      return tableExists;
-      }
-      }
-
+    return false;
     }
 
   @Override

@@ -237,9 +237,7 @@ public class JDBCFactory
     if( primaryKeysProperty != null && !primaryKeysProperty.isEmpty() )
       primaryKeys = primaryKeysProperty.split( separator );
 
-    String tableExistsQuerty = properties.getProperty( PROTOCOL_TABLE_EXISTS_QUERY, DEFAULT_TABLE_EXISTS_QUERY );
-
-    TableDesc desc = new TableDesc( tableName, columnNames, columnDefs, primaryKeys, tableExistsQuerty );
+    TableDesc desc = new TableDesc( tableName, columnNames, columnDefs, primaryKeys );
     return desc;
     }
 

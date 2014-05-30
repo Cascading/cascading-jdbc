@@ -47,8 +47,6 @@ public class TableDesc implements Serializable
 
   String tableExistsQuery;
 
-  private Map<Comparable<?>, Type> internalColumnTypeMapping;
-
   /**
    * Constructor TableDesc creates a new TableDesc instance.
    *
@@ -66,8 +64,12 @@ public class TableDesc implements Serializable
    * @param columnNames of type String[]
    * @param columnDefs of type String[]
    * @param primaryKeys of type String
+   * @param tableExistsQuery of type String
+   *
+   * Constructor using a tableExistQuery is deprecated. The existance is determined via JDBC meta data now.
    *
    */
+  @Deprecated
   public TableDesc( String tableName, String[] columnNames, String[] columnDefs, String[] primaryKeys, String tableExistsQuery )
     {
     this.tableName = tableName;
@@ -75,6 +77,23 @@ public class TableDesc implements Serializable
     this.columnDefs = columnDefs;
     this.primaryKeys = primaryKeys;
     this.tableExistsQuery = tableExistsQuery;
+    }
+
+  /**
+   * Constructor TableDesc creates a new TableDesc instance.
+   *
+   * @param tableName of type String
+   * @param columnNames of type String[]
+   * @param columnDefs of type String[]
+   * @param primaryKeys of type String
+   *
+   */
+  public TableDesc( String tableName, String[] columnNames, String[] columnDefs, String[] primaryKeys )
+    {
+    this.tableName = tableName;
+    this.columnNames = columnNames;
+    this.columnDefs = columnDefs;
+    this.primaryKeys = primaryKeys;
     }
 
   public String getTableName()
@@ -168,6 +187,7 @@ public class TableDesc implements Serializable
    *
    * @return the tableExistsQuery (type String) of this TableDesc object.
    */
+  @Deprecated
   public String getTableExistsQuery()
     {
     if( canQueryExistence() )

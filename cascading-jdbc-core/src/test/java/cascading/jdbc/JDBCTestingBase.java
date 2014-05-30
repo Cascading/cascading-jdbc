@@ -45,10 +45,13 @@ import cascading.tap.hadoop.Hfs;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntryIterator;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.mapred.JobConf;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Base class for the various database tests. This class contains the actual
@@ -226,7 +229,6 @@ public abstract class JDBCTestingBase
     tapProperties.setProperty( JDBCFactory.PROTOCOL_PRIMARY_KEYS, "num:lwr" );
     tapProperties.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, TESTING_TABLE_NAME );
     tapProperties.setProperty( JDBCFactory.PROTOCOL_JDBC_DRIVER, driverName );
-    tapProperties.setProperty( JDBCFactory.PROTOCOL_TABLE_EXISTS_QUERY, getTableExistsQuery() );
 
     String[] columnNames = new String[]{"num", "lwr", "upr"};
 
@@ -299,7 +301,6 @@ public abstract class JDBCTestingBase
     Properties tapProperties = new Properties();
     tapProperties.setProperty( JDBCFactory.PROTOCOL_TABLE_NAME, TESTING_TABLE_NAME );
     tapProperties.setProperty( JDBCFactory.PROTOCOL_JDBC_DRIVER, driverName );
-    tapProperties.setProperty( JDBCFactory.PROTOCOL_TABLE_EXISTS_QUERY, getTableExistsQuery() );
 
     Properties schemeProperties = new Properties();
     JDBCScheme scheme = (JDBCScheme) factory.createScheme( "somename", columnFields, schemeProperties );
@@ -388,7 +389,7 @@ public abstract class JDBCTestingBase
 
   protected TableDesc getNewTableDesc( String tableName, String[] columnNames, String[] columnDefs, String[] primaryKeys )
     {
-    return new TableDesc( tableName, columnNames, columnDefs, primaryKeys, getTableExistsQuery() );
+    return new TableDesc( tableName, columnNames, columnDefs, primaryKeys );
     }
 
   protected JDBCTap getNewJDBCTap( TableDesc tableDesc, JDBCScheme jdbcScheme, SinkMode sinkMode )
@@ -420,33 +421,6 @@ public abstract class JDBCTestingBase
     return props;
     }
 
-  public String getTableExistsQuery() {
-
-  Enumeration<URL> resources = null;
-  try
-    {
-    resources = this.getClass().getClassLoader().getResources( ProviderDefinition.CASCADING_BIND_PROVIDER_PROPERTIES );
-    URL url = resources.nextElement();
-    LOG.debug( "loading properties from: {}", url );
-    InputStream inputStream = url.openStream();
-    Properties properties = new Properties();
-    properties.load( inputStream );
-    inputStream.close();
-    String tableExistsQuery = JDBCFactory.DEFAULT_TABLE_EXISTS_QUERY;
-    Set<String> keySet = properties.stringPropertyNames();
-    for (String keyName : keySet)
-      if (keyName.toString().endsWith( JDBCFactory.PROTOCOL_TABLE_EXISTS_QUERY ))
-        tableExistsQuery = properties.getProperty( keyName ) ;
-
-    return tableExistsQuery;
-    }
-  catch( IOException exception )
-    {
-    LOG.error( "unable to read {}. using default query", ProviderDefinition.CASCADING_BIND_PROVIDER_PROPERTIES, exception );
-    return JDBCFactory.DEFAULT_TABLE_EXISTS_QUERY;
-    }
-  }
-
   public void setJdbcurl( String jdbcurl )
     {
     this.jdbcurl = jdbcurl;
@@ -466,6 +440,33 @@ public abstract class JDBCTestingBase
     {
     this.inputFormatClass = inputFormatClass;
     }
+
+  @Test
+  public void testJDBCTapExistsWithMetaData() throws IOException
+    {
+
+    String[] columnNames = { "id" };
+    String[] columnDefs = { "INT NOT NULL" };
+    String[] primaryKeys = {"id"};
+    Fields fields = new Fields( columnNames );
+    JobConf conf = new JobConf(  );
+
+    TableDesc tableDesc = getNewTableDesc( "nonexistant", columnNames, columnDefs, primaryKeys );
+
+    JDBCScheme scheme = getNewJDBCScheme( fields, columnNames );
+
+    JDBCTap tap = getNewJDBCTap( tableDesc, scheme, SinkMode.REPLACE );
+    assertFalse( tap.resourceExists( conf ) );
+
+    tableDesc = getNewTableDesc( "taptest", columnNames, columnDefs, primaryKeys );
+    tap = getNewJDBCTap( tableDesc, scheme, SinkMode.REPLACE );
+    tap.createResource( conf );
+    assertTrue( tap.resourceExists( conf ) );
+    tap.deleteResource( conf );
+    assertFalse( tap.resourceExists( conf ) );
+
+    }
+
 
   public void setFactory( JDBCFactory factory )
     {

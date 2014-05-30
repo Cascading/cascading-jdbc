@@ -35,4 +35,5 @@ public class MysqlTest extends JDBCTestingBase
     setJdbcurl( System.getProperty( "cascading.jdbcurl" ) );
     setFactory( new MySqlFactory() );
     }
+
   }

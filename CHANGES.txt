@@ -2,6 +2,7 @@ Cascading-jdbc Change Log
 
 2.5.3 (unreleased)
 - RedshiftScheme constructor is now accepting additional conditions
+- JDBCTap uses DatabaseMetaData to check if a table exists
 
 2.5.2
 - upgrade redshift jdbc driver to 8.4-702.jdbc4

@@ -36,10 +36,4 @@ public class H2Test extends JDBCTestingBase
     setJdbcurl( "jdbc:h2:mem:testing;DB_CLOSE_DELAY=-1;MVCC=true" );
     }
 
-  @Override
-  public String getTableExistsQuery()
-    {
-    return JDBCFactory.TABLE_EXISTS_UNSUPPORTED;
-    }
-
   }

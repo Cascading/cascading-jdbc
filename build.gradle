@@ -98,6 +98,12 @@ subprojects{
 
   }
 
+  test {
+    if ( System.getProperty('DEBUG', 'false') == 'true' ) {
+      jvmArgs '-Xdebug', '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005'
+    }
+  }
+
   task sourcesJar( type: Jar, dependsOn: classes ) {
     from sourceSets.main.allSource
     classifier = 'sources'

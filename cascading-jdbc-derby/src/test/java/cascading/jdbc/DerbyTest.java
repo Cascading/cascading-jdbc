@@ -55,12 +55,6 @@ public class DerbyTest extends JDBCTestingBase
 
     }
 
-  @Override
-  public String getTableExistsQuery()
-    {
-      return JDBCFactory.TABLE_EXISTS_UNSUPPORTED;
-    }
-
   @After
   public void tearDown() throws Exception
     {

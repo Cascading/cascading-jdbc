@@ -25,7 +25,7 @@ include 'cascading-jdbc-h2'
 def optional = ["mysql", "postgresql", "oracle", "redshift"]
 
 for ( dbsystem in optional ) {
-  if (System.getProperty("cascading.jdbc.url.${dbsystem}"))
+  if ( System.getProperty( "cascading.jdbc.url.${dbsystem}" ) || System.getProperty( "dev" ) )
     include "cascading-jdbc-${dbsystem}"
   else
     logger.warn("excluding cascading-jdbc-${dbsystem} due to missing cascading.jdbc.url.${dbsystem} property")
