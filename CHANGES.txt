@@ -1,6 +1,7 @@
 Cascading-jdbc Change Log
 
 2.5.4 (unreleased)
+- update to cascading 2.5.5
 
 2.5.3
 - RedshiftScheme constructor is now accepting additional conditions

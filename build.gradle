@@ -25,8 +25,8 @@ buildscript {
     maven { url 'http://repo.springsource.org/plugins-release' }
   }
   dependencies {
-    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.4'
-    classpath 'eu.appsatori:gradle-fatjar-plugin:0.2-rc1'
+    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.5'
+    classpath 'eu.appsatori:gradle-fatjar-plugin:0.2'
 
   }
 }
@@ -46,7 +46,7 @@ version = releaseVersion
 // the version of hadoop used for compiling and testing
 ext.hadoopVersion = "1.2.1"
 
-ext.cascadingVersion = '2.5.4'
+ext.cascadingVersion = '2.5.5'
 ext.lingualVersion = '1.1.0'
 
 allprojects {
