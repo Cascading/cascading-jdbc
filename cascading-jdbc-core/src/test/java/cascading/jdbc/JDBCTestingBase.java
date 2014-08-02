@@ -21,18 +21,13 @@
 package cascading.jdbc;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.net.URL;
-import java.util.Enumeration;
 import java.util.Properties;
-import java.util.Set;
 
 import cascading.flow.Flow;
 import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.jdbc.db.DBInputFormat;
 import cascading.jdbc.db.DBWritable;
-import cascading.lingual.catalog.provider.ProviderDefinition;
 import cascading.operation.Identity;
 import cascading.operation.regex.RegexSplitter;
 import cascading.pipe.Each;
@@ -145,6 +140,143 @@ public abstract class JDBCTestingBase
 
     verifySink( readFlow, 13 );
     }
+
+  @Test
+  public void testJDBCDeriveTypesFromFields() throws IOException
+    {
+
+    // CREATE NEW TABLE FROM SOURCE
+
+    Tap<?, ?, ?> source = new Hfs( new TextLine(), inputFile );
+    Fields fields = new Fields( new Comparable[]{"num", "lwr", "upr"}, new Type[]{int.class, String.class,
+                                                                                  String.class} );
+    Pipe parsePipe = new Each( "insert", new Fields( "line" ), new RegexSplitter( fields, "\\s" ) );
+
+    String[] columnNames = {"num", "lwr", "upr"};
+    String[] columnDefs = {};
+    String[] primaryKeys = {"num", "lwr"};
+    TableDesc tableDesc = getNewTableDesc( TESTING_TABLE_NAME, columnNames, columnDefs, primaryKeys );
+
+    JDBCScheme scheme = getNewJDBCScheme( fields, columnNames );
+
+    JDBCTap replaceTap = getNewJDBCTap( tableDesc, scheme, SinkMode.REPLACE );
+
+    // forcing commits to test the batch behaviour
+    replaceTap.setBatchSize( 2 );
+
+    Flow<?> parseFlow = new HadoopFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
+
+    parseFlow.complete();
+
+    verifySink( parseFlow, 13 );
+
+    // READ DATA FROM TABLE INTO TEXT FILE
+
+    Tap<?, ?, ?> sink = new Hfs( new TextLine(), "build/test/jdbc", SinkMode.REPLACE );
+
+    Pipe copyPipe = new Each( "read", new Identity() );
+
+    Flow<?> copyFlow = new HadoopFlowConnector( createProperties() ).connect( replaceTap, sink, copyPipe );
+
+    copyFlow.complete();
+
+    verifySink( copyFlow, 13 );
+
+    // READ DATA FROM TEXT FILE AND UPDATE TABLE
+
+    JDBCScheme jdbcScheme = getNewJDBCScheme( columnNames, null, new String[]{"num", "lwr"} );
+    jdbcScheme.setSinkFields( fields );
+    Tap<?, ?, ?> updateTap = getNewJDBCTap( tableDesc, jdbcScheme, SinkMode.UPDATE );
+
+    Flow<?> updateFlow = new HadoopFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
+
+    updateFlow.complete();
+    updateFlow.cleanup();
+
+    verifySink( updateFlow, 13 );
+
+    // READ DATA FROM TABLE INTO TEXT FILE, USING CUSTOM QUERY
+
+    Tap<?, ?, ?> sourceTap = getNewJDBCTap( getNewJDBCScheme( columnNames,
+      String.format( "select num, lwr, upr from %s %s", TESTING_TABLE_NAME, TESTING_TABLE_NAME), "select count(*) from " + TESTING_TABLE_NAME ) );
+
+    Pipe readPipe = new Each( "read", new Identity() );
+
+    Flow<?> readFlow = new HadoopFlowConnector( createProperties() ).connect( sourceTap, sink, readPipe );
+
+    readFlow.complete();
+
+    verifySink( readFlow, 13 );
+    }
+
+
+  @Test
+  public void testJDBCNoTypeOnFields() throws IOException
+    {
+
+    // CREATE NEW TABLE FROM SOURCE
+
+    Tap<?, ?, ?> source = new Hfs( new TextLine(), inputFile );
+    Fields fields = new Fields( new Comparable[]{"num", "lwr", "upr"}  );
+    Pipe parsePipe = new Each( "insert", new Fields( "line" ), new RegexSplitter( fields, "\\s" ) );
+
+    String[] columnNames = {"num", "lwr", "upr"};
+    String[] columnDefs = {"INT NOT NULL", "VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL"};
+    String[] primaryKeys = {"num", "lwr"};
+    TableDesc tableDesc = getNewTableDesc( TESTING_TABLE_NAME, columnNames, columnDefs, primaryKeys );
+
+    JDBCScheme scheme = getNewJDBCScheme( fields, columnNames );
+
+    JDBCTap replaceTap = getNewJDBCTap( tableDesc, scheme, SinkMode.REPLACE );
+
+    // forcing commits to test the batch behaviour
+    replaceTap.setBatchSize( 2 );
+
+    Flow<?> parseFlow = new HadoopFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
+
+    parseFlow.complete();
+
+    verifySink( parseFlow, 13 );
+
+    // READ DATA FROM TABLE INTO TEXT FILE
+
+    Tap<?, ?, ?> sink = new Hfs( new TextLine(), "build/test/jdbc", SinkMode.REPLACE );
+
+    Pipe copyPipe = new Each( "read", new Identity() );
+
+    Flow<?> copyFlow = new HadoopFlowConnector( createProperties() ).connect( replaceTap, sink, copyPipe );
+
+    copyFlow.complete();
+
+    verifySink( copyFlow, 13 );
+
+    // READ DATA FROM TEXT FILE AND UPDATE TABLE
+
+    JDBCScheme jdbcScheme = getNewJDBCScheme( columnNames, null, new String[]{"num", "lwr"} );
+    jdbcScheme.setSinkFields( fields );
+    Tap<?, ?, ?> updateTap = getNewJDBCTap( tableDesc, jdbcScheme, SinkMode.UPDATE );
+
+    Flow<?> updateFlow = new HadoopFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
+
+    updateFlow.complete();
+    updateFlow.cleanup();
+
+    verifySink( updateFlow, 13 );
+
+    // READ DATA FROM TABLE INTO TEXT FILE, USING CUSTOM QUERY
+
+    Tap<?, ?, ?> sourceTap = getNewJDBCTap( getNewJDBCScheme( columnNames,
+      String.format( "select num, lwr, upr from %s %s", TESTING_TABLE_NAME, TESTING_TABLE_NAME), "select count(*) from " + TESTING_TABLE_NAME ) );
+
+    Pipe readPipe = new Each( "read", new Identity() );
+
+    Flow<?> readFlow = new HadoopFlowConnector( createProperties() ).connect( sourceTap, sink, readPipe );
+
+    readFlow.complete();
+
+    verifySink( readFlow, 13 );
+    }
+
 
   @Test
   public void testJDBCAliased() throws IOException

@@ -686,12 +686,16 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     OutputCollector outputCollector = sinkCall.getOutput();
 
     Fields fields = getSinkFields();
-    if ( internalSinkFields == null )
-      deriveInternalSinkFields( getSinkFields() );
+    if ( internalSinkFields == null && fields.hasTypes() )
+      deriveInternalSinkFields( fields );
     if( internalSinkFields != null && !fields.equals( internalSinkFields ) )
       fields = internalSinkFields;
 
-    Tuple result = tupleEntry.getCoercedTuple( fields.getTypes() );
+    Tuple result;
+    if ( fields.hasTypes() )
+      result = tupleEntry.getCoercedTuple( fields.getTypes() );
+    else
+      result = tupleEntry.getTuple();
 
     if( updateBy != null )
       {
@@ -743,16 +747,19 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
    */
   private void deriveInternalSinkFields( Fields fields )
     {
-    Comparable<?>[] comparables = new Comparable[fields.size()];
-    Type[] types = new Type[fields.size()];
 
-    for( int i = 0; i < fields.size(); i++ )
+    if ( fields.hasTypes() )
       {
-      comparables[ i ] = fields.get( i );
-      types[ i ] = InternalTypeMapping.findInternalType( fields.getType( i ) );
-      }
+      Comparable<?>[] comparables = new Comparable[ fields.size() ];
+      Type[] types = new Type[ fields.size() ];
 
-    this.internalSinkFields = new Fields( comparables, types );
+      for( int i = 0; i < fields.size(); i++ )
+        {
+        comparables[ i ] = fields.get( i );
+        types[ i ] = InternalTypeMapping.findInternalType( fields.getType( i ) );
+        }
+      this.internalSinkFields = new Fields( comparables, types );
+      }
     }
 
   /**

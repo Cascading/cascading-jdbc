@@ -260,10 +260,10 @@ public class TableDesc implements Serializable
         Type internalType = InternalTypeMapping.findInternalType( fields.getType( i ) );
         defs.add( InternalTypeMapping.sqltypeForClass( internalType ) );
         }
-      if( columnNames == null )
-        columnNames = names.toArray( new String[names.size()] );
-      if( columnDefs == null )
-        columnDefs = defs.toArray( new String[defs.size()] );
+      if( columnNames == null || columnNames.length == 0 )
+        columnNames = names.toArray( new String[ names.size() ] );
+      if( columnDefs == null || columnDefs.length == 0 )
+        columnDefs = defs.toArray( new String[ defs.size() ] );
 
       // now it has to be complete and usable, if not bail out.
       if( !hasRequiredTableInformation() )
