@@ -129,6 +129,15 @@ All artifacts, except the ones for Oracle (see above) are in
 [conjars](http://conjars.org).
 
 
+### Types
+
+Cascading-jdbc supports multiple RDBMS systems all of which behave slightly
+different when it comes to automatic type coercions/casts. This project tries to
+ease the type handling, by doing 'educated guesses', yet it is not always
+capabable of doing so. We highly recommend that when using JDBCScheme, that you
+provide a typed Fields instance, so that values can be properly coerced before
+being written to the database.
+
 ## In Lingual
 
 __NOTE__: The JDBC providers can only be used on the `hadoop` and `hadoop2-mr1`

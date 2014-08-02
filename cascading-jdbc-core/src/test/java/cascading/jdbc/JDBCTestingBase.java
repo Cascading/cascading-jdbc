@@ -221,7 +221,7 @@ public abstract class JDBCTestingBase
     Pipe parsePipe = new Each( "insert", new Fields( "line" ), new RegexSplitter( fields, "\\s" ) );
 
     String[] columnNames = {"num", "lwr", "upr"};
-    String[] columnDefs = {"INT NOT NULL", "VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL"};
+    String[] columnDefs = {"VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL", "VARCHAR(100) NOT NULL"};
     String[] primaryKeys = {"num", "lwr"};
     TableDesc tableDesc = getNewTableDesc( TESTING_TABLE_NAME, columnNames, columnDefs, primaryKeys );
 
