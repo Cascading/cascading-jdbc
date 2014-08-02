@@ -203,6 +203,7 @@ public class TableDesc implements Serializable
       }
     }
 
+  @Deprecated
   public boolean canQueryExistence()
     {
     if( Utils.isNullOrEmpty( tableExistsQuery ) )

@@ -579,20 +579,6 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
     try
       {
-      if( !tableDesc.canQueryExistence() )
-        {
-        LOG.info( "undiscoverable resource. trying a drop of table: {}", tableDesc );
-        try
-          {
-          executeUpdate( tableDesc.getTableDropStatement() );
-          }
-        catch( Throwable t )
-          {
-          // it's likely that a drop on a pseudo-DB will fail. ignore it unless debugging.
-          LOG.debug( "drop failed", t );
-          }
-        }
-
       LOG.info( "creating table: {}", tableDesc );
       executeUpdate( tableDesc.getCreateTableStatement() );
       }
@@ -627,8 +613,6 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
       // For things like Derby that pretend to be a SQL system but offer no real
       // table discovery these have to be ignored since they throw "table does not exist"
       // problems.
-      if ( !tableDesc.canQueryExistence() )
-        return true;
 
       LOG.warn( "unable to drop table: {}", tableDesc.tableName );
       LOG.warn( "sql failure", exception.getCause() );
