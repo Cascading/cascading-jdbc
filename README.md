@@ -134,9 +134,9 @@ All artifacts, except the ones for Oracle (see above) are in
 Cascading-jdbc supports multiple RDBMS systems all of which behave slightly
 different when it comes to automatic type coercions/casts. This project tries to
 ease the type handling, by doing 'educated guesses', yet it is not always
-capabable of doing so. We highly recommend that when using JDBCScheme, that you
-provide a typed Fields instance, so that values can be properly coerced before
-being written to the database.
+capable of doing so. We highly recommend that you provide a typed Fields
+instance to the JDBCScheme constructor, so that values can be properly coerced
+before being written to the database.
 
 ## In Lingual
 
@@ -154,7 +154,7 @@ Setup your lingual catalog with the derby provider:
     # only hadoop platform is supported
     > export LINGUAL_PLATFORM=hadoop
 
-    > lingual catalog --provider --add cascading:cascading-jdbc-derby:2.5.1:provider
+    > lingual catalog --provider --add cascading:cascading-jdbc-derby:2.5.4:provider
 
 This will register the provider `derby` for the `hadoop` platform. The provider
 supports one protocol (`jdbc`) and one format (`derby`). The provider is
@@ -228,7 +228,7 @@ it to `settings.gradle`. Include the JDBC driver of your RDBMS in the
 `build.gradle` file of your sub-project and create a `TestCase` subclassing the
 `JDBCTestingBase` explained above. All you have to do, is setting the driver
 class and JDBC URL for your database. For an example see
-[MysqlTest](https://github.com/Cascading/cascading-jdbc/blob/wip-2.2/cascading-jdbc-mysql/src/test/java/cascading/jdbc/MysqlTest.java).
+[MysqlTest](https://github.com/Cascading/cascading-jdbc/blob/wip-2.5/cascading-jdbc-mysql/src/test/java/cascading/jdbc/MysqlTest.java).
 
 ## JDBC driver versions
 
@@ -283,7 +283,7 @@ Below is an example from the `derby` subproject:
     cascading.bind.provider.derby.format.derby.countquery=
 
 For more information on the `provider.properties` file, see the [lingual
-documentation](http://docs.cascading.org/lingual/1.0/#_creating_a_data_provider).
+documentation](http://docs.cascading.org/lingual/1.1/#_creating_a_data_provider).
 
 # License
 
