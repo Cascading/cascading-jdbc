@@ -81,9 +81,8 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
 
       if( connection == null )
         openConnection();
-      statement = connection.createStatement( ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY );
+      statement = createStatement();
 
-      // statement.setFetchSize(Integer.MIN_VALUE);
       String query = getSelectQuery();
       try
         {
@@ -97,6 +96,11 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
         throw new IOException( "unable to execute select query: " + query, exception );
         }
       }
+
+    protected Statement createStatement() throws SQLException {
+        Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        return stmt;
+    }
 
     /**
      * Returns the query for selecting the records, subclasses can override this
