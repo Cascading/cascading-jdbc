@@ -23,7 +23,9 @@ package cascading.jdbc;
 import java.util.Properties;
 
 import cascading.jdbc.db.DBOutputFormat;
+import cascading.jdbc.db.DBInputFormat;
 import cascading.jdbc.db.MySqlDBOutputFormat;
+import cascading.jdbc.db.MySqlDBInputFormat;
 import cascading.scheme.Scheme;
 import cascading.tuple.Fields;
 
@@ -39,6 +41,12 @@ public class MySqlFactory extends JDBCFactory
     {
     return MySqlDBOutputFormat.class;
     }
+
+  @Override
+  protected Class<? extends DBInputFormat> getInputFormatClass()
+  {
+      return MySqlDBInputFormat.class;
+  }
 
   protected Scheme createUpdatableScheme( Fields fields, long limit, String[] columnNames, Boolean tableAlias, String conditions,
                                           String[] updateBy, Fields updateByFields, String[] orderBy, Properties properties )
@@ -56,4 +64,5 @@ public class MySqlFactory extends JDBCFactory
     {
     return new MySqlScheme( getInputFormatClass(), fields, columnNames, selectQuery, countQuery, limit, tableAlias);
     }
+
   }
