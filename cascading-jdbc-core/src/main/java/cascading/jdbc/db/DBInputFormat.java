@@ -81,9 +81,8 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
 
       if( connection == null )
         openConnection();
-      statement = connection.createStatement( ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY );
+      statement = createStatement();
 
-      // statement.setFetchSize(Integer.MIN_VALUE);
       String query = getSelectQuery();
       try
         {
@@ -96,6 +95,11 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
         LOG.error( "unable to execute select query: " + query, exception );
         throw new IOException( "unable to execute select query: " + query, exception );
         }
+      }
+
+    protected Statement createStatement() throws SQLException
+      {
+      return connection.createStatement( ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY );
       }
 
     /**
@@ -259,7 +263,7 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
 
     /**
      * Convenience Constructor
-     * 
+     *
      * @param start the index of the first row to select
      * @param end the index of the last row to select
      */
@@ -490,7 +494,7 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
 
   /**
    * Initializes the map-part of the job with the appropriate input settings.
-   * 
+   *
    * @param job The job
    * @param inputClass the class object implementing DBWritable, which is the
    *          Java object holding tuple fields.
@@ -524,7 +528,7 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
 
   /**
    * Initializes the map-part of the job with the appropriate input settings.
-   * 
+   *
    * @param job The job
    * @param inputClass the class object implementing DBWritable, which is the
    *          Java object holding tuple fields.

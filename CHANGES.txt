@@ -1,5 +1,8 @@
 Cascading-jdbc Change Log
 
+2.5.5 [unreleased]
+- enable mysql streaming
+
 2.5.4
 - update to cascading 2.5.5
 - fix a bug related to type handling and table creation

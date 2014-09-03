@@ -23,7 +23,9 @@ package cascading.jdbc;
 import java.util.Properties;
 
 import cascading.jdbc.db.DBOutputFormat;
+import cascading.jdbc.db.DBInputFormat;
 import cascading.jdbc.db.MySqlDBOutputFormat;
+import cascading.jdbc.db.MySqlDBInputFormat;
 import cascading.scheme.Scheme;
 import cascading.tuple.Fields;
 
@@ -40,12 +42,18 @@ public class MySqlFactory extends JDBCFactory
     return MySqlDBOutputFormat.class;
     }
 
+  @Override
+  protected Class<? extends DBInputFormat> getInputFormatClass()
+    {
+    return MySqlDBInputFormat.class;
+    }
+
   protected Scheme createUpdatableScheme( Fields fields, long limit, String[] columnNames, Boolean tableAlias, String conditions,
                                           String[] updateBy, Fields updateByFields, String[] orderBy, Properties properties )
     {
     boolean replaceOnInsert = false;
     String replaceOnInsertProperty = properties.getProperty( PROTOCOL_REPLACE_ON_INSERT );
-    if ( replaceOnInsertProperty != null && !replaceOnInsertProperty.isEmpty() )
+    if( replaceOnInsertProperty != null && !replaceOnInsertProperty.isEmpty() )
       replaceOnInsert = Boolean.parseBoolean( replaceOnInsertProperty );
 
     return new MySqlScheme( getInputFormatClass(), getOutputFormClass(), fields, columnNames, orderBy, conditions, limit, updateByFields,
@@ -54,6 +62,7 @@ public class MySqlFactory extends JDBCFactory
 
   protected Scheme createScheme( Fields fields, String selectQuery, String countQuery, long limit, String[] columnNames, Boolean tableAlias )
     {
-    return new MySqlScheme( getInputFormatClass(), fields, columnNames, selectQuery, countQuery, limit, tableAlias);
+    return new MySqlScheme( getInputFormatClass(), fields, columnNames, selectQuery, countQuery, limit, tableAlias );
     }
+
   }
