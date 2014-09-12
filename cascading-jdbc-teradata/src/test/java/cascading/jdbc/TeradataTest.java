@@ -18,16 +18,26 @@
  * limitations under the License.
  */
 
-include 'cascading-jdbc-core'
-include 'cascading-jdbc-derby'
-include 'cascading-jdbc-h2'
+package cascading.jdbc;
 
-def optional = ["mysql", "postgresql", "oracle", "redshift", "teradata"]
+import cascading.jdbc.TeradataTableDesc;
+import cascading.jdbc.db.TeradataDBInputFormat;
+import org.junit.Before;
 
-for ( dbsystem in optional ) {
-  if ( System.getProperty( "cascading.jdbc.url.${dbsystem}" ) || System.getProperty( "dev" ) )
-    include "cascading-jdbc-${dbsystem}"
-  else
-    logger.warn("excluding cascading-jdbc-${dbsystem} due to missing cascading.jdbc.url.${dbsystem} property")
+public class TeradataTest extends JDBCTestingBase
+  {
+  @Before
+  public void setUp()
+    {
+    setDriverName( "com.teradata.jdbc.TeraDriver" );
+    setJdbcurl( System.getProperty( "cascading.jdbcurl" ) );
+    setInputFormatClass( TeradataDBInputFormat.class );
+    setFactory( new TeradataJDBCFactory() );
+    }
 
-}
+  @Override
+  public TeradataTableDesc getNewTableDesc( String tableName, String[] columnNames, String[] columnDefs, String[] primaryKeys )
+    {
+    return new TeradataTableDesc( tableName, columnNames, columnDefs, primaryKeys );
+    }
+  }

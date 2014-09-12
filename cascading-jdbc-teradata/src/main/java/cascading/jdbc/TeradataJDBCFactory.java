@@ -18,16 +18,16 @@
  * limitations under the License.
  */
 
-include 'cascading-jdbc-core'
-include 'cascading-jdbc-derby'
-include 'cascading-jdbc-h2'
+package cascading.jdbc;
 
-def optional = ["mysql", "postgresql", "oracle", "redshift", "teradata"]
+import cascading.jdbc.db.DBInputFormat;
+import cascading.jdbc.db.TeradataDBInputFormat;
 
-for ( dbsystem in optional ) {
-  if ( System.getProperty( "cascading.jdbc.url.${dbsystem}" ) || System.getProperty( "dev" ) )
-    include "cascading-jdbc-${dbsystem}"
-  else
-    logger.warn("excluding cascading-jdbc-${dbsystem} due to missing cascading.jdbc.url.${dbsystem} property")
-
-}
+public class TeradataJDBCFactory extends JDBCFactory
+  {
+  @Override
+  protected Class<? extends DBInputFormat> getInputFormatClass()
+    {
+    return TeradataDBInputFormat.class;
+    }
+  }

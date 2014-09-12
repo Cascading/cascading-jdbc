@@ -18,16 +18,25 @@
  * limitations under the License.
  */
 
-include 'cascading-jdbc-core'
-include 'cascading-jdbc-derby'
-include 'cascading-jdbc-h2'
+evaluationDependsOn( ":cascading-jdbc-core" )
 
-def optional = ["mysql", "postgresql", "oracle", "redshift", "teradata"]
+ext.teradataVersion = "14.10.00.39"
 
-for ( dbsystem in optional ) {
-  if ( System.getProperty( "cascading.jdbc.url.${dbsystem}" ) || System.getProperty( "dev" ) )
-    include "cascading-jdbc-${dbsystem}"
-  else
-    logger.warn("excluding cascading-jdbc-${dbsystem} due to missing cascading.jdbc.url.${dbsystem} property")
+dependencies {
+    compile project( ':cascading-jdbc-core' )
 
+    compile( group: 'com.teradata', name: 'teradata_jdbc', version: teradataVersion )
+    compile( group: 'com.teradata', name: 'teradata_gssconfig', version: teradataVersion )
+
+    testCompile project( ':cascading-jdbc-core' ).sourceSets.test.runtimeClasspath
+}
+
+test {
+    systemProperty( "cascading.jdbcurl", System.getProperty( "cascading.jdbc.url.teradata" ) )
+}
+
+fatJar {
+    classifier = 'provider'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/LICENSE*'
 }
