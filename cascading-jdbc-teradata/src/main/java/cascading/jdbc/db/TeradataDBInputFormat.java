@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import cascading.CascadingException;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
@@ -47,7 +48,7 @@ public class TeradataDBInputFormat extends DBInputFormat<DBWritable>
       }
     catch( Exception exception )
       {
-      throw new RuntimeException( "unable to set auto commit", exception );
+      throw new CascadingException( "unable to set auto commit", exception );
       }
     }
 
@@ -62,7 +63,6 @@ public class TeradataDBInputFormat extends DBInputFormat<DBWritable>
 
   class TeradataDBRecordReader extends DBInputFormat.DBRecordReader
     {
-
     protected TeradataDBRecordReader( cascading.jdbc.db.DBInputFormat.DBInputSplit split, Class inputClass, JobConf job ) throws SQLException, IOException
       {
       super( new cascading.jdbc.db.DBInputFormat.DBInputSplit(), inputClass, job );
@@ -86,7 +86,8 @@ public class TeradataDBInputFormat extends DBInputFormat<DBWritable>
           {
           query.append( fieldNames[ i ] );
 
-          if( i != fieldNames.length - 1 ) query.append( ", " );
+          if( i != fieldNames.length - 1 )
+            query.append( ", " );
           }
 
         query.append( " FROM " ).append( tableName );
@@ -96,9 +97,11 @@ public class TeradataDBInputFormat extends DBInputFormat<DBWritable>
 
         String orderBy = dbConf.getInputOrderBy();
 
-        if( orderBy != null && orderBy.length() > 0 ) query.append( " ORDER BY " ).append( orderBy );
+        if( orderBy != null && orderBy.length() > 0 )
+          query.append( " ORDER BY " ).append( orderBy );
         }
-      else query.append( dbConf.getInputQuery() );
+      else
+        query.append( dbConf.getInputQuery() );
 
       return query.toString();
       }

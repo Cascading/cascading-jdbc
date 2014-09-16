@@ -74,11 +74,13 @@ public class TeradataInternalTypeMapping
    */
   public static Type findInternalType( Type type )
     {
-    if( !( type instanceof CoercibleType ) ) return type;
+    if( !( type instanceof CoercibleType ) )
+      return type;
 
     CoercibleType<?> coercible = (CoercibleType<?>) type;
     Type nativeType = NATIVE_TYPES.get( coercible.getClass().getName() );
-    if( nativeType == null ) nativeType = String.class;
+    if( nativeType == null )
+      nativeType = String.class;
     return nativeType;
 
     }
