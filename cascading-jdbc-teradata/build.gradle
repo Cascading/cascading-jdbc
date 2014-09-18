@@ -25,8 +25,8 @@ ext.teradataVersion = "14.10.00.39"
 dependencies {
     compile project( ':cascading-jdbc-core' )
 
-    compile( group: 'com.teradata', name: 'teradata_jdbc', version: teradataVersion )
-    compile( group: 'com.teradata', name: 'teradata_gssconfig', version: teradataVersion )
+    compile( group: 'com.teradata', name: 'terajdbc', version: teradataVersion )
+    compile( group: 'com.teradata', name: 'teragssconfig', version: teradataVersion )
 
     testCompile project( ':cascading-jdbc-core' ).sourceSets.test.runtimeClasspath
 }

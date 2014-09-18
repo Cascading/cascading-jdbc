@@ -63,8 +63,12 @@ public class TeradataTableDesc extends TableDesc implements Serializable
         {
         Comparable<?> cmp = fields.get( i );
         names.add( cmp.toString() );
-        Type internalType = TeradataInternalTypeMapping.findInternalType( fields.getType( i ) );
-        defs.add( TeradataInternalTypeMapping.sqltypeForClass( internalType ) );
+        Type internalType = InternalTypeMapping.findInternalType( fields.getType( i ) );
+        String type = InternalTypeMapping.sqltypeForClass( internalType );
+        if (type.equalsIgnoreCase("varchar(256)")){
+          type = type + " not null";
+        }
+        defs.add( type );
         }
       if( columnNames == null || columnNames.length == 0 )
         columnNames = names.toArray( new String[ names.size() ] );
