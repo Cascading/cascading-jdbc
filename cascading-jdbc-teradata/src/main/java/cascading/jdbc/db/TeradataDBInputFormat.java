@@ -44,7 +44,7 @@ public class TeradataDBInputFormat extends DBInputFormat<DBWritable>
     {
     try
       {
-      connection.setAutoCommit( true );
+      connection.setAutoCommit( false );
       }
     catch( Exception exception )
       {
@@ -86,8 +86,7 @@ public class TeradataDBInputFormat extends DBInputFormat<DBWritable>
           {
           query.append( fieldNames[ i ] );
 
-          if( i != fieldNames.length - 1 )
-            query.append( ", " );
+          if( i != fieldNames.length - 1 ) query.append( ", " );
           }
 
         query.append( " FROM " ).append( tableName );
@@ -97,11 +96,9 @@ public class TeradataDBInputFormat extends DBInputFormat<DBWritable>
 
         String orderBy = dbConf.getInputOrderBy();
 
-        if( orderBy != null && orderBy.length() > 0 )
-          query.append( " ORDER BY " ).append( orderBy );
+        if( orderBy != null && orderBy.length() > 0 ) query.append( " ORDER BY " ).append( orderBy );
         }
-      else
-        query.append( dbConf.getInputQuery() );
+      else query.append( dbConf.getInputQuery() );
 
       return query.toString();
       }
