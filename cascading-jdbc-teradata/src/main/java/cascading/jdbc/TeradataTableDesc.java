@@ -15,7 +15,6 @@ package cascading.jdbc;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Arrays;
 
 import cascading.tuple.Fields;
 import com.google.common.collect.Lists;
@@ -37,15 +36,6 @@ public class TeradataTableDesc extends TableDesc implements Serializable
   private static final long serialVersionUID = 5009899098019404131L;
 
   /**
-   * Field columnNames
-   */
-  String[] columnNames;
-  /**
-   * Field primaryKeys
-   */
-  String[] primaryKeys;
-
-  /**
    * Constructor TeradataTableDesc creates a new TeradataTableDesc instance.
    *
    * @param tableName   of type String
@@ -56,8 +46,6 @@ public class TeradataTableDesc extends TableDesc implements Serializable
   public TeradataTableDesc( String tableName, String[] columnNames, String[] columnDefs, String[] primaryKeys )
     {
     super( tableName, columnNames, columnDefs, primaryKeys );
-    this.columnNames = columnNames;
-    this.primaryKeys = primaryKeys;
     }
 
   /**
@@ -77,23 +65,15 @@ public class TeradataTableDesc extends TableDesc implements Serializable
         names.add( cmp.toString() );
         Type internalType = InternalTypeMapping.findInternalType( fields.getType( i ) );
         String type = InternalTypeMapping.sqltypeForClass( internalType );
+        if (type.equalsIgnoreCase("varchar(256)")){
+          type = type + " not null";
+        }
         defs.add( type );
         }
       if( columnNames == null || columnNames.length == 0 )
         columnNames = names.toArray( new String[ names.size() ] );
       if( columnDefs == null || columnDefs.length == 0 )
         columnDefs = defs.toArray( new String[ defs.size() ] );
-
-      for( int i = 0; i < columnNames.length; i++ )
-        {
-        if( Arrays.asList( primaryKeys ).contains( columnNames[ i ] ) )
-          {
-          if( columnDefs[ i ].equalsIgnoreCase( "varchar(256)" ) )
-            {
-            columnDefs[ i ] = "varchar(256) not null";
-            }
-          }
-        }
 
       // now it has to be complete and usable, if not bail out.
       if( !hasRequiredTableInformation() )
