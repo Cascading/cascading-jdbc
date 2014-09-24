@@ -14,7 +14,6 @@ Currently six relational databases are supported in the build:
 * [postgresql](http://www.postgresql.org/)
 * [Amazon Redshift](http://aws.amazon.com/redshift/)
 * [oracle](http://www.oracle.com/technetwork/database/enterprise-edition/overview/index.html) (see below)
-* [teradata](https://downloads.teradata.com/download/connectivity/jdbc-driver) (see below)
 
 This code is based on previous work:
 
@@ -103,33 +102,6 @@ After executing the build you will find all the jars in
 repository with by using `gradle install` instead of `gradle build` or upload
 them to your organizations repo manager.
 
-
-## Teradata
-
-Similar to Oracle above, the `cascading-jdbc-teradata` subproject contains everything to create jar files that can talk
-to a teradata instance. Since the teradata JDBC driver is not available in any maven repository, you have to build it
-yourself like so:
-
-0. Create a teradata account, if you don't have one already
-1. Download `TeraJDBC__indep_indep.14.10.00.39.tar` from the [download page](https://downloads.teradata.com/download/connectivity/jdbc-driver)
-2. Unpack the driver:
-
-    > tar xf TeraJDBC__indep_indep.14.10.00.39.tar
-
-3. Install `terajdbc4.jar` and `tdgssconfig.jar` in your local maven repository. You can skip this step, if the teradata
-   jars are already in your organizations maven repository.
-
-   > mvn install:install-file -DgroupId=com.teradata -DartifactId=terajdbc4 -Dversion=14.10.00.39 -Dpackaging=jar -Dfile=terajdbc4.jar -DgeneratePom=true
-   > mvn install:install-file -DgroupId=com.teradata -DartifactId=tdgssconfig -Dversion=14.10.00.39 -Dpackaging=jar -Dfile=tdgssconfig.jar -DgeneratePom=true
-
-
-4. Build the sub-project like this:
-
-   > gradle clean cascading-jdbc-teradata:build -Dcascading.jdbc.url.teradata="jdbc:teradata://host/USER=user,PASSWORD=password"
-
-After executing the build you will find all the jars in `cascading-jdbc-teradata/build/libs/`.  You can install them in
-your local maven repository with by using `gradle install` instead of `gradle build` or upload them to your
-organizations repo manager.
 
 # Usage
 

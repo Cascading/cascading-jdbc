@@ -22,7 +22,7 @@ include 'cascading-jdbc-core'
 include 'cascading-jdbc-derby'
 include 'cascading-jdbc-h2'
 
-def optional = ["mysql", "postgresql", "oracle", "redshift", "teradata"]
+def optional = ["mysql", "postgresql", "oracle", "redshift"]
 
 for ( dbsystem in optional ) {
   if ( System.getProperty( "cascading.jdbc.url.${dbsystem}" ) || System.getProperty( "dev" ) )
