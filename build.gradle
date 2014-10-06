@@ -46,8 +46,8 @@ version = releaseVersion
 // the version of hadoop used for compiling and testing
 ext.hadoopVersion = "1.2.1"
 
-ext.cascadingVersion = '2.5.5'
-ext.lingualVersion = '1.1.0'
+ext.cascadingVersion = '2.6.0-wip-+'
+ext.lingualVersion = '1.2.0-wip-+'
 
 allprojects {
 
