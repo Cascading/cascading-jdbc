@@ -28,6 +28,7 @@ import java.util.UUID;
 
 import cascading.flow.FlowProcess;
 import cascading.jdbc.db.DBConfiguration;
+import cascading.management.annotation.URISanitizer;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.TapException;
@@ -78,9 +79,20 @@ import org.slf4j.LoggerFactory;
  */
 public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
   {
+
+  // make sure usernames and passwords are sanitized before they are sent to the DocumentService.
+  static
+    {
+    StringBuilder parametersToFiler = new StringBuilder( "user,password" );
+    if( System.getProperty( URISanitizer.PARAMETER_FILTER_PROPERTY ) != null )
+      parametersToFiler.append( "," ).append( System.getProperty( URISanitizer.PARAMETER_FILTER_PROPERTY ) );
+    System.setProperty( URISanitizer.PARAMETER_FILTER_PROPERTY, parametersToFiler.toString() );
+    }
+
   /** Field LOG */
   private static final Logger LOG = LoggerFactory.getLogger( JDBCTap.class );
 
+  /** unique identifier */
   private final String id = UUID.randomUUID().toString();
 
   /** Field connectionUrl */
