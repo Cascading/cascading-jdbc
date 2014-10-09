@@ -24,11 +24,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import cascading.flow.FlowProcess;
-import cascading.flow.hadoop.util.HadoopUtil;
 import cascading.jdbc.db.DBConfiguration;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
@@ -286,6 +284,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    *
    * @return the concurrentReads (type int) of this JDBCTap object.
    */
+  @Deprecated
   public int getConcurrentReads()
     {
     return concurrentReads;
@@ -299,6 +298,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    *
    * @param concurrentReads the concurrentReads of this JDBCTap object.
    */
+  @Deprecated
   public void setConcurrentReads( int concurrentReads )
     {
     this.concurrentReads = concurrentReads;
@@ -317,32 +317,26 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
   @Override
   public String getIdentifier()
     {
-    return getJDBCPath() + this.id;
+    return getJDBCPath() + "&id=" + this.id;
     }
 
   public String getJDBCPath()
     {
-    return "jdbc:/" + connectionUrl.replaceAll( ":", "_" );
+    return "jdbc://" + connectionUrl;
     }
 
+  @Deprecated
   public boolean isWriteDirect()
     {
     return true;
     }
 
-  private JobConf getSourceConf( FlowProcess<JobConf> flowProcess, JobConf conf, String property ) throws IOException
-    {
-    Map<String, String> priorConf = ( (Map<String, String>) HadoopUtil.deserializeBase64( property, conf, Map.class ) );
-
-    return flowProcess.mergeMapIntoConfig( conf, priorConf );
-    }
 
   @Override
   public TupleEntryIterator openForRead( FlowProcess<JobConf> flowProcess, RecordReader input ) throws IOException
     {
     // input may be null when this method is called on the client side or
-    // cluster side when accumulating
-    // for a HashJoin
+    // cluster side when accumulating for a HashJoin
     return new HadoopTupleEntrySchemeIterator( flowProcess, this, input );
     }
 

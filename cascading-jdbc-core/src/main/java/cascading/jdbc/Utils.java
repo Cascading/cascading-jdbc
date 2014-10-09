@@ -43,11 +43,12 @@ public class Utils
 
   /**
    * Checks if the given String is null, empty or only contains whitespace
-   * characeters and if that is a case, throws an IllegalArgumentException.
+   * characters and if that is a case, throws an IllegalArgumentException.
    *
    * @param string           The string to check.
    * @param exceptionMessage The message to be used in the Exception.
-   * @throws IllegalArgumentException.
+   * @throws java.lang.IllegalArgumentException
+   *
    */
   public static String throwIfNullOrEmpty( String string, String exceptionMessage )
     {

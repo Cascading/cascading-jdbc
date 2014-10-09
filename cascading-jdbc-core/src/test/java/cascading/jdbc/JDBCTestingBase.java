@@ -44,9 +44,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Base class for the various database tests. This class contains the actual
@@ -549,7 +547,7 @@ public abstract class JDBCTestingBase
     props.put( "mapred.reduce.tasks.speculative.execution", "false" );
     props.put( "mapred.map.tasks.speculative.execution", "false" );
     AppProps.setApplicationJarClass( props, getClass() );
-    LOG.info( "running with properties {}", props);
+    AppProps.setApplicationName( props, getClass().getName() );
     return props;
     }
 

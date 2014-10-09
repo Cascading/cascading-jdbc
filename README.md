@@ -1,12 +1,10 @@
 # cascading-jdbc
 
-A set of Cascading (version 2.5 and above) Taps and Schemes which interact with
-RDBMS systems via JDBC. The project consists of a generic part
-`cascading-jdbc-core` and database specific sub-projects. The database specific
-projects have dependencies to their respective JDBC drivers and run tests
-against those systems during build.
+A set of Cascading (version 2.6 and above) Taps and Schemes which interact with RDBMS systems via JDBC. The project
+consists of a generic part `cascading-jdbc-core` and database specific sub-projects. The database specific projects have
+dependencies to their respective JDBC drivers and run tests against those systems during build.
 
-Currently six relational databases are supported in the build:
+Currently seven relational databases are supported in the build:
 
 * [derby](http://db.apache.org/derby/)
 * [h2](http://www.h2database.com/html/main.html)
@@ -25,15 +23,14 @@ Both are based on code coming from [apache hadoop](http://hadoop.apache.org).
 
 # Building and Testing
 
-Building all jars is done with a simple `gradle build` (Gradle version 1.8 required). This produces "normal"
-jar files, to be used within cascading applications as well as "fat" provider jars,
-that can be used within [lingual](http://docs.cascading.org/lingual/1.0/).
+Building all jars is done with a simple `gradle build` (Gradle version 1.8 required). This produces "normal" jar files,
+to be used within cascading applications as well as "fat" provider jars, that can be used within
+[lingual](http://docs.cascading.org/lingual/1.1/).
 
-The database specific test are implemented as an abstract class in the core
-project `cascading.provider.jdbc.JDBCTestingBase`. Each project has a sub-class
-setting driver specific things. Some might perform more sophisticated setups,
-like starting and stopping an in-process server during `setUp()` and
-`tearDown()`, respectively.
+The database specific test are implemented as an abstract class in the core project
+`cascading.provider.jdbc.JDBCTestingBase`. Each project has a sub-class setting driver specific things. Some might
+perform more sophisticated setups, like starting and stopping an in-process server during `setUp()` and `tearDown()`,
+respectively.
 
 You can install the jars into a local maven repository with
 
@@ -44,12 +41,11 @@ or you can use the ones deployed to [conjars](http://conjars.org).
 
 ## mysql and postgresql
 
-Database systems like `mysql` require an external database server. In order to
-be able to test with an external server, the build uses system properties, which
-can be given on the command line.
+Database systems like `mysql` require an external database server. In order to be able to test with an external server,
+the build uses system properties, which can be given on the command line.
 
-Due to this the sub-projects for `mysql` and `postgresql` are only enabled, if the
-connnection information is given to gradle like this:
+Due to this the sub-projects for `mysql` and `postgresql` are only enabled, if the connnection information is given to
+gradle like this:
 
     > gradle build -Dcascading.jdbc.url.mysql="jdbc:mysql://some-host/somedb?user=someuser&password=somepw" -i
 
@@ -59,30 +55,26 @@ or this
 
 If you want to build both, you can of course combine the properties.
 
-Debian based systems enable SSL by default for postgres, but are using self
-signed certificates. If you want to connect to such a database, you have to add
-`sslfactory=org.postgresql.ssl.NonValidatingFactory` to the JDBC url, otherwise
-you will run into an exception.
+Debian based systems enable SSL by default for postgres, but are using self signed certificates. If you want to connect
+to such a database, you have to add `sslfactory=org.postgresql.ssl.NonValidatingFactory` to the JDBC url, otherwise you
+will run into an exception.
 
 ## Amazon Redshift
 
-Like the `mysql` and `postgresql` projects the `redshift` project requires a
-running external database for tests and is therefore disabled by default. To
-enable it, provide JDBC URL for a running [Redshift](http://aws.amazon.com/redshift/)
+Like the `mysql` and `postgresql` projects the `redshift` project requires a running external database for tests and is
+therefore disabled by default. To enable it, provide JDBC URL for a running [Redshift](http://aws.amazon.com/redshift/)
 instance to the build as follows:
 
     > gradle build -Dcascading.jdbc.url.redshift='jdbc:postgresql://some-host/somedb?user=some-user&password=somepw' -i
 
-The Redshift data engine is API-compatible with PostgreSQL and uses the PostgreSQL
- JDBC driver. Hence the JDBC URL for a Redshift connection begins with `jdbc:postgresql://`
+The Redshift data engine is API-compatible with PostgreSQL and uses the PostgreSQL JDBC driver. Hence the JDBC URL for a
+Redshift connection begins with `jdbc:postgresql://`
 
 
 ## Oracle
 
-The `cascading-jdbc-oracle` project contains everything to create jar files to
-talk to oracle, but due to the fact, that the oracle jdbc driver is not
-available on any public maven repository, you have to build it yourself. Here is
-how:
+The `cascading-jdbc-oracle` project contains everything to create jar files to talk to oracle, but due to the fact, that
+the oracle jdbc driver is not available on any public maven repository, you have to build it yourself. Here is how:
 
 1. Download the `ojdbc6.jar` file from [oracle technet](http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html)
 2. Install it in your local maven repo
@@ -95,13 +87,12 @@ how:
 
     > gradle cascading-jdbc-oracle:build -Dcascading.jdbc.url.oracle='jdbc:oracle:thin:user/password@host:port:SID' -i
 
-Alternatively to 1. and 2. you can add your organizations maven repository to
-the build, in case, it already contains the oracle jdbc driver.
+Alternatively to 1. and 2. you can add your organizations maven repository to the build, in case, it already contains
+the oracle jdbc driver.
 
-After executing the build you will find all the jars in
-`cascading-jdbc-oracle/build/libs/`.  You can install them in your local maven
-repository with by using `gradle install` instead of `gradle build` or upload
-them to your organizations repo manager.
+After executing the build you will find all the jars in `cascading-jdbc-oracle/build/libs/`.  You can install them in
+your local maven repository with by using `gradle install` instead of `gradle build` or upload them to your
+organizations repo manager.
 
 
 ## Teradata
@@ -135,21 +126,18 @@ organizations repo manager.
 
 ## In Cascading applications
 
-With the `JDBCTap` and `JDBCScheme` you can read from database tables, create
-new tables and write to them, write into existing tables and, update existing
-tables. All modes of operation are used in the test base class
+With the `JDBCTap` and `JDBCScheme` you can read from database tables, create new tables and write to them, write into
+existing tables and, update existing tables. All modes of operation are used in the test base class
 `cascading.provider.jdbc.JDBCTestingBase` and should be self explanatory.
 
-Please note that updating a database table is supported, but not recommended for
-long running jobs. It is considered a convenience during testing/development.
+Please note that updating a database table is supported, but not recommended for long running jobs. It is considered a
+convenience during testing/development.
 
-Typical work loads write into a new table, which is afterwards made available to
-other parts of your system via a post process. You can achieve this by using the
-`onCompleted(Flow flow)` method in a class implementing the
-[`cascading.flow.FlowListener`](http://docs.cascading.org/cascading/2.1/javadoc/cascading/flow/FlowListener.html)
-interface. In case something goes wrong during the execution of your Flow, you
-can clean up your database table in the `onThrowable(Flow flow)` method of your
-`FlowListener` implementation.
+Typical work loads write into a new table, which is afterwards made available to other parts of your system via a post
+process. You can achieve this by using the `onCompleted(Flow flow)` method in a class implementing the
+[`cascading.flow.FlowListener`](http://docs.cascading.org/cascading/2.6/javadoc/cascading/flow/FlowListener.html)
+interface. In case something goes wrong during the execution of your Flow, you can clean up your database table in the
+`onThrowable(Flow flow)` method of your `FlowListener` implementation.
 
 ## Maven repository
 
@@ -159,23 +147,19 @@ All artifacts, except the ones for Oracle (see above) are in
 
 ### Types
 
-Cascading-jdbc supports multiple RDBMS systems all of which behave slightly
-different when it comes to automatic type coercions/casts. This project tries to
-ease the type handling, by doing 'educated guesses', yet it is not always
-capable of doing so. We highly recommend that you provide a typed Fields
-instance to the JDBCScheme constructor, so that values can be properly coerced
-before being written to the database.
+Cascading-jdbc supports multiple RDBMS systems all of which behave slightly different when it comes to automatic type
+coercions/casts. This project tries to ease the type handling, by doing 'educated guesses', yet it is not always capable
+of doing so. We highly recommend that you provide a typed Fields instance to the JDBCScheme constructor, so that values
+can be properly coerced before being written to the database.
 
 ## In Lingual
 
-__NOTE__: The JDBC providers can only be used on the `hadoop` and `hadoop2-mr1`
-platforms. The `local` platform is not supported.
+__NOTE__: The JDBC providers can only be used on the `hadoop` and `hadoop2-mr1` platforms. The `local` platform is not
+supported.
 
-This assumes, that you have followed the [lingual
-tutorial](http://docs.cascading.org/lingual/1.0/), esp. the part, where a
-provider is used to write directly into a memcached server. To accomplish the
-same, but with a [derby](http://db.apache.org/derby/) database, you can do the
-following:
+This assumes, that you have followed the [lingual tutorial](http://docs.cascading.org/lingual/1.1/), esp. the part,
+where a provider is used to write directly into a memcached server. To accomplish the same, but with a
+[derby](http://db.apache.org/derby/) database, you can do the following:
 
 Setup your lingual catalog with the derby provider:
 
@@ -184,37 +168,31 @@ Setup your lingual catalog with the derby provider:
 
     > lingual catalog --provider --add cascading:cascading-jdbc-derby:2.5.4:provider
 
-This will register the provider `derby` for the `hadoop` platform. The provider
-supports one protocol (`jdbc`) and one format (`derby`). The provider is
-downloaded from [conjars](http://conjars.org).
+This will register the provider `derby` for the `hadoop` platform. The provider supports one protocol (`jdbc`) and one
+format (`derby`). The provider is downloaded from [conjars](http://conjars.org).
 
-Next we can add the `working` schema, the `titles` stereotype and register the
-`derby` provider in the schema.
+Next we can add the `working` schema, the `titles` stereotype and register the `derby` provider in the schema.
 
     > lingual catalog --schema working --add
     > lingual catalog --schema working --stereotype titles --add --columns TITLE,CNT --types string,int
     > lingual catalog --schema working --format derby --add --provider derby
 
-Next we set the protocol properties for `jdbc` in the `derby` provider. The
-first line describes the table, that we are operating on, to the underlying
-JDBCTap.  The table has two columns `title` and `cnt`, which are of type
-`varchar(100)` and `int`. The command line interface uses `:` as a separator for
-properties, which contain multiple values.
+Next we set the protocol properties for `jdbc` in the `derby` provider. The first line describes the table, that we are
+operating on, to the underlying JDBCTap.  The table has two columns `title` and `cnt`, which are of type `varchar(100)`
+and `int`. The command line interface uses `:` as a separator for properties, which contain multiple values.
 
     > lingual catalog --schema working --protocol jdbc --add --properties="tabledesc.tablename=title_counts,tabledesc.columnnames=title:cnt,tabledesc.columndefs=varchar(100) not null:int not null" --provider derby
 
-__Tip__: If the `--properties` syntax becomes to complex for your use case, you
-can put them in a properties file and use
-`--properties-file /path/to/my.properties` instead.
+__Tip__: If the `--properties` syntax becomes to complex for your use case, you can put them in a properties file and
+use `--properties-file /path/to/my.properties` instead.
 
-Finally we tell the derby provider, where it can find the derby server. The
-`create=true` is optional. If the database already exists, you can omit it.
+Finally we tell the derby provider, where it can find the derby server. The `create=true` is optional. If the database
+already exists, you can omit it.
 
     > lingual catalog --schema working --table title_counts --stereotype titles --add "jdbc:derby://localhost:1527/mydb;create=true" --protocol jdbc  --format derby
 
-Now the table `title_counts` is ready to be used from within lingual as a sink.
-You can now run a query over the employe data from the lingual tutorial on hdfs
-directly into your derby server like this:
+Now the table `title_counts` is ready to be used from within lingual as a sink.  You can now run a query over the
+employe data from the lingual tutorial on hdfs directly into your derby server like this:
 
     > lingual shell
     (lingual shell)  insert into "working"."title_counts" select title, count( title ) as cnt from employees.titles group by title;
@@ -225,14 +203,12 @@ directly into your derby server like this:
     +-----------+
     1 row selected (9,581 seconds)
 
-When lingual attempts to write into the underlying JDBC table, like in the
-example above, it will recreate the table by default. If you want to append to
-the table instead, you can use overwrite the SinkMode for the `JDBCTap` by
-setting `sinkmode=KEEP`, when registering the table.
+When lingual attempts to write into the underlying JDBC table, like in the example above, it will recreate the table by
+default. If you want to append to the table instead, you can use overwrite the SinkMode for the `JDBCTap` by setting
+`sinkmode=KEEP`, when registering the table.
 
-The provider can not only be used as a sink, but also as a source, meaning you
-can investigate the data, that was just written into the derby table directly
-from the lingual shell:
+The provider can not only be used as a sink, but also as a source, meaning you can investigate the data, that was just
+written into the derby table directly from the lingual shell:
 
     > (lingual shell) select * from "working"."title_counts"
     +---------------------+---------+
@@ -251,29 +227,28 @@ from the lingual shell:
 
 # Extending and Versioning
 
-Adding a new JDBC system is straight forward. Create a new sub-project and add
-it to `settings.gradle`. Include the JDBC driver of your RDBMS in the
-`build.gradle` file of your sub-project and create a `TestCase` subclassing the
-`JDBCTestingBase` explained above. All you have to do, is setting the driver
-class and JDBC URL for your database. For an example see
-[MysqlTest](https://github.com/Cascading/cascading-jdbc/blob/wip-2.5/cascading-jdbc-mysql/src/test/java/cascading/jdbc/MysqlTest.java).
+Adding a new JDBC system is straight forward. Create a new sub-project and add it to `settings.gradle`. Include the JDBC
+driver of your RDBMS in the `build.gradle` file of your sub-project and create a `TestCase` subclassing the
+`JDBCTestingBase` explained above. All you have to do, is setting the driver class and JDBC URL for your database. For
+an example see
+[MysqlTest](https://github.com/Cascading/cascading-jdbc/blob/wip-2.6/cascading-jdbc-mysql/src/test/java/cascading/jdbc/MysqlTest.java).
 
 ## JDBC driver versions
 
-The JDBC driver version used for a particular provider should match the version for your database. To use a different version, edit
-the `build.gradle` file for the particular driver you're using, change the version specified by the `compile` line, and re-install the
-provider.
+The JDBC driver version used for a particular provider should match the version for your database. To use a different
+version, edit the `build.gradle` file for the particular driver you're using, change the version specified by the
+`compile` line, and re-install the provider.
 
-By default [mavencentral](http://search.maven.org/), [conjars](http://conjars.org/), [pentaho](http://repository.pentaho.org/) and the
-local maven install are the only repos listed in the build script. If the particular version of a driver you need
-is hosted somewhere else, you will need to add this repo to the top level `build.gradle` file.
+By default [mavencentral](http://search.maven.org/), [conjars](http://conjars.org/),
+[pentaho](http://repository.pentaho.org/) and the local maven install are the only repos listed in the build script. If
+the particular version of a driver you need is hosted somewhere else, you will need to add this repo to the top level
+`build.gradle` file.
 
 ## Provider mechanism
 
-If you want to use your driver as a provider within lingual, you have to include
-a `provider.properties` in the `src/main/resources/cascading/bind` directory of
-your project. The name of the provider should match your database, the protocol
-should be set to `jdbc` and the format to the type of database you are using.
+If you want to use your driver as a provider within lingual, you have to include a `provider.properties` in the
+`src/main/resources/cascading/bind` directory of your project. The name of the provider should match your database, the
+protocol should be set to `jdbc` and the format to the type of database you are using.
 
 Below is an example from the `derby` subproject:
 
@@ -315,5 +290,4 @@ documentation](http://docs.cascading.org/lingual/1.1/#_creating_a_data_provider)
 
 # License
 
-All code, unless otherwise noted, is licensed under the Apache Software License
-version 2.
+All code, unless otherwise noted, is licensed under the Apache Software License version 2.

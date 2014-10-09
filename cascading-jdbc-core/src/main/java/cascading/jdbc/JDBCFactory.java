@@ -47,7 +47,6 @@ public class JDBCFactory
   public static final String PROTOCOL_JDBC_USER = "jdbcuser";
   public static final String PROTOCOL_JDBC_PASSWORD = "jdbcpassword";
   public static final String PROTOCOL_JDBC_DRIVER = "jdbcdriver";
-  public static final String PROTOCOL_TABLE_EXISTS_QUERY = "tableExistsQuery";
   public static final String DEFAULT_TABLE_EXISTS_QUERY =  "select 1 from %s where 1 = 0";
   public static final String TABLE_EXISTS_UNSUPPORTED = "__TABLE_EXISTS_QUERY_UNSUPPORTED__";
 
