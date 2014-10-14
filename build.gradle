@@ -18,6 +18,8 @@
  * limitations under the License.
  */
 
+import org.apache.tools.ant.filters.ReplaceTokens
+
 buildscript {
   repositories {
     mavenLocal()
@@ -170,6 +172,15 @@ subprojects{
       pom.dependencies = pom.dependencies.sort { scopeOrder[it.scope] }
     }
  }
+
+ task createFrameworkProperties( dependsOn: processResources ) << {
+   if ( project.name != "cascading-jdbc-core" ) {
+     file( "${sourceSets.main.output.resourcesDir}/cascading" ).mkdirs()
+     file( "${sourceSets.main.output.resourcesDir}/cascading/framework.properties").write("name=${project.name}:${version}\n" )
+   }
+ }
+
+ jar.dependsOn( createFrameworkProperties )
 }
 
 idea {

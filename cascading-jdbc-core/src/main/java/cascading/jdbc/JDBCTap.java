@@ -13,6 +13,7 @@
 package cascading.jdbc;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Driver;
@@ -24,11 +25,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 
 import cascading.flow.FlowProcess;
 import cascading.jdbc.db.DBConfiguration;
 import cascading.management.annotation.URISanitizer;
+import cascading.property.AppProps;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.TapException;
@@ -79,14 +82,31 @@ import org.slf4j.LoggerFactory;
  */
 public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
   {
-
-  // make sure usernames and passwords are sanitized before they are sent to the DocumentService.
   static
     {
+    // make sure usernames and passwords are sanitized before they are sent to the DocumentService.
     StringBuilder parametersToFiler = new StringBuilder( "user,password" );
     if( System.getProperty( URISanitizer.PARAMETER_FILTER_PROPERTY ) != null )
       parametersToFiler.append( "," ).append( System.getProperty( URISanitizer.PARAMETER_FILTER_PROPERTY ) );
     System.setProperty( URISanitizer.PARAMETER_FILTER_PROPERTY, parametersToFiler.toString() );
+
+    // add cascading-jdbc release to frameworks
+    Properties properties = new Properties();
+    InputStream stream = JDBCTap.class.getClassLoader().getResourceAsStream( "cascading/framework.properties" );
+    if( stream != null )
+      {
+      try
+        {
+        properties.load( stream );
+        stream.close();
+        }
+      catch( IOException exception )
+        {
+        // ingore
+        }
+      }
+    String framework = properties.getProperty( "name" );
+    AppProps.addApplicationFramework( null, framework );
     }
 
   /** Field LOG */
