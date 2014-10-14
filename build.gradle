@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-import org.apache.tools.ant.filters.ReplaceTokens
+import java.text.SimpleDateFormat
 
 buildscript {
   repositories {
@@ -50,6 +50,9 @@ ext.hadoopVersion = "1.2.1"
 
 ext.cascadingVersion = '2.6.0'
 ext.lingualVersion = '1.2.0-wip-+'
+
+ext.timestamp = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
+
 
 allprojects {
 
@@ -171,16 +174,24 @@ subprojects{
       def scopeOrder = [test: 1, runtime: 2, provided: 3, compile: 4].withDefault { 100 }
       pom.dependencies = pom.dependencies.sort { scopeOrder[it.scope] }
     }
- }
+  }
 
- task createFrameworkProperties( dependsOn: processResources ) << {
-   if ( project.name != "cascading-jdbc-core" ) {
-     file( "${sourceSets.main.output.resourcesDir}/cascading" ).mkdirs()
-     file( "${sourceSets.main.output.resourcesDir}/cascading/framework.properties").write("name=${project.name}:${version}\n" )
-   }
- }
+  jar {
+    manifest {
+      attributes( "Build-Date": "${timestamp}" )
+    }
+  }
 
- jar.dependsOn( createFrameworkProperties )
+  task createFrameworkProperties( dependsOn: processResources ) << {
+    if ( project.name != "cascading-jdbc-core" ) {
+      file( "${sourceSets.main.output.resourcesDir}/cascading" ).mkdirs()
+      file( "${sourceSets.main.output.resourcesDir}/cascading/framework.properties").write("name=${project.name}:${version}\n" )
+    }
+  }
+
+  jar.dependsOn( createFrameworkProperties )
+  fatJar.dependsOn( createFrameworkProperties )
+
 }
 
 idea {
