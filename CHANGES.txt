@@ -1,6 +1,6 @@
 Cascading-jdbc Change Log
 
-2.6.0 [unreleased]
+2.6.0 
 - add cascading-jdbc-<subprojec>:<version> to Cascading Frameworks property
 - enabled parameter sanitization for username and password
 - added support for Teradata (cascading-jdbc-teradata)

@@ -166,7 +166,7 @@ Setup your lingual catalog with the derby provider:
     # only hadoop platform is supported
     > export LINGUAL_PLATFORM=hadoop
 
-    > lingual catalog --provider --add cascading:cascading-jdbc-derby:2.5.4:provider
+    > lingual catalog --provider --add cascading:cascading-jdbc-derby:2.6.0:provider
 
 This will register the provider `derby` for the `hadoop` platform. The provider supports one protocol (`jdbc`) and one
 format (`derby`). The provider is downloaded from [conjars](http://conjars.org).
