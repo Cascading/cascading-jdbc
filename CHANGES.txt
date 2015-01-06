@@ -1,5 +1,8 @@
 Cascading-jdbc Change Log
 
+2.7.0 (unreleased)
+- update to Cascading 2.7
+
 2.6.0 
 - add cascading-jdbc-<subprojec>:<version> to Cascading Frameworks property
 - enabled parameter sanitization for username and password
