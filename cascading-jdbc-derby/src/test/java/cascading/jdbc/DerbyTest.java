@@ -23,6 +23,7 @@ package cascading.jdbc;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 
+import cascading.jdbc.db.DerbyDBInputFormat;
 import org.apache.derby.drda.NetworkServerControl;
 import org.junit.After;
 import org.junit.Before;
@@ -47,11 +48,13 @@ public class DerbyTest extends JDBCTestingBase
     System.setProperty( "derby.locks.deadlockTrace", "true" );
     System.setProperty( "derby.system.home", "build/derby" );
 
-    serverControl = new NetworkServerControl(InetAddress.getByName("localhost"), PORT);
-    serverControl.start(new PrintWriter(System.out,true));
+    serverControl = new NetworkServerControl( InetAddress.getByName( "localhost" ), PORT );
+    serverControl.start( new PrintWriter(System.out,true ) );
 
     setDriverName( "org.apache.derby.jdbc.ClientDriver" );
     setJdbcurl( String.format("jdbc:derby://localhost:%s/testing;create=true", PORT) );
+    setInputFormatClass( DerbyDBInputFormat.class );
+    setFactory( new DerbyFactory() );
 
     }
 

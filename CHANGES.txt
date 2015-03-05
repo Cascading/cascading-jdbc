@@ -2,6 +2,7 @@ Cascading-jdbc Change Log
 
 2.7.0 (unreleased)
 - update to Cascading 2.7
+- fix issue in Derby InputSplit handline
 
 2.6.0 
 - add cascading-jdbc-<subprojec>:<version> to Cascading Frameworks property

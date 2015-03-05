@@ -18,22 +18,19 @@
  * limitations under the License.
  */
 
-evaluationDependsOn( ":cascading-jdbc-core" )
+package cascading.jdbc;
 
-ext.derbyVersion = "10.11.1.1"
+import cascading.jdbc.db.DBInputFormat;
+import cascading.jdbc.db.DerbyDBInputFormat;
 
-dependencies{
-  compile project( ':cascading-jdbc-core' )
-
-  compile( group: 'org.apache.derby', name: 'derby', version: derbyVersion )
-  compile( group: 'org.apache.derby', name: 'derbyclient', version: derbyVersion )
-  compile( group: 'org.apache.derby', name: 'derbynet', version: derbyVersion )
-
-  testCompile project( ':cascading-jdbc-core' ).sourceSets.test.runtimeClasspath
-}
-
-fatJar {
-  classifier = 'provider'
-  exclude 'META-INF/*.DSA'
-  exclude 'META-INF/LICENSE*'
-}
+/**
+ *
+ */
+public class DerbyFactory extends JDBCFactory
+  {
+  @Override
+  protected Class<? extends DBInputFormat> getInputFormatClass()
+    {
+    return DerbyDBInputFormat.class;
+    }
+  }
