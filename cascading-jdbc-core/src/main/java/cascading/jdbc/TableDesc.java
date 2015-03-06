@@ -192,7 +192,7 @@ public class TableDesc implements Serializable
     {
     if( canQueryExistence() )
       {
-      if( !Utils.isNullOrEmpty( tableExistsQuery ) )
+      if( !Util.isEmpty( tableExistsQuery ) )
         return String.format( tableExistsQuery, tableName );
       else
         return String.format( JDBCFactory.DEFAULT_TABLE_EXISTS_QUERY, tableName );
@@ -206,7 +206,7 @@ public class TableDesc implements Serializable
   @Deprecated
   public boolean canQueryExistence()
     {
-    if( Utils.isNullOrEmpty( tableExistsQuery ) )
+    if( Util.isEmpty( tableExistsQuery ) )
       return true; // default to assuming we can query the table
     else
       return ( !tableExistsQuery.equals( JDBCFactory.TABLE_EXISTS_UNSUPPORTED ) );

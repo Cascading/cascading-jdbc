@@ -28,6 +28,7 @@ import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
+import cascading.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,11 +96,11 @@ public class RedshiftFactory extends JDBCFactory
     String jdbcPasswordProperty = protocolProperties.getProperty( PROTOCOL_JDBC_PASSWORD );
 
     String jdbcUser = null;
-    if( !Utils.isNullOrEmpty( jdbcUserProperty ) )
+    if( !Util.isEmpty( jdbcUserProperty ) )
       jdbcUser = jdbcUserProperty;
 
     String jdbcPassword = null;
-    if( !Utils.isNullOrEmpty( jdbcPasswordProperty ) )
+    if( !Util.isEmpty( jdbcPasswordProperty ) )
       jdbcPassword = jdbcPasswordProperty;
 
     String hfsStagingDir = protocolProperties.getProperty( PROTOCOL_S3_OUTPUT_PATH, "/tmp" );
@@ -123,7 +124,7 @@ public class RedshiftFactory extends JDBCFactory
 
     // users can overwrite the sink mode.
     String sinkModeProperty = protocolProperties.getProperty( PROTOCOL_SINK_MODE );
-    if( !Utils.isNullOrEmpty( sinkModeProperty ) )
+    if( Util.isEmpty( sinkModeProperty ) )
       sinkMode = SinkMode.valueOf( sinkModeProperty );
 
     return new RedshiftTap( identifier, jdbcUser, jdbcPassword, hfsStagingDir, credentials, redshiftTableDesc, (RedshiftScheme) scheme, sinkMode, keepDebugHdfsData, useDirectInsert );
@@ -134,7 +135,7 @@ public class RedshiftFactory extends JDBCFactory
     String tableName = properties.getProperty( PROTOCOL_TABLE_NAME, null );
 
     if( !allowNullName )
-      if( Utils.isNullOrEmpty( tableName ) )
+      if( Util.isEmpty( tableName ) )
         throw new IllegalArgumentException( "no tablename given" );
 
     String separator = properties.getProperty( PROTOCOL_FIELD_SEPARATOR, DEFAULT_SEPARATOR );
@@ -143,7 +144,7 @@ public class RedshiftFactory extends JDBCFactory
 
     String[] columnDefs = null;
     String columnDefsProperty = properties.getProperty( PROTOCOL_COLUMN_DEFS, null );
-    if( !Utils.isNullOrEmpty( columnDefsProperty ) )
+    if( !Util.isEmpty( columnDefsProperty ) )
       columnDefs = columnDefsProperty.split( separator );
 
     String distributionKey = properties.getProperty( FORMAT_DISTRIBUTION_KEY );
@@ -177,7 +178,7 @@ public class RedshiftFactory extends JDBCFactory
     String awsAccessKey = properties.getProperty( PROTOCOL_AWS_ACCESS_KEY );
     String awsSecretKey = properties.getProperty( PROTOCOL_AWS_SECRET_KEY );
 
-    if( !Utils.isNullOrEmpty( awsAccessKey ) && !Utils.isNullOrEmpty( awsSecretKey ) )
+    if( !Util.isEmpty( awsAccessKey ) && !Util.isEmpty( awsSecretKey ) )
       awsCredentials = new AWSCredentials( awsAccessKey, awsSecretKey );
 
     // next try environment variables
@@ -185,7 +186,7 @@ public class RedshiftFactory extends JDBCFactory
       {
       awsAccessKey = System.getenv( SYSTEM_AWS_ACCESS_KEY );
       awsSecretKey = System.getenv( SYSTEM_AWS_SECRET_KEY );
-      if( !Utils.isNullOrEmpty( awsAccessKey ) && !Utils.isNullOrEmpty( awsSecretKey ) )
+      if( !Util.isEmpty( awsAccessKey ) && !Util.isEmpty( awsSecretKey ) )
         awsCredentials = new AWSCredentials( awsAccessKey, awsSecretKey );
       }
 

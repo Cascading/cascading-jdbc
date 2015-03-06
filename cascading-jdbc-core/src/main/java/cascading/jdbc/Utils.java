@@ -25,6 +25,7 @@ import com.google.common.base.Strings;
 /**
  *
  */
+@Deprecated
 public class Utils
   {
 
