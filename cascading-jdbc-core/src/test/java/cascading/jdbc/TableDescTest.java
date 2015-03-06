@@ -35,13 +35,13 @@ public class TableDescTest
     TableDesc desc = new TableDesc( "name" );
     assertFalse( desc.hasRequiredTableInformation() );
 
-    desc = new TableDesc( "name", null, null, null, null );
+    desc = new TableDesc( "name", null, null, null );
     assertFalse( desc.hasRequiredTableInformation() );
 
-    desc = new TableDesc( "name", new String[]{ "id" }, null, null, null );
+    desc = new TableDesc( "name", new String[]{ "id" }, null, null );
     assertFalse( desc.hasRequiredTableInformation() );
 
-    desc = new TableDesc( "name", new String[]{ "id" }, new String[]{ "int" }, null, "foo" );
+    desc = new TableDesc( "name", new String[]{ "id" }, new String[]{ "int" }, new String[] {"foo"} );
     assertTrue( desc.hasRequiredTableInformation() );
 
     }

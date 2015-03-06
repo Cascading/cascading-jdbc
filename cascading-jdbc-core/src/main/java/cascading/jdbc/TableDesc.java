@@ -1,13 +1,21 @@
 /*
- * Copyright (c) 2009 Concurrent, Inc.
+ * Copyright (c) 2007-2015 Concurrent, Inc. All Rights Reserved.
  *
- * This work has been released into the public domain
- * by the copyright holder. This applies worldwide.
+ * Project and contact information: http://www.cascading.org/
  *
- * In case this is not legally possible:
- * The copyright holder grants any entity the right
- * to use this work for any purpose, without any
- * conditions, unless such conditions are required by law.
+ * This file is part of the Cascading project.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package cascading.jdbc;
@@ -17,11 +25,9 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import cascading.tuple.Fields;
 import cascading.util.Util;
-import com.google.common.collect.Lists;
 
 /**
  * Class TableDesc describes a SQL based table, this description is used by the
@@ -33,7 +39,6 @@ import com.google.common.collect.Lists;
  */
 public class TableDesc implements Serializable
   {
-
   private static final long serialVersionUID = 5009899098019404131L;
 
   /** Field tableName */
@@ -181,36 +186,6 @@ public class TableDesc implements Serializable
     return "DROP TABLE %s";
     }
 
-  /**
-   * Method getTableExistsQuery returns the tableExistsQuery of this TableDesc
-   * object.
-   *
-   * @return the tableExistsQuery (type String) of this TableDesc object.
-   */
-  @Deprecated
-  public String getTableExistsQuery()
-    {
-    if( canQueryExistence() )
-      {
-      if( !Util.isEmpty( tableExistsQuery ) )
-        return String.format( tableExistsQuery, tableName );
-      else
-        return String.format( JDBCFactory.DEFAULT_TABLE_EXISTS_QUERY, tableName );
-      }
-    else
-      {
-      return String.format( JDBCFactory.DEFAULT_TABLE_EXISTS_QUERY, tableName );
-      }
-    }
-
-  @Deprecated
-  public boolean canQueryExistence()
-    {
-    if( Util.isEmpty( tableExistsQuery ) )
-      return true; // default to assuming we can query the table
-    else
-      return ( !tableExistsQuery.equals( JDBCFactory.TABLE_EXISTS_UNSUPPORTED ) );
-    }
 
   private boolean hasPrimaryKey()
     {
@@ -251,8 +226,8 @@ public class TableDesc implements Serializable
     {
     if( !hasRequiredTableInformation() )
       {
-      List<String> names = Lists.newArrayList();
-      List<String> defs = Lists.newArrayList();
+      List<String> names = new ArrayList<String>();
+      List<String> defs = new ArrayList<String>();
 
       for( int i = 0; i < fields.size(); i++ )
         {
