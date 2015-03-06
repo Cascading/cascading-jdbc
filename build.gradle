@@ -47,7 +47,7 @@ version = releaseVersion
 
 // the version of hadoop used for compiling and testing
 ext.hadoopVersion = "2.4.1"
-ext.tezVersion = "0.5.3"
+ext.tezVersion = "0.6.0"
 
 ext.cascadingVersion = '3.0.0-wip-+'
 ext.lingualVersion = '2.0.0-wip-+'
@@ -81,9 +81,13 @@ subprojects{
     provided group: 'cascading', name: 'cascading-hadoop2-tez', version: cascadingVersion, changing: true
     provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
     provided group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
-    provided group: 'org.apache.hadoop', name: 'hadoop-common', version: hadoopVersion
-    provided group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: hadoopVersion
-
+    provided( group: 'org.apache.hadoop', name: 'hadoop-common', version: hadoopVersion ) {
+      exclude group: 'com.google.guava'
+    }
+    provided( group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: hadoopVersion ) {
+      exclude group: 'com.google.guava'
+    }
+    provided group: 'com.google.guava', name: 'guava', version: '11.0.2'
 
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
@@ -95,10 +99,19 @@ subprojects{
       exclude group: 'xerces'
     }
 
-    testCompile( group: 'org.apache.tez', name: 'tez-tests', version: tezVersion, classifier: 'tests' )
-    testCompile( group: 'org.apache.tez', name: 'tez-api', version: tezVersion )
-    testCompile( group: 'org.apache.tez', name: 'tez-dag', version: tezVersion )
-    testCompile( group: 'org.apache.hadoop', name: 'hadoop-minicluster', version: hadoopVersion )
+    testCompile( group: 'org.apache.tez', name: 'tez-tests', version: tezVersion, classifier: 'tests' ) {
+      exclude group: 'com.google.guava'
+    }
+    testCompile( group: 'org.apache.tez', name: 'tez-api', version: tezVersion ) {
+      exclude group: 'com.google.guava'
+    }
+    testCompile( group: 'org.apache.tez', name: 'tez-dag', version: tezVersion ) {
+      exclude group: 'com.google.guava'
+    }
+    testCompile( group: 'org.apache.hadoop', name: 'hadoop-minicluster', version: hadoopVersion ) {
+      exclude group: 'com.google.guava'
+    }
+
 
   }
 
