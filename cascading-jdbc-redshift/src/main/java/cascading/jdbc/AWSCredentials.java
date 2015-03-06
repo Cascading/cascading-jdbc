@@ -54,24 +54,17 @@ public class AWSCredentials implements Serializable
   public boolean equals( Object object )
     {
     if( this == object )
-      {
       return true;
-      }
+
     if( !( object instanceof AWSCredentials ) )
-      {
       return false;
-      }
 
     AWSCredentials that = (AWSCredentials) object;
 
     if( awsAccessKey != null ? !awsAccessKey.equals( that.awsAccessKey ) : that.awsAccessKey != null )
-      {
       return false;
-      }
     if( awsSecretKey != null ? !awsSecretKey.equals( that.awsSecretKey ) : that.awsSecretKey != null )
-      {
       return false;
-      }
 
     return true;
     }

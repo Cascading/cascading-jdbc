@@ -82,7 +82,7 @@ public class RedshiftFactory extends JDBCFactory
 
     Map<CopyOption, String> copyOptions = extractCopyOptions( formatProperties, FORMAT_COPY_OPTIONS_PREFIX );
 
-    Boolean tableAlias = getTableAlias( formatProperties );
+    boolean tableAlias = getTableAlias( formatProperties );
 
     return new RedshiftScheme( fields, redshiftTableDesc, delimiter, quoteCharacter, copyOptions, tableAlias );
     }
@@ -124,7 +124,7 @@ public class RedshiftFactory extends JDBCFactory
 
     // users can overwrite the sink mode.
     String sinkModeProperty = protocolProperties.getProperty( PROTOCOL_SINK_MODE );
-    if( Util.isEmpty( sinkModeProperty ) )
+    if( !Util.isEmpty( sinkModeProperty ) )
       sinkMode = SinkMode.valueOf( sinkModeProperty );
 
     return new RedshiftTap( identifier, jdbcUser, jdbcPassword, hfsStagingDir, credentials, redshiftTableDesc, (RedshiftScheme) scheme, sinkMode, keepDebugHdfsData, useDirectInsert );
@@ -189,7 +189,6 @@ public class RedshiftFactory extends JDBCFactory
       if( !Util.isEmpty( awsAccessKey ) && !Util.isEmpty( awsSecretKey ) )
         awsCredentials = new AWSCredentials( awsAccessKey, awsSecretKey );
       }
-
     return awsCredentials;
     }
 

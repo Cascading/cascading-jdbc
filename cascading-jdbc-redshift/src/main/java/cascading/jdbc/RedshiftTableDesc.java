@@ -27,7 +27,6 @@ import java.util.List;
 
 import cascading.tuple.Fields;
 import cascading.util.Util;
-import com.google.common.base.Joiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,14 +122,13 @@ public class RedshiftTableDesc extends TableDesc
 
   private String getRedshiftTableKeys()
     {
-
     StringBuilder sb = new StringBuilder().append( "" );
 
     if( distributionkey != null )
       sb.append( " DISTKEY (" ).append( distributionkey ).append( ") " );
 
     if( sortKeys != null && sortKeys.length > 0 )
-      sb.append( " SORTKEY (" ).append( Joiner.on( ", " ).join( sortKeys ) ).append( ") " );
+      sb.append( " SORTKEY (" ).append( Util.join( sortKeys, "," ) ).append( ") " );
 
     return sb.toString();
     }

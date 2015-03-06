@@ -1,13 +1,21 @@
 /*
- * Copyright (c) 2009 Concurrent, Inc.
+ * Copyright (c) 2007-2015 Concurrent, Inc. All Rights Reserved.
  *
- * This work has been released into the public domain
- * by the copyright holder. This applies worldwide.
+ * Project and contact information: http://www.cascading.org/
  *
- * In case this is not legally possible:
- * The copyright holder grants any entity the right
- * to use this work for any purpose, without any
- * conditions, unless such conditions are required by law.
+ * This file is part of the Cascading project.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package cascading.jdbc;
@@ -16,6 +24,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
@@ -54,7 +63,7 @@ import cascading.util.Util;
  * Override this class, {@link DBInputFormat}, and {@link DBOutputFormat} to
  * specialize for a given vendor database.
  */
-public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]>
+public class JDBCScheme extends Scheme<Configuration, RecordReader, OutputCollector, Object[], Object[]>
   {
 
   private Class<? extends DBInputFormat> inputFormatClass;
@@ -604,7 +613,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     }
 
   @Override
-  public void sourceConfInit( FlowProcess<JobConf> process, Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf )
+  public void sourceConfInit( FlowProcess<? extends Configuration> process, Tap<Configuration, RecordReader, OutputCollector> tap, Configuration conf )
     {
     int concurrentReads = ( (JDBCTap) tap ).concurrentReads;
 
@@ -618,25 +627,31 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
       }
 
     if( inputFormatClass != null )
-      conf.setInputFormat( inputFormatClass );
+      conf.set( "mapred.input.format.class", inputFormatClass.getName() );
+
+    conf.set( "mapred.mapper.new-api", "false");
+    conf.set( "mapred.reducer.new-api", "false");
     }
 
   @Override
-  public void sinkConfInit( FlowProcess<JobConf> process, Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf )
+  public void sinkConfInit( FlowProcess<? extends Configuration> process, Tap<Configuration, RecordReader, OutputCollector> tap, Configuration conf )
     {
     if( selectQuery != null )
       throw new TapException( "cannot sink to this Scheme" );
 
-    String tableName = ( (JDBCTap) tap ).getTableName();
     int batchSize = ( (JDBCTap) tap ).getBatchSize();
-    DBOutputFormat.setOutput( conf, DBOutputFormat.class, tableName, columns, updateBy, batchSize );
+    DBOutputFormat.setOutput( conf, DBOutputFormat.class, ((JDBCTap) tap).getTableDesc(), updateBy, batchSize );
 
     if( outputFormatClass != null )
-      conf.setOutputFormat( outputFormatClass );
+      conf.set( "mapred.output.format.class", outputFormatClass.getName() );
+
+    conf.set( "mapred.mapper.new-api", "false");
+    conf.set( "mapred.reducer.new-api", "false");
+
     }
 
   @Override
-  public void sourcePrepare( FlowProcess<JobConf> flowProcess, SourceCall<Object[], RecordReader> sourceCall )
+  public void sourcePrepare( FlowProcess<? extends Configuration> flowProcess, SourceCall<Object[], RecordReader> sourceCall )
     {
     Object[] pair = new Object[]{ sourceCall.getInput().createKey(), sourceCall.getInput().createValue() };
 
@@ -644,7 +659,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     }
 
   @Override
-  public boolean source( FlowProcess<JobConf> flowProcess, SourceCall<Object[], RecordReader> sourceCall ) throws IOException
+  public boolean source( FlowProcess<? extends Configuration> flowProcess, SourceCall<Object[], RecordReader> sourceCall ) throws IOException
     {
     Object key = sourceCall.getContext()[ 0 ];
     Object value = sourceCall.getContext()[ 1 ];
@@ -673,13 +688,13 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     }
 
   @Override
-  public void sourceCleanup( FlowProcess<JobConf> flowProcess, SourceCall<Object[], RecordReader> sourceCall )
+  public void sourceCleanup( FlowProcess<? extends Configuration> flowProcess, SourceCall<Object[], RecordReader> sourceCall )
     {
     sourceCall.setContext( null );
     }
 
   @Override
-  public void sink( FlowProcess<JobConf> flowProcess, SinkCall<Object[], OutputCollector> sinkCall ) throws IOException
+  public void sink( FlowProcess<? extends Configuration> flowProcess, SinkCall<Object[], OutputCollector> sinkCall ) throws IOException
     {
     // it's ok to use NULL here so the collector does not write anything
     TupleEntry tupleEntry = sinkCall.getOutgoingEntry();
@@ -718,7 +733,7 @@ public class JDBCScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     }
 
   @Override
-  public void presentSinkFields( FlowProcess<JobConf> flowProcess, Tap tap, Fields fields )
+  public void presentSinkFields( FlowProcess<? extends Configuration> flowProcess, Tap tap, Fields fields )
     {
     LOG.info( "receiving final sink fields {}", fields );
     super.presentSinkFields( flowProcess, tap, fields );

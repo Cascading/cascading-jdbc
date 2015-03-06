@@ -28,21 +28,21 @@ public class MySqlDBConfiguration
   /** Boolean to use ON DUPLICATE KEY UPDATE for INSERTs when outputting tuples to MySQL. */
   public static final String REPLACE_ON_INSERT = "mapred.jdbc.output.replace.on.insert";
 
-  private Configuration job;
+  private Configuration configuration;
 
-  public MySqlDBConfiguration( Configuration job )
+  public MySqlDBConfiguration( Configuration configuration )
     {
-    this.job = job;
+    this.configuration = configuration;
     }
 
   public boolean getReplaceOnInsert()
     {
-    return job.getBoolean( MySqlDBConfiguration.REPLACE_ON_INSERT, false );
+    return configuration.getBoolean( MySqlDBConfiguration.REPLACE_ON_INSERT, false );
     }
 
   public void setReplaceOnInsert( boolean replaceOnInsert )
     {
-    job.setBoolean( MySqlDBConfiguration.REPLACE_ON_INSERT, replaceOnInsert );
+    configuration.setBoolean( MySqlDBConfiguration.REPLACE_ON_INSERT, replaceOnInsert );
     }
 
   }

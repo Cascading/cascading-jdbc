@@ -29,8 +29,10 @@
 
 package cascading.jdbc.db;
 
+import cascading.jdbc.JDBCUtil;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.*;
@@ -81,6 +83,7 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
 
       if( connection == null )
         openConnection();
+
       statement = createStatement();
 
       String query = getSelectQuery();
@@ -88,7 +91,7 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
         {
         LOG.info( query );
         results = statement.executeQuery( query );
-        LOG.info( "done executing select query" );
+        LOG.debug( "done executing select query" );
         }
       catch ( SQLException exception )
         {
@@ -415,7 +418,7 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
   protected RecordReader<LongWritable, T> getRecordReaderInternal( DBInputSplit split, Class inputClass, JobConf job ) throws SQLException,
       IOException
     {
-    return new DBRecordReader( (DBInputSplit) split, inputClass, job );
+    return new DBRecordReader( split, inputClass, job );
     }
 
   /** {@inheritDoc} */
@@ -423,7 +426,6 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
     {
     // use the configured value if avail
     chunks = maxConcurrentReads == 0 ? chunks : maxConcurrentReads;
-
     try
       {
       if( connection == null )
@@ -476,18 +478,15 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
    */
   protected String getCountQuery()
     {
-
     if( dbConf.getInputCountQuery() != null )
-      {
       return dbConf.getInputCountQuery();
-      }
 
     StringBuilder query = new StringBuilder();
 
-    query.append( "SELECT COUNT(*) FROM " + tableName );
+    query.append( "SELECT COUNT(*) FROM ").append( tableName );
 
     if( conditions != null && conditions.length() > 0 )
-      query.append( " WHERE " + conditions );
+      query.append( " WHERE " ).append( conditions );
 
     return query.toString();
     }
@@ -495,7 +494,7 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
   /**
    * Initializes the map-part of the job with the appropriate input settings.
    *
-   * @param job The job
+   * @param configuration The current configuration
    * @param inputClass the class object implementing DBWritable, which is the
    *          Java object holding tuple fields.
    * @param tableName The table to read data from
@@ -506,12 +505,12 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
    * @param fieldNames The field names in the table
    * @param concurrentReads
    */
-  public static void setInput( JobConf job, Class<? extends DBWritable> inputClass, String tableName, String conditions, String orderBy,
+  public static void setInput( Configuration configuration, Class<? extends DBWritable> inputClass, String tableName, String conditions, String orderBy,
       long limit, int concurrentReads, Boolean tableAlias, String... fieldNames )
     {
-    job.setInputFormat( DBInputFormat.class );
+    configuration.set( "mapred.input.format.class", DBInputFormat.class.getName() );
 
-    DBConfiguration dbConf = new DBConfiguration( job );
+    DBConfiguration dbConf = new DBConfiguration( configuration );
 
     dbConf.setInputClass( inputClass );
     dbConf.setInputTableName( tableName );
@@ -529,7 +528,7 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
   /**
    * Initializes the map-part of the job with the appropriate input settings.
    *
-   * @param job The job
+   * @param configuration The configuration object.
    * @param inputClass the class object implementing DBWritable, which is the
    *          Java object holding tuple fields.
    * @param selectQuery the input query to select fields. Example : "SELECT f1,
@@ -538,12 +537,12 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
    *          table. Example : "SELECT COUNT(f1) FROM Mytable"
    * @param concurrentReads
    */
-  public static void setInput( JobConf job, Class<? extends DBWritable> inputClass, String selectQuery, String countQuery, long limit,
+  public static void setInput( Configuration configuration, Class<? extends DBWritable> inputClass, String selectQuery, String countQuery, long limit,
       int concurrentReads, Boolean tableAlias )
     {
-    job.setInputFormat( DBInputFormat.class );
+    configuration.set( "mapred.input.format.class", DBInputFormat.class.getName() );
 
-    DBConfiguration dbConf = new DBConfiguration( job );
+    DBConfiguration dbConf = new DBConfiguration( configuration );
 
     dbConf.setInputClass( inputClass );
     dbConf.setInputQuery( selectQuery );
@@ -561,19 +560,7 @@ public class DBInputFormat<T extends DBWritable> implements InputFormat<LongWrit
    * */
   private void closeConnection() throws IOException
     {
-    if( connection != null )
-      {
-      try
-        {
-        // some databases like derby require a commit, before a close.
-        connection.commit();
-        connection.close();
-        connection = null;
-        }
-      catch ( SQLException e )
-        {
-        throw new IOException( e );
-        }
-      }
+    JDBCUtil.closeConnection( connection );
+    connection = null;
     }
   }

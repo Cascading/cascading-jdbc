@@ -28,7 +28,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 
 /**
- * Derby specific DBInputFormat subclass.
+ *
  */
 public class DerbyDBInputFormat extends DBInputFormat<DBWritable>
   {

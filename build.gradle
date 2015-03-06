@@ -46,10 +46,11 @@ apply from: 'etc/version.gradle'
 version = releaseVersion
 
 // the version of hadoop used for compiling and testing
-ext.hadoopVersion = "1.2.1"
+ext.hadoopVersion = "2.4.1"
+ext.tezVersion = "0.5.3"
 
-ext.cascadingVersion = '2.7.0-wip-+'
-ext.lingualVersion = '1.2.0'
+ext.cascadingVersion = '3.0.0-wip-+'
+ext.lingualVersion = '2.0.0-wip-+'
 
 ext.timestamp = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
 
@@ -74,32 +75,30 @@ allprojects {
 }
 
 subprojects{
+
   dependencies {
-    compile group: 'com.google.guava', name: 'guava', version: "15.0"
+    //provided group: 'cascading', name: 'cascading-hadoop2-mr1', version: cascadingVersion, changing: true
+    provided group: 'cascading', name: 'cascading-hadoop2-tez', version: cascadingVersion, changing: true
+    provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
+    provided group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
+    provided group: 'org.apache.hadoop', name: 'hadoop-common', version: hadoopVersion
+    provided group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: hadoopVersion
 
-    provided group: 'xerces', name: 'xercesImpl', version: "2.9.1"
-    provided group: 'xalan', name: 'xalan', version: "2.7.1"
-
-    provided group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion
-    provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.2'
-
-    provided( group: 'org.apache.hadoop', name: 'hadoop-core', version: hadoopVersion ) {
-      exclude group: 'ant'
-      exclude group: 'junit'
-      exclude group: 'hsqldb'
-      exclude group: 'oro' // causes transient build maven failures, ftw
-    }
 
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
-    testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
     testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests'
+    testRuntime group: 'log4j', name: 'log4j', version: '1.2.17'
+
     // only used in tests, not in the production code.
-    testCompile group: 'cascading', name: 'lingual-core', version: lingualVersion
-    testCompile( group: 'org.apache.hadoop', name: 'hadoop-test', version: hadoopVersion ) {
-      exclude group: 'oro'
-      exclude group: 'hsqldb'
+    testCompile(group: 'cascading', name: 'lingual-core', version: lingualVersion ){
+      exclude group: 'xerces'
     }
+
+    testCompile( group: 'org.apache.tez', name: 'tez-tests', version: tezVersion, classifier: 'tests' )
+    testCompile( group: 'org.apache.tez', name: 'tez-api', version: tezVersion )
+    testCompile( group: 'org.apache.tez', name: 'tez-dag', version: tezVersion )
+    testCompile( group: 'org.apache.hadoop', name: 'hadoop-minicluster', version: hadoopVersion )
 
   }
 

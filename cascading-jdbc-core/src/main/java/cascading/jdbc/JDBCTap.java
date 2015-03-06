@@ -35,13 +35,13 @@ import cascading.property.AppProps;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.TapException;
+import cascading.tap.hadoop.io.HadoopTupleEntrySchemeCollector;
 import cascading.tap.hadoop.io.HadoopTupleEntrySchemeIterator;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
-import com.google.common.collect.Lists;
+import cascading.tuple.TupleEntrySchemeCollector;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 import org.slf4j.Logger;
@@ -80,7 +80,7 @@ import org.slf4j.LoggerFactory;
  * @see cascading.jdbc.db.DBInputFormat
  * @see cascading.jdbc.db.DBOutputFormat
  */
-public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
+public class JDBCTap extends Tap<Configuration, RecordReader, OutputCollector>
   {
   static
     {
@@ -163,11 +163,6 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     this( connectionUrl, null, null, driverClassName, tableDesc, scheme, sinkMode );
     }
 
-  @Override
-  public boolean commitResource( JobConf conf ) throws IOException
-    {
-    return super.commitResource( conf );
-    }
 
   /**
    * Constructor JDBCTap creates a new JDBCTap instance.
@@ -208,12 +203,6 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     this.password = password;
     this.driverClassName = driverClassName;
     this.tableDesc = tableDesc;
-
-    // TODO make sure, this is bullet proof
-    // if ( tableDesc.getColumnDefs() == null && sinkMode != SinkMode.UPDATE )
-    // throw new IllegalArgumentException(
-    // "cannot have sink mode REPLACE or KEEP without TableDesc column defs, use UPDATE mode"
-    // );
 
     if ( sinkMode != SinkMode.UPDATE && sinkMode != SinkMode.KEEP )
       LOG.warn( "using sink mode: {}, consider UPDATE to prevent DROP TABLE from being called during Flow or Cascade setup", sinkMode );
@@ -365,7 +354,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
 
 
   @Override
-  public TupleEntryIterator openForRead( FlowProcess<JobConf> flowProcess, RecordReader input ) throws IOException
+  public TupleEntryIterator openForRead( FlowProcess<? extends Configuration> flowProcess, RecordReader input ) throws IOException
     {
     // input may be null when this method is called on the client side or
     // cluster side when accumulating for a HashJoin
@@ -373,17 +362,23 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public TupleEntryCollector openForWrite( FlowProcess<JobConf> flowProcess, OutputCollector output ) throws IOException
+  public TupleEntryCollector openForWrite( FlowProcess<? extends Configuration> flowProcess, OutputCollector output ) throws IOException
     {
     if( !isSink() )
       throw new TapException( "this tap may not be used as a sink, no TableDesc defined" );
 
-    LOG.info( "Creating JDBCTapCollector output instance" );
-    JDBCTapCollector jdbcCollector = new JDBCTapCollector( flowProcess, this );
+    Connection connection = null;
+    try
+      {
+      connection = createConnection();
+      JDBCUtil.createTableIfNotExists( connection, tableDesc );
+      }
+    finally
+      {
+      JDBCUtil.closeConnection( connection );
+      }
 
-    jdbcCollector.prepare();
-
-    return jdbcCollector;
+    return new HadoopTupleEntrySchemeCollector( flowProcess, this, output );
     }
 
   @Override
@@ -393,11 +388,8 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public void sourceConfInit( FlowProcess<JobConf> process, JobConf conf )
+  public void sourceConfInit( FlowProcess<? extends Configuration> process, Configuration conf )
     {
-    // a hack for MultiInputFormat to see that there is a child format
-    FileInputFormat.setInputPaths( conf, getPath() );
-
     if( username == null )
       DBConfiguration.configureDB( conf, driverClassName, connectionUrl );
     else
@@ -407,24 +399,10 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public void sinkConfInit( FlowProcess<JobConf> process, JobConf conf )
+  public void sinkConfInit( FlowProcess<? extends Configuration> process, Configuration conf )
     {
     if( !isSink() )
       return;
-
-    // do not delete if initialized from within a task
-    try
-      {
-      if( isReplace() && conf.get( "mapred.task.partition" ) == null && !deleteResource( conf ) )
-        throw new TapException( "unable to drop table: " + tableDesc.getTableName() );
-
-      if( !createResource( conf ) )
-        throw new TapException( "unable to create table: " + tableDesc.getTableName() );
-      }
-    catch ( IOException e )
-      {
-      throw new TapException( "error '" + e.getMessage() + "'  while trying to modify table: " + tableDesc.getTableName(), e );
-      }
 
     if( username == null )
       DBConfiguration.configureDB( conf, driverClassName, connectionUrl );
@@ -439,7 +417,6 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     try
       {
       LOG.info( "creating connection: {}", connectionUrl );
-
       Class.forName( driverClassName );
 
       Connection connection = null;
@@ -448,6 +425,7 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
         connection = DriverManager.getConnection( connectionUrl );
       else
         connection = DriverManager.getConnection( connectionUrl, username, password );
+
       connection.setAutoCommit( false );
 
       return connection;
@@ -458,8 +436,10 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
         {
         List<String> availableDrivers = new ArrayList<String>();
         Enumeration<Driver> drivers = DriverManager.getDrivers();
+
         while( drivers.hasMoreElements() )
           availableDrivers.add( drivers.nextElement().getClass().getName() );
+
         LOG.error( "Driver not found: {} because {}. Available drivers are: {}", driverClassName, exception.getMessage(), availableDrivers );
         }
       throw new TapException( exception.getMessage() + " (SQL error code: " + exception.getErrorCode() + ") opening connection: " + connectionUrl, exception );
@@ -478,56 +458,22 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * @param updateString of type String
    * @return int
    */
-  public int executeUpdate( String updateString )
+  public int executeUpdate( String updateString ) throws IOException
     {
     Connection connection = null;
-    Statement statement = null;
-    int result;
-
     try
       {
       connection = createConnection();
-      try
-        {
-        LOG.info( "executing update: {}", updateString );
-
-        statement = connection.createStatement();
-
-        result = statement.executeUpdate( updateString );
-
-        connection.commit();
-        statement.close();
-        connection.close();
-        }
-      catch ( SQLException exception )
-        {
-        throw new TapException( "SQL error code: " + exception.getErrorCode() + " executing update statement: " + updateString, exception );
-        }
+      return JDBCUtil.executeUpdate( connection, updateString );
       }
     finally
       {
-      try
-        {
-        if( connection != null && !connection.isClosed() )
-          {
-          connection.commit();
-          if ( statement != null)
-            statement.close();
-          connection.close();
-          }
-        }
-      catch ( SQLException exception )
-        {
-        // ignore
-        LOG.error( "Error closing connection but Flow will still continue. SQL error code: " + exception.getErrorCode(), exception );
-        }
+      JDBCUtil.closeConnection( connection );
       }
-
-    return result;
     }
 
   /**
-   * Method executeQuery allows for ad-hoc queries to be sent to the remove
+   * Method executeQuery allows for ad-hoc queries to be sent to the remote
    * RDBMS. A value of -1 for returnResults will return a List of all results
    * from the query, a value of 0 will return an empty List.
    *
@@ -535,92 +481,41 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
    * @param returnResults of type int
    * @return List
    */
-  public List<Object[]> executeQuery( String queryString, int returnResults ) throws SQLException
+  public List<Object[]> executeQuery( String queryString, int returnResults ) throws IOException
     {
-    Connection connection = null;
-    List<Object[]> result = Collections.emptyList();
-
-    try
+    try (Connection connection = createConnection())
       {
-      connection = createConnection();
-      LOG.info( "executing query: {}", queryString );
-
-      Statement statement = connection.createStatement();
-
-      ResultSet resultSet = statement.executeQuery( queryString );
-
-      if( returnResults != 0 )
-        result = copyResultSet( resultSet, returnResults );
-
-      statement.close();
-      connection.commit();
-      connection.close();
-      return result;
+      return JDBCUtil.executeQuery( connection, queryString, returnResults );
       }
-    finally
+    catch ( SQLException exception )
       {
-      try
-        {
-        if( connection != null && !connection.isClosed() )
-          {
-          connection.commit();
-          connection.close();
-          }
-        }
-      catch( SQLException exception )
-        {
-        LOG.warn( "ignoring connection close exception. SQL error code: " + exception.getErrorCode(), exception );
-        }
+      throw new IOException( exception );
       }
-    }
 
-  private List<Object[]> copyResultSet( ResultSet resultSet, int length ) throws SQLException
-    {
-    List<Object[]> results = Lists.newArrayList();
-
-    if( length == -1 )
-      length = Integer.MAX_VALUE;
-
-    int size = resultSet.getMetaData().getColumnCount();
-
-    int count = 0;
-    while( resultSet.next() && count < length )
-      {
-      count++;
-      Object[] row = new Object[size];
-      for( int i = 0; i < row.length; i++ )
-        {
-        row[ i ] = resultSet.getObject( i + 1 );
-        }
-      results.add( row );
-      }
-    return results;
     }
 
   @Override
-  public boolean createResource( JobConf conf ) throws IOException
+  public boolean createResource( Configuration conf ) throws IOException
     {
     if( resourceExists( conf ) )
       return true;
 
+    Connection connection = null;
     try
       {
-      LOG.info( "creating table: {}", tableDesc );
-      executeUpdate( tableDesc.getCreateTableStatement() );
+      connection = createConnection();
+      JDBCUtil.createTableIfNotExists( connection, tableDesc );
       }
-    catch( Exception exception )
+    finally
       {
-      LOG.error( "unable to create table: {}", tableDesc.tableName, exception );
-      LOG.error( "sql query failed: {}", tableDesc.getCreateTableStatement(), exception.getCause() );
-
-      return false;
+      JDBCUtil.closeConnection( connection );
       }
 
     return resourceExists( conf );
     }
 
   @Override
-  public boolean deleteResource( JobConf conf ) throws IOException
+  public boolean deleteResource( Configuration conf ) throws IOException
     {
     if( !isSink() )
       return false;
@@ -628,75 +523,39 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     if( !resourceExists( conf )  )
       return true;
 
+    Connection connection = null;
     try
       {
-      LOG.info( "deleting table: {}", tableDesc.tableName );
-
-      executeUpdate( tableDesc.getTableDropStatement() );
+      connection = createConnection();
+      JDBCUtil.dropTable( connection, tableDesc );
       }
-    catch ( Exception exception )
+    finally
       {
-      // For things like Derby that pretend to be a SQL system but offer no real
-      // table discovery these have to be ignored since they throw "table does not exist"
-      // problems.
-
-      LOG.warn( "unable to drop table: {}", tableDesc.tableName );
-      LOG.warn( "sql failure", exception.getCause() );
-
-      return false;
+      JDBCUtil.closeConnection( connection );
       }
-
     return !resourceExists( conf );
     }
 
   @Override
-  public boolean resourceExists( JobConf conf ) throws IOException
+  public boolean resourceExists( Configuration conf ) throws IOException
     {
     if( !isSink() )
       return true;
 
     Connection connection = null;
-    ResultSet tables = null;
-    LOG.info( "testing if table exists with DatabaseMetaData" );
     try
       {
       connection = createConnection();
-      DatabaseMetaData dbm = connection.getMetaData();
-      tables = dbm.getTables( null, null, tableDesc.getTableName(), null );
-      if ( tables.next() )
-        return true;
-      tables.close();
-      // try again with upper case for oracle compatibility:
-      // see http://stackoverflow.com/questions/2942788/check-if-table-exists
-      tables = dbm.getTables( null, null, tableDesc.getTableName().toUpperCase(), null );
-      if ( tables.next() )
-        return true;
-      }
-    catch( SQLException exception )
-      {
-      throw new IOException( exception );
+      return JDBCUtil.tableExists( connection, tableDesc );
       }
     finally
       {
-      if ( connection != null )
-        {
-        try
-          {
-          tables.close();
-          connection.rollback();
-          connection.close();
-          }
-        catch( SQLException exception )
-          {
-          throw new IOException( exception );
-          }
-        }
+      JDBCUtil.closeConnection( connection );
       }
-    return false;
     }
 
   @Override
-  public long getModifiedTime( JobConf conf ) throws IOException
+  public long getModifiedTime( Configuration conf ) throws IOException
     {
     return System.currentTimeMillis();
     }

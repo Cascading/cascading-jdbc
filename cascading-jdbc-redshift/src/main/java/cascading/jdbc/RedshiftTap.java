@@ -22,6 +22,7 @@ package cascading.jdbc;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
 
 import cascading.flow.FlowProcess;
@@ -32,8 +33,7 @@ import cascading.tap.hadoop.Hfs;
 import cascading.tuple.TupleEntryCollector;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,21 +107,18 @@ public class RedshiftTap extends JDBCTap
     }
 
   @Override
-  public void sourceConfInit( FlowProcess<JobConf> process, JobConf conf )
+  public void sourceConfInit( FlowProcess<? extends Configuration> process, Configuration configuration )
     {
-    // a hack for MultiInputFormat to see that there is a child format
-    FileInputFormat.setInputPaths( conf, getPath() );
-
     if( username == null )
-      DBConfiguration.configureDB( conf, driverClassName, connectionUrl );
+      DBConfiguration.configureDB( configuration, driverClassName, connectionUrl );
     else
-      DBConfiguration.configureDB( conf, driverClassName, connectionUrl, username, password );
+      DBConfiguration.configureDB( configuration, driverClassName, connectionUrl, username, password );
 
-    super.sourceConfInit( process, conf );
+    super.sourceConfInit( process, configuration );
     }
 
   @Override
-  public void sinkConfInit( FlowProcess<JobConf> process, JobConf conf )
+  public void sinkConfInit( FlowProcess<? extends Configuration> process, Configuration conf )
     {
     if (!useDirectInsert) {
       // if we haven't set the credentials beforehand try to set them from the job conf
@@ -139,7 +136,7 @@ public class RedshiftTap extends JDBCTap
     }
 
   @Override
-  public TupleEntryCollector openForWrite( FlowProcess<JobConf> flowProcess, OutputCollector outputCollector ) throws IOException
+  public TupleEntryCollector openForWrite( FlowProcess<? extends Configuration> flowProcess, OutputCollector outputCollector ) throws IOException
     {
     // force a table creation if one does not exist
     LOG.info( "creating db table: " + getTableName() );
@@ -157,40 +154,40 @@ public class RedshiftTap extends JDBCTap
     }
 
   @Override
-  public boolean createResource( JobConf jobConf ) throws IOException
+  public boolean createResource( Configuration configuration ) throws IOException
     {
     LOG.info( "creating resources" );
     boolean createSuccess = true;
     if( !useDirectInsert )
       {
       LOG.info( "creating hfs scratch space: {}", hfsStagingDir.getIdentifier() );
-      createSuccess = hfsStagingDir.createResource( jobConf );
+      createSuccess = hfsStagingDir.createResource( configuration );
       }
     if( createSuccess )
       {
       LOG.info( "creating DB table: {}", super.getIdentifier() );
-      createSuccess = super.createResource( jobConf );
+      createSuccess = super.createResource( configuration );
       }
     return createSuccess;
     }
 
   @Override
-  public boolean deleteResource( JobConf jobConf ) throws IOException
+  public boolean deleteResource( Configuration configuration ) throws IOException
     {
     LOG.info( "deleting resources" );
     boolean deleteSuccsess;
     LOG.info( "deleting DB table: {}", super.getIdentifier() );
-    deleteSuccsess = super.deleteResource( jobConf );
-    if( deleteSuccsess && hfsStagingDir.resourceExists( jobConf ) )
+    deleteSuccsess = super.deleteResource( configuration );
+    if( deleteSuccsess && hfsStagingDir.resourceExists( configuration ) )
       {
       LOG.info( "deleting hfs scratch space: {}", hfsStagingDir.getIdentifier() );
-      deleteSuccsess = hfsStagingDir.deleteResource( jobConf );
+      deleteSuccsess = hfsStagingDir.deleteResource( configuration );
       }
     return deleteSuccsess;
     }
 
   @Override
-  public boolean commitResource( JobConf jobConf ) throws IOException
+  public boolean commitResource( Configuration configuration ) throws IOException
     {
     if( !useDirectInsert )
       {
@@ -204,19 +201,19 @@ public class RedshiftTap extends JDBCTap
       finally
         {
         // clean scratch resources even if load failed.
-        if( !keepDebugHfsData && hfsStagingDir.resourceExists( jobConf ) )
-          hfsStagingDir.deleteResource( jobConf );
+        if( !keepDebugHfsData && hfsStagingDir.resourceExists( configuration ) )
+          hfsStagingDir.deleteResource( configuration );
         }
       }
     return true;
     }
 
   @Override
-  public long getModifiedTime( JobConf jobConf ) throws IOException
+  public long getModifiedTime( Configuration configuration ) throws IOException
     {
-    if( hfsStagingDir.resourceExists( jobConf ) )
-      return hfsStagingDir.getModifiedTime( jobConf );
-    return super.getModifiedTime( jobConf );
+    if( hfsStagingDir.resourceExists( configuration ) )
+      return hfsStagingDir.getModifiedTime( configuration );
+    return super.getModifiedTime( configuration );
     }
 
   public boolean isUseDirectInsert()
@@ -242,22 +239,16 @@ public class RedshiftTap extends JDBCTap
 
   private String buildCopyOptions()
     {
-
-    Maps.EntryTransformer<RedshiftFactory.CopyOption, String, String> optionToCommandString =
-      new Maps.EntryTransformer<RedshiftFactory.CopyOption, String, String>()
+    StringBuilder builder = new StringBuilder();
+    for( Map.Entry<RedshiftFactory.CopyOption, String> copyOption : redshiftScheme.getCopyOptions().entrySet() )
       {
-      @Override
-      public String transformEntry( RedshiftFactory.CopyOption copyOption, String args )
-        {
-        if( args == null )
-          return copyOption.toString();
-
-        return copyOption.toString() + " " + copyOption.getArguments( args );
-        }
-      };
-
-    Collection<String> optionsAsCommand = Maps.transformEntries( redshiftScheme.getCopyOptions(), optionToCommandString ).values();
-    return StringUtils.join( optionsAsCommand, " " );
+      builder.append( " " );
+      if( copyOption.getValue() == null )
+        builder.append( copyOption.getKey().toString() );
+      else
+        builder.append( copyOption.getKey().toString() ).append( " " ).append( copyOption.getKey().getArguments( copyOption.getValue() ) );
+      }
+    return builder.toString();
     }
 
   @Override

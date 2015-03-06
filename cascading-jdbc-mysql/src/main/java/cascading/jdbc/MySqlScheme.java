@@ -22,6 +22,7 @@ package cascading.jdbc;
 
 import cascading.jdbc.db.DBOutputFormat;
 import cascading.tuple.Fields;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
@@ -92,12 +93,11 @@ public class MySqlScheme extends JDBCScheme
     }
 
   @Override
-  public void sinkConfInit( FlowProcess<JobConf> process, Tap<JobConf, RecordReader, OutputCollector> tap,
-      JobConf job )
+  public void sinkConfInit( FlowProcess<? extends Configuration> process, Tap<Configuration, RecordReader, OutputCollector> tap, Configuration configuration )
     {
-    MySqlDBConfiguration conf = new MySqlDBConfiguration( job );
+    MySqlDBConfiguration conf = new MySqlDBConfiguration( configuration );
     conf.setReplaceOnInsert( replaceOnInsert );
 
-    super.sinkConfInit( process, tap, job );
+    super.sinkConfInit( process, tap, configuration );
     }
   }

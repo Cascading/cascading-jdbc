@@ -38,13 +38,18 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import cascading.CascadingException;
+import cascading.jdbc.JDBCUtil;
+import cascading.jdbc.TableDesc;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.jobcontrol.Job;
 import org.apache.hadoop.util.Progressable;
 
 /**
@@ -58,164 +63,44 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
   {
   private static final Log LOG = LogFactory.getLog( DBOutputFormat.class );
 
-  /** A RecordWriter that writes the reduce output to a SQL table */
-  protected class DBRecordWriter implements RecordWriter<K, V>
+  /**
+   * Initializes the reduce-part of the job with the appropriate output settings
+   *
+   * @param configuration       The Configuration object.
+   * @param dbOutputFormatClass
+   * @param tableDesc The TableDesc instance describing the table.
+   */
+  public static void setOutput( Configuration configuration, Class<? extends DBOutputFormat> dbOutputFormatClass, TableDesc tableDesc, String[] updateFields, int batchSize )
     {
-    private Connection connection;
-    private PreparedStatement insertStatement;
-    private PreparedStatement updateStatement;
-    private final int statementsBeforeExecute;
+    if( dbOutputFormatClass == null )
+      configuration.set( "mapred.output.format.class", DBOutputFormat.class.getName() );
+    else
+      configuration.set( "mapred.output.format.class", dbOutputFormatClass.getName() );
 
-    private long statementsAdded = 0;
-    private long insertStatementsCurrent = 0;
-    private long updateStatementsCurrent = 0;
+    // writing doesn't always happen in reduce
+    configuration.setBoolean( "mapred.map.tasks.speculative.execution", false );
+    configuration.setBoolean( "mapred.reduce.tasks.speculative.execution", false );
 
-    protected DBRecordWriter( Connection connection, PreparedStatement insertStatement, PreparedStatement updateStatement,
-        int statementsBeforeExecute )
-      {
-      this.connection = connection;
-      this.insertStatement = insertStatement;
-      this.updateStatement = updateStatement;
-      this.statementsBeforeExecute = statementsBeforeExecute;
-      }
+    DBConfiguration dbConf = new DBConfiguration( configuration );
 
-    /** {@inheritDoc} */
-    public void close( Reporter reporter ) throws IOException
-      {
-      try
-        {
-        if (insertStatement != null)
-          executeBatch(insertStatement, insertStatementsCurrent);
-        if (updateStatement != null)
-          executeBatch( updateStatement, updateStatementsCurrent );
-        }
-      finally
-        {
-        try
-          {
-          if (!connection.isClosed())
-            connection.close();
-          }
-        catch ( SQLException exception )
-          {
-          throw new IOException( "unable to close connection", exception );
-          }
-        }
-      }
+    dbConf.setOutputTableName( tableDesc.getTableName() );
+    dbConf.setOutputFieldNames( tableDesc.getColumnNames() );
+    dbConf.setOutputFieldTypes( tableDesc.getColumnDefs() );
+    dbConf.setOutputPrimaryKeys( tableDesc.getPrimaryKeys() );
 
-    private void executeBatch(PreparedStatement preparedStatement, long currentCount) throws IOException
-      {
-      try
-        {
-        if( currentCount != 0 )
-          {
-          LOG.info( "executing batch " + createBatchMessage( currentCount ) );
-          int[] result = preparedStatement.executeBatch();
-          int updatedRecords = 0;
-          boolean hasUpdateCount = true;
+    if( updateFields != null )
+      dbConf.setOutputUpdateFieldNames( updateFields );
 
-          for( int value : result )
-            {
-            if (value == Statement.EXECUTE_FAILED)
-              manageBatchProcessingError("update failed", 0, new BatchProcessingException( "value=Statement.EXECUTE_FAILED" ));
-            else if ( value == Statement.SUCCESS_NO_INFO)
-              hasUpdateCount = false;
-
-            updatedRecords =+ value;
-            }
-
-          if (hasUpdateCount)
-            LOG.info( "records:" + updatedRecords );
-
-          // If no records matched the update query it's still a success. But if the number of updated statements
-          // that ran isn't the expected count there's a problem.
-          if( result.length != currentCount )
-            manageBatchProcessingError("update did not update same number of statements executed in batch, batch: " + currentCount
-              + " updated: " + result.length, 0, new BatchProcessingException( "" ));
-            }
-
-        connection.commit();
-        }
-      catch ( SQLException exception )
-        {
-        manageBatchProcessingError( "unable to execute update batch", currentCount, exception );
-        }
-
-      }
-
-    private String createBatchMessage( long currentStatements )
-      {
-      return String.format( "[totstmts: %d][crntstmts: %d][batch: %d]", statementsAdded, currentStatements, statementsBeforeExecute );
-      }
-
-    private void manageBatchProcessingError( String stateMessage, long currentStatements, SQLException exception ) throws IOException
-      {
-      String message = exception.getMessage();
-
-      message = message.substring( 0, Math.min( 75, message.length() ) );
-
-      int messageLength = exception.getMessage().length();
-      String batchMessage = createBatchMessage( currentStatements );
-      String template = "%s [msglength: %d]%s %s";
-      String errorMessage = String.format( template, stateMessage, messageLength, batchMessage, message );
-
-      LOG.error( errorMessage, exception.getNextException() );
-
-      try
-        {
-        connection.rollback();
-        connection.commit();
-        }
-      catch( SQLException sqlException )
-        {
-        LOG.error( "unable to rollback batch", sqlException );
-        }
-
-      throw new IOException( errorMessage, exception.getNextException() );
-      }
-
-    /** {@inheritDoc} */
-    public synchronized void write( K key, V value ) throws IOException
-      {
-      try
-        {
-        if( value == null )
-          {
-          key.write( insertStatement );
-          insertStatement.addBatch();
-          insertStatementsCurrent++;
-          }
-        else
-          {
-          key.write( updateStatement );
-          updateStatement.addBatch();
-          updateStatementsCurrent++;
-          }
-        }
-      catch ( SQLException exception )
-        {
-        throw new IOException( "unable to add batch statement", exception );
-        }
-
-      statementsAdded++;
-
-      if( statementsAdded % statementsBeforeExecute == 0 )
-        {
-        executeBatch(insertStatement, insertStatementsCurrent);
-        executeBatch(updateStatement, updateStatementsCurrent);
-        // reset counters after each batch
-        insertStatementsCurrent = 0;
-        updateStatementsCurrent = 0;
-        }
-      }
+    if( batchSize != -1 )
+      dbConf.setBatchStatementsNum( batchSize );
     }
 
   /**
    * Constructs the query used as the prepared statement to insert data.
    *
-   * @param table the table to insert into
+   * @param table      the table to insert into
    * @param fieldNames the fields to insert into. If field names are unknown,
-   *          supply an array of nulls.
+   *                   supply an array of nulls.
    */
   protected String constructInsertQuery( String table, String[] fieldNames )
     {
@@ -310,7 +195,10 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
 
     Connection connection = dbConf.getConnection();
 
+    TableDesc tableDesc = dbConf.toTableDesc();
+
     configureConnection( connection );
+    JDBCUtil.createTableIfNotExists( connection, tableDesc );
 
     String sqlInsert = constructInsertQuery( tableName, fieldNames );
     PreparedStatement insertPreparedStatement;
@@ -320,19 +208,19 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
       insertPreparedStatement = connection.prepareStatement( sqlInsert );
       insertPreparedStatement.setEscapeProcessing( true ); // should be on by default
       }
-    catch ( SQLException exception )
+    catch( SQLException exception )
       {
       throw new IOException( "unable to create statement for: " + sqlInsert, exception );
       }
 
     String sqlUpdate = updateNames != null ? constructUpdateQuery( tableName, fieldNames, updateNames ) : null;
-    PreparedStatement updatePreparedStatement = null;
+    PreparedStatement updatePreparedStatement;
 
     try
       {
       updatePreparedStatement = sqlUpdate != null ? connection.prepareStatement( sqlUpdate ) : null;
       }
-    catch ( SQLException exception )
+    catch( SQLException exception )
       {
       throw new IOException( "unable to create statement for: " + sqlUpdate, exception );
       }
@@ -351,42 +239,151 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
       {
       connection.setAutoCommit( false );
       }
-    catch ( Exception exception )
+    catch( SQLException exception )
       {
-      throw new RuntimeException( "unable to set auto commit", exception );
+      throw new CascadingException( "unable to set auto commit", exception );
       }
     }
 
-  /**
-   * Initializes the reduce-part of the job with the appropriate output settings
-   *
-   * @param job The job
-   * @param dbOutputFormatClass
-   * @param tableName The table to insert data into
-   * @param fieldNames The field names in the table. If unknown, supply the
-   *          appropriate
-   */
-  public static void setOutput( JobConf job, Class<? extends DBOutputFormat> dbOutputFormatClass, String tableName, String[] fieldNames,
-      String[] updateFields, int batchSize )
+  /** A RecordWriter that writes the reduce output to a SQL table */
+  protected class DBRecordWriter implements RecordWriter<K, V>
     {
-    if( dbOutputFormatClass == null )
-      job.setOutputFormat( DBOutputFormat.class );
-    else
-      job.setOutputFormat( dbOutputFormatClass );
+    private final int statementsBeforeExecute;
+    private Connection connection;
+    private PreparedStatement insertStatement;
+    private PreparedStatement updateStatement;
+    private long statementsAdded = 0;
+    private long insertStatementsCurrent = 0;
+    private long updateStatementsCurrent = 0;
 
-    // writing doesn't always happen in reduce
-    job.setReduceSpeculativeExecution( false );
-    job.setMapSpeculativeExecution( false );
+    protected DBRecordWriter( Connection connection, PreparedStatement insertStatement, PreparedStatement updateStatement, int statementsBeforeExecute )
+      {
+      this.connection = connection;
+      this.insertStatement = insertStatement;
+      this.updateStatement = updateStatement;
+      this.statementsBeforeExecute = statementsBeforeExecute;
+      }
 
-    DBConfiguration dbConf = new DBConfiguration( job );
+    /** {@inheritDoc} */
+    public void close( Reporter reporter ) throws IOException
+      {
+      try
+        {
+        if( insertStatement != null )
+          executeBatch( insertStatement, insertStatementsCurrent );
+        if( updateStatement != null )
+          executeBatch( updateStatement, updateStatementsCurrent );
+        }
+      finally
+        {
+        JDBCUtil.closeConnection( connection );
+        }
+      }
 
-    dbConf.setOutputTableName( tableName );
-    dbConf.setOutputFieldNames( fieldNames );
+    private void executeBatch( PreparedStatement preparedStatement, long currentCount ) throws IOException
+      {
+      try
+        {
+        if( currentCount != 0 )
+          {
+          LOG.info( "executing batch " + createBatchMessage( currentCount ) );
+          int[] result = preparedStatement.executeBatch();
+          int updatedRecords = 0;
+          boolean hasUpdateCount = true;
 
-    if( updateFields != null )
-      dbConf.setOutputUpdateFieldNames( updateFields );
+          for( int value : result )
+            {
+            if( value == Statement.EXECUTE_FAILED )
+              manageBatchProcessingError( "update failed", 0, new BatchProcessingException( "value=Statement.EXECUTE_FAILED" ) );
+            else if( value == Statement.SUCCESS_NO_INFO )
+              hasUpdateCount = false;
 
-    if( batchSize != -1 )
-      dbConf.setBatchStatementsNum( batchSize );
+            updatedRecords = +value;
+            }
+
+          if( hasUpdateCount )
+            LOG.info( "records:" + updatedRecords );
+
+          // If no records matched the update query it's still a success. But if the number of updated statements
+          // that ran isn't the expected count there's a problem.
+          if( result.length != currentCount )
+            manageBatchProcessingError( "update did not update same number of statements executed in batch, batch: " + currentCount
+              + " updated: " + result.length, 0, new BatchProcessingException( "" ) );
+          }
+
+        connection.commit();
+        }
+      catch( SQLException exception )
+        {
+        manageBatchProcessingError( "unable to execute update batch", currentCount, exception );
+        }
+
+      }
+
+    private String createBatchMessage( long currentStatements )
+      {
+      return String.format( "[totstmts: %d][crntstmts: %d][batch: %d]", statementsAdded, currentStatements, statementsBeforeExecute );
+      }
+
+    private void manageBatchProcessingError( String stateMessage, long currentStatements, SQLException exception ) throws IOException
+      {
+      String message = exception.getMessage();
+
+      message = message.substring( 0, Math.min( 75, message.length() ) );
+
+      int messageLength = exception.getMessage().length();
+      String batchMessage = createBatchMessage( currentStatements );
+      String template = "%s [msglength: %d]%s %s";
+      String errorMessage = String.format( template, stateMessage, messageLength, batchMessage, message );
+
+      LOG.error( errorMessage, exception.getNextException() );
+
+      try
+        {
+        connection.rollback();
+        connection.commit();
+        }
+      catch( SQLException sqlException )
+        {
+        LOG.error( "unable to rollback batch", sqlException );
+        }
+
+      throw new IOException( errorMessage, exception.getNextException() );
+      }
+
+    /** {@inheritDoc} */
+    public synchronized void write( K key, V value ) throws IOException
+      {
+      try
+        {
+        if( value == null )
+          {
+          key.write( insertStatement );
+          insertStatement.addBatch();
+          insertStatementsCurrent++;
+          }
+        else
+          {
+          key.write( updateStatement );
+          updateStatement.addBatch();
+          updateStatementsCurrent++;
+          }
+        }
+      catch( SQLException exception )
+        {
+        throw new IOException( "unable to add batch statement", exception );
+        }
+
+      statementsAdded++;
+
+      if( statementsAdded % statementsBeforeExecute == 0 )
+        {
+        executeBatch( insertStatement, insertStatementsCurrent );
+        executeBatch( updateStatement, updateStatementsCurrent );
+        // reset counters after each batch
+        insertStatementsCurrent = 0;
+        updateStatementsCurrent = 0;
+        }
+      }
     }
   }

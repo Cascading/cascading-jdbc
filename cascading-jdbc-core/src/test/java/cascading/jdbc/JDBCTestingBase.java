@@ -22,11 +22,18 @@ package cascading.jdbc;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.util.Map;
 import java.util.Properties;
 
 import cascading.flow.Flow;
-import cascading.flow.hadoop.HadoopFlowConnector;
+import cascading.flow.FlowConnector;
+import cascading.flow.FlowRuntimeProps;
+
+import cascading.flow.tez.Hadoop2TezFlowConnector;
 import cascading.jdbc.db.DBInputFormat;
+import cascading.jdbc.db.DBOutputFormat;
 import cascading.jdbc.db.DBWritable;
 import cascading.operation.Identity;
 import cascading.operation.regex.RegexSplitter;
@@ -94,7 +101,7 @@ public abstract class JDBCTestingBase
     // forcing commits to test the batch behaviour
     replaceTap.setBatchSize( 2 );
 
-    Flow<?> parseFlow = new HadoopFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
+    Flow<?> parseFlow = createFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
 
     parseFlow.complete();
 
@@ -106,7 +113,7 @@ public abstract class JDBCTestingBase
 
     Pipe copyPipe = new Each( "read", new Identity() );
 
-    Flow<?> copyFlow = new HadoopFlowConnector( createProperties() ).connect( replaceTap, sink, copyPipe );
+    Flow<?> copyFlow = createFlowConnector( createProperties() ).connect( replaceTap, sink, copyPipe );
 
     copyFlow.complete();
 
@@ -118,7 +125,7 @@ public abstract class JDBCTestingBase
     jdbcScheme.setSinkFields( fields );
     Tap<?, ?, ?> updateTap = getNewJDBCTap( tableDesc, jdbcScheme, SinkMode.UPDATE );
 
-    Flow<?> updateFlow = new HadoopFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
+    Flow<?> updateFlow = createFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
 
     updateFlow.complete();
     updateFlow.cleanup();
@@ -132,7 +139,7 @@ public abstract class JDBCTestingBase
 
     Pipe readPipe = new Each( "read", new Identity() );
 
-    Flow<?> readFlow = new HadoopFlowConnector( createProperties() ).connect( sourceTap, sink, readPipe );
+    Flow<?> readFlow = createFlowConnector( createProperties() ).connect( sourceTap, sink, readPipe );
 
     readFlow.complete();
 
@@ -142,9 +149,6 @@ public abstract class JDBCTestingBase
   @Test
   public void testJDBCDeriveTypesFromFields() throws IOException
     {
-
-    // CREATE NEW TABLE FROM SOURCE
-
     Tap<?, ?, ?> source = new Hfs( new TextLine(), inputFile );
     Fields fields = new Fields( new Comparable[]{"num", "lwr", "upr"}, new Type[]{int.class, String.class,
                                                                                   String.class} );
@@ -162,7 +166,7 @@ public abstract class JDBCTestingBase
     // forcing commits to test the batch behaviour
     replaceTap.setBatchSize( 2 );
 
-    Flow<?> parseFlow = new HadoopFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
+    Flow<?> parseFlow = createFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
 
     parseFlow.complete();
 
@@ -174,7 +178,7 @@ public abstract class JDBCTestingBase
 
     Pipe copyPipe = new Each( "read", new Identity() );
 
-    Flow<?> copyFlow = new HadoopFlowConnector( createProperties() ).connect( replaceTap, sink, copyPipe );
+    Flow<?> copyFlow = createFlowConnector( createProperties() ).connect( replaceTap, sink, copyPipe );
 
     copyFlow.complete();
 
@@ -186,7 +190,7 @@ public abstract class JDBCTestingBase
     jdbcScheme.setSinkFields( fields );
     Tap<?, ?, ?> updateTap = getNewJDBCTap( tableDesc, jdbcScheme, SinkMode.UPDATE );
 
-    Flow<?> updateFlow = new HadoopFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
+    Flow<?> updateFlow = createFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
 
     updateFlow.complete();
     updateFlow.cleanup();
@@ -200,7 +204,7 @@ public abstract class JDBCTestingBase
 
     Pipe readPipe = new Each( "read", new Identity() );
 
-    Flow<?> readFlow = new HadoopFlowConnector( createProperties() ).connect( sourceTap, sink, readPipe );
+    Flow<?> readFlow = createFlowConnector( createProperties() ).connect( sourceTap, sink, readPipe );
 
     readFlow.complete();
 
@@ -230,7 +234,7 @@ public abstract class JDBCTestingBase
     // forcing commits to test the batch behaviour
     replaceTap.setBatchSize( 2 );
 
-    Flow<?> parseFlow = new HadoopFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
+    Flow<?> parseFlow = createFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
 
     parseFlow.complete();
 
@@ -242,7 +246,7 @@ public abstract class JDBCTestingBase
 
     Pipe copyPipe = new Each( "read", new Identity() );
 
-    Flow<?> copyFlow = new HadoopFlowConnector( createProperties() ).connect( replaceTap, sink, copyPipe );
+    Flow<?> copyFlow = createFlowConnector( createProperties() ).connect( replaceTap, sink, copyPipe );
 
     copyFlow.complete();
 
@@ -254,7 +258,7 @@ public abstract class JDBCTestingBase
     jdbcScheme.setSinkFields( fields );
     Tap<?, ?, ?> updateTap = getNewJDBCTap( tableDesc, jdbcScheme, SinkMode.UPDATE );
 
-    Flow<?> updateFlow = new HadoopFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
+    Flow<?> updateFlow = createFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
 
     updateFlow.complete();
     updateFlow.cleanup();
@@ -268,7 +272,7 @@ public abstract class JDBCTestingBase
 
     Pipe readPipe = new Each( "read", new Identity() );
 
-    Flow<?> readFlow = new HadoopFlowConnector( createProperties() ).connect( sourceTap, sink, readPipe );
+    Flow<?> readFlow = createFlowConnector( createProperties() ).connect( sourceTap, sink, readPipe );
 
     readFlow.complete();
 
@@ -294,7 +298,7 @@ public abstract class JDBCTestingBase
 
     Tap<?, ?, ?> replaceTap = getNewJDBCTap( tableDesc, getNewJDBCScheme( fields, columnNames ), SinkMode.REPLACE );
 
-    Flow<?> parseFlow = new HadoopFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
+    Flow<?> parseFlow = createFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
 
     parseFlow.complete();
 
@@ -306,7 +310,7 @@ public abstract class JDBCTestingBase
 
     Pipe copyPipe = new Each( "read", new Identity() );
 
-    Flow<?> copyFlow = new HadoopFlowConnector( createProperties() ).connect( replaceTap, sink, copyPipe );
+    Flow<?> copyFlow = createFlowConnector( createProperties() ).connect( replaceTap, sink, copyPipe );
 
     copyFlow.complete();
 
@@ -318,7 +322,7 @@ public abstract class JDBCTestingBase
     jdbcScheme.setSinkFields( fields );
     Tap<?, ?, ?> updateTap = getNewJDBCTap( tableDesc, jdbcScheme, SinkMode.UPDATE );
 
-    Flow<?> updateFlow = new HadoopFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
+    Flow<?> updateFlow = createFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
 
     updateFlow.complete();
 
@@ -331,7 +335,7 @@ public abstract class JDBCTestingBase
 
     Pipe readPipe = new Each( "read", new Identity() );
 
-    Flow<?> readFlow = new HadoopFlowConnector( createProperties() ).connect( sourceTap, sink, readPipe );
+    Flow<?> readFlow = createFlowConnector( createProperties() ).connect( sourceTap, sink, readPipe );
 
     readFlow.complete();
 
@@ -368,7 +372,7 @@ public abstract class JDBCTestingBase
 
     Tap<?, ?, ?> replaceTap = factory.createTap( "jdbc", scheme, jdbcurl, SinkMode.REPLACE, tapProperties );
 
-    Flow<?> parseFlow = new HadoopFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
+    Flow<?> parseFlow = createFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
 
     parseFlow.complete();
 
@@ -380,7 +384,7 @@ public abstract class JDBCTestingBase
 
     Pipe copyPipe = new Each( "read", new Identity() );
 
-    Flow<?> copyFlow = new HadoopFlowConnector( createProperties() ).connect( replaceTap, sink, copyPipe );
+    Flow<?> copyFlow = createFlowConnector( createProperties() ).connect( replaceTap, sink, copyPipe );
 
     copyFlow.complete();
 
@@ -394,7 +398,7 @@ public abstract class JDBCTestingBase
 
     Tap<?, ?, ?> updateTap = factory.createTap( "jdbc", updateScheme, jdbcurl, getSinkModeForReset(), tapProperties );
 
-    Flow<?> updateFlow = new HadoopFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
+    Flow<?> updateFlow = createFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
 
     updateFlow.complete();
 
@@ -408,7 +412,7 @@ public abstract class JDBCTestingBase
     Tap<?, ?, ?> sourceTap = factory.createTap( "jdbc", sourceScheme, jdbcurl, SinkMode.KEEP, tapProperties );
 
     Pipe readPipe = new Each( "read", new Identity() );
-    Flow<?> readFlow = new HadoopFlowConnector( createProperties() ).connect( sourceTap, sink, readPipe );
+    Flow<?> readFlow = createFlowConnector( createProperties() ).connect( sourceTap, sink, readPipe );
 
     readFlow.complete();
 
@@ -437,7 +441,7 @@ public abstract class JDBCTestingBase
 
     Tap<?, ?, ?> replaceTap = factory.createTap( "jdbc", scheme, jdbcurl, SinkMode.REPLACE, tapProperties );
 
-    Flow<?> parseFlow = new HadoopFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
+    Flow<?> parseFlow = createFlowConnector( createProperties() ).connect( source, replaceTap, parsePipe );
 
     parseFlow.complete();
 
@@ -449,7 +453,7 @@ public abstract class JDBCTestingBase
 
     Pipe copyPipe = new Each( "read", new Identity() );
 
-    Flow<?> copyFlow = new HadoopFlowConnector( createProperties() ).connect( replaceTap, sink, copyPipe );
+    Flow<?> copyFlow = createFlowConnector( createProperties() ).connect( replaceTap, sink, copyPipe );
 
     copyFlow.complete();
 
@@ -463,7 +467,7 @@ public abstract class JDBCTestingBase
 
     Tap<?, ?, ?> updateTap = factory.createTap( "jdbc", updateScheme, jdbcurl, getSinkModeForReset(), tapProperties );
 
-    Flow<?> updateFlow = new HadoopFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
+    Flow<?> updateFlow = createFlowConnector( createProperties() ).connect( sink, updateTap, parsePipe );
 
     updateFlow.complete();
 
@@ -478,7 +482,7 @@ public abstract class JDBCTestingBase
 
     Pipe readPipe = new Each( "read", new Identity() );
 
-    Flow<?> readFlow = new HadoopFlowConnector( createProperties() ).connect( sourceTap, sink, readPipe );
+    Flow<?> readFlow = createFlowConnector( createProperties() ).connect( sourceTap, sink, readPipe );
 
     readFlow.complete();
 
@@ -509,12 +513,12 @@ public abstract class JDBCTestingBase
 
   protected JDBCScheme getNewJDBCScheme( String[] columns, String[] orderBy, String[] updateBy )
     {
-    return new JDBCScheme( columns, orderBy, updateBy );
+    return new JDBCScheme( inputFormatClass, DBOutputFormat.class, columns, orderBy, updateBy );
     }
 
-  protected JDBCScheme getNewJDBCScheme( String[] columnsNames, String contentsQuery, String countStarQuery )
+  protected JDBCScheme getNewJDBCScheme( String[] columnNames, String contentsQuery, String countStarQuery )
     {
-    return new JDBCScheme( columnsNames, contentsQuery, countStarQuery );
+    return new JDBCScheme( inputFormatClass, new Fields( columnNames ), columnNames, contentsQuery, countStarQuery, -1 );
     }
 
   protected TableDesc getNewTableDesc( String tableName, String[] columnNames, String[] columnDefs, String[] primaryKeys )
@@ -544,10 +548,11 @@ public abstract class JDBCTestingBase
   protected Properties createProperties()
     {
     Properties props = new Properties();
-    props.put( "mapred.reduce.tasks.speculative.execution", "false" );
-    props.put( "mapred.map.tasks.speculative.execution", "false" );
+    props.setProperty( "mapred.reduce.tasks.speculative.execution", "false" );
+    props.setProperty( "mapred.map.tasks.speculative.execution", "false" );
     AppProps.setApplicationJarClass( props, getClass() );
     AppProps.setApplicationName( props, getClass().getName() );
+    props.setProperty( FlowRuntimeProps.GATHER_PARTITIONS, "1" );
     return props;
     }
 
@@ -556,9 +561,19 @@ public abstract class JDBCTestingBase
     this.jdbcurl = jdbcurl;
     }
 
+  public String getJdbcurl()
+    {
+    return jdbcurl;
+    }
+
   public void setDriverName( String driverName )
     {
     this.driverName = driverName;
+    }
+
+  public String getDriverName()
+    {
+    return driverName;
     }
 
   public void setJDBCFactory( JDBCFactory factory )
@@ -597,9 +612,41 @@ public abstract class JDBCTestingBase
 
     }
 
+  private FlowConnector createFlowConnector( final Map<Object, Object> properties )
+    {
+    return new Hadoop2TezFlowConnector( properties );
+    }
+
+  @Test
+  public void testJDBCUtil() throws Exception
+    {
+    Connection connection = openConnection();
+    TableDesc tableDesc = new TableDesc( "jdbcutiltable", new String[] {"id"}, new String[] {"int"}, new String[ ]{"id"} );
+
+    JDBCUtil.dropTable( connection, tableDesc );
+    assertFalse( JDBCUtil.tableExists( connection, tableDesc ) );
+
+    JDBCUtil.createTableIfNotExists( connection, tableDesc );
+    assertTrue( JDBCUtil.tableExists( connection, tableDesc ) );
+
+    JDBCUtil.closeConnection( connection );
+    }
+
+
 
   public void setFactory( JDBCFactory factory )
     {
     this.factory = factory;
     }
+
+
+  public Connection openConnection() throws Exception
+    {
+    Class.forName( getDriverName() );
+    Connection connection = DriverManager.getConnection( getJdbcurl() );
+    connection.setAutoCommit( false );
+
+    return connection;
+    }
+
   }

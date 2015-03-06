@@ -1,5 +1,13 @@
 Cascading-jdbc Change Log
 
+3.0.0 (unreleased)
+- updated to Cascading 3.0
+- support for Apache Tez
+- moved tests onto cascading-hadoop2-tez platform
+- major code restructuring to simplify database interactions
+- removed c.j.JDBCTapCollector and leave creation of RecordReader to the computational framework
+- removed deprecated code
+
 2.7.0 (unreleased)
 - update to Cascading 2.7
 - fix issue in Derby InputSplit handling

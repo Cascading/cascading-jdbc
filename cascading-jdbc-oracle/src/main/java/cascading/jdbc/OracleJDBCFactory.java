@@ -22,6 +22,9 @@ package cascading.jdbc;
 import cascading.jdbc.db.DBInputFormat;
 import cascading.jdbc.db.OracleDBInputFormat;
 
+/**
+ * Oracle specific subclass of {@link JDBCFactory}.
+ * */
 public class OracleJDBCFactory extends JDBCFactory
   {
   @Override

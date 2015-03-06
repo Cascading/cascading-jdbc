@@ -39,7 +39,6 @@ import cascading.tuple.Fields;
  * */
 public class JDBCFactory
   {
-
   private static final Logger LOG = LoggerFactory.getLogger( JDBCFactory.class );
 
   public static final String DEFAULT_SEPARATOR = ":";
@@ -47,8 +46,6 @@ public class JDBCFactory
   public static final String PROTOCOL_JDBC_USER = "jdbcuser";
   public static final String PROTOCOL_JDBC_PASSWORD = "jdbcpassword";
   public static final String PROTOCOL_JDBC_DRIVER = "jdbcdriver";
-  public static final String DEFAULT_TABLE_EXISTS_QUERY =  "select 1 from %s where 1 = 0";
-  public static final String TABLE_EXISTS_UNSUPPORTED = "__TABLE_EXISTS_QUERY_UNSUPPORTED__";
 
   public static final String PROTOCOL_FIELD_SEPARATOR = "tabledesc.separator";
   public static final String PROTOCOL_TABLE_NAME = "tabledesc.tablename";
@@ -138,7 +135,6 @@ public class JDBCFactory
    *          information to construct a {@link JDBCScheme}.
    * @return a new {@link JDBCScheme} instance.
    */
-  @SuppressWarnings("rawtypes")
   public Scheme createScheme( String format, Fields fields, Properties properties )
     {
     LOG.info( "creating {} format with properties {} and fields {}", format, properties, fields );
@@ -154,7 +150,7 @@ public class JDBCFactory
 
     String[] columnNames = getColumnNames(fields, properties, separator);
 
-    Boolean tableAlias = getTableAlias(properties);
+    boolean tableAlias = getTableAlias(properties);
 
     if( selectQuery != null )
       {
@@ -280,14 +276,13 @@ public class JDBCFactory
     return columNames;
     }
 
-  protected Boolean getTableAlias( Properties properties )
+  protected boolean getTableAlias( Properties properties )
     {
-    Boolean tableAlias = false;
+    boolean tableAlias = false;
     String tableAliasProperty = properties.getProperty( FORMAT_TABLE_ALIAS );
     if( tableAliasProperty != null )
-      tableAlias = new Boolean( tableAliasProperty );
+      Boolean.parseBoolean( tableAliasProperty );
 
     return tableAlias;
     }
-
   }

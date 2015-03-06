@@ -23,6 +23,9 @@ package cascading.jdbc;
 import cascading.jdbc.db.DBInputFormat;
 import cascading.jdbc.db.TeradataDBInputFormat;
 
+/**
+ * Teradata specific subclass of {@link cascading.jdbc.JDBCFactory}
+ * */
 public class TeradataJDBCFactory extends JDBCFactory
   {
   @Override

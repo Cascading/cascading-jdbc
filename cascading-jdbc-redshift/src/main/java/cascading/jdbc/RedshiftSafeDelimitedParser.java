@@ -31,7 +31,6 @@ import org.apache.hadoop.util.StringUtils;
 
 public class RedshiftSafeDelimitedParser extends DelimitedParser
   {
-
   private static final char BACKSLASH = 0x5c;
 
   public RedshiftSafeDelimitedParser( String delimiter, String quote, Class[] types, boolean strict, boolean safe, Fields sourceFields, Fields sinkFields )
@@ -85,7 +84,6 @@ public class RedshiftSafeDelimitedParser extends DelimitedParser
           buffer.append( value.toString() );
           }
         }
-
       count++;
       }
 

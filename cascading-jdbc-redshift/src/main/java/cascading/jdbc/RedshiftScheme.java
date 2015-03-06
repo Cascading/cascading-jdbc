@@ -30,6 +30,7 @@ import cascading.scheme.Scheme;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
@@ -51,7 +52,7 @@ public class RedshiftScheme extends JDBCScheme
   private static final Logger LOG = LoggerFactory.getLogger( RedshiftScheme.class );
 
   private TextDelimited textDelimited;
-  private Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> sinkScheme;
+  private Scheme<Configuration, RecordReader, OutputCollector, Object[], Object[]> sinkScheme;
   private RedshiftTableDesc redshiftTableDesc;
   private Map<RedshiftFactory.CopyOption, String> copyOptions = new HashMap<RedshiftFactory.CopyOption, String>();
 
@@ -144,7 +145,7 @@ public class RedshiftScheme extends JDBCScheme
     }
 
   @Override
-  public void sinkConfInit( FlowProcess<JobConf> flowProcess, Tap<JobConf, RecordReader, OutputCollector> tap, JobConf jobConf )
+  public void sinkConfInit( FlowProcess<? extends Configuration> flowProcess, Tap<Configuration, RecordReader, OutputCollector> tap, Configuration jobConf )
     {
     if( ( (RedshiftTap) tap ).isUseDirectInsert() )
       {
@@ -166,6 +167,5 @@ public class RedshiftScheme extends JDBCScheme
     else
       return getClass().getSimpleName() + "[" + getSourceFields().print() + "->" + getSinkFields().print() + "]";
     }
-
 
   }

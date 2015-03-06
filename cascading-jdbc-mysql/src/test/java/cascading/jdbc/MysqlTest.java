@@ -20,6 +20,7 @@
 
 package cascading.jdbc;
 
+import cascading.jdbc.db.MySqlDBInputFormat;
 import org.junit.Before;
 
 /**
@@ -34,6 +35,7 @@ public class MysqlTest extends JDBCTestingBase
     setDriverName( "com.mysql.jdbc.Driver" );
     setJdbcurl( System.getProperty( "cascading.jdbcurl" ) );
     setFactory( new MySqlFactory() );
+    setInputFormatClass( MySqlDBInputFormat.class );
     }
 
   }

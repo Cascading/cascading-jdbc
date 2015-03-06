@@ -33,12 +33,12 @@ import org.apache.hadoop.mapred.*;
 
 import java.io.IOException;
 
-public class MySqlDBInputFormat<T extends DBWritable> extends DBInputFormat<T>
+public class MySqlDBInputFormat extends DBInputFormat<DBWritable>
   {
 
   protected class MySqlDBRecordReader extends DBRecordReader
     {
-    protected MySqlDBRecordReader( DBInputSplit split, Class<T> inputClass, JobConf job ) throws SQLException, IOException
+    protected MySqlDBRecordReader( DBInputSplit split, Class<DBWritable> inputClass, JobConf job ) throws SQLException, IOException
       {
       super( split, inputClass, job );
       }
@@ -53,7 +53,7 @@ public class MySqlDBInputFormat<T extends DBWritable> extends DBInputFormat<T>
     }
 
   @Override
-  protected RecordReader<LongWritable, T> getRecordReaderInternal( DBInputSplit split, Class inputClass, JobConf job ) throws SQLException,
+  protected RecordReader<LongWritable, DBWritable> getRecordReaderInternal( DBInputSplit split, Class inputClass, JobConf job ) throws SQLException,
     IOException
     {
     return new MySqlDBRecordReader( split, inputClass, job );

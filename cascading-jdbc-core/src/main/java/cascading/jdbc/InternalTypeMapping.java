@@ -23,12 +23,12 @@ import java.lang.reflect.Type;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.Map;
 
 import cascading.tuple.Fields;
 import cascading.tuple.type.CoercibleType;
 
-import com.google.common.collect.Maps;
 
 /**
  * Class that maps Java classes to SQL type definitions. When cascading-jdbc is
@@ -65,9 +65,9 @@ import com.google.common.collect.Maps;
  */
 public class InternalTypeMapping
   {
-  private static final Map<Type, String> TYPES = Maps.newHashMap();
+  private static final Map<Type, String> TYPES = new HashMap<Type, String>();
 
-  private static final Map<String, Type> NATIVE_TYPES = Maps.newHashMap();
+  private static final Map<String, Type> NATIVE_TYPES = new HashMap<String, Type>();
 
   static
     {
