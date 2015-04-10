@@ -1,6 +1,6 @@
 # cascading-jdbc
 
-A set of Cascading (version 2.6 and above) Taps and Schemes which interact with RDBMS systems via JDBC. The project
+A set of Cascading (version 3.0 and above) Taps and Schemes which interact with RDBMS systems via JDBC. The project
 consists of a generic part `cascading-jdbc-core` and database specific sub-projects. The database specific projects have
 dependencies to their respective JDBC drivers and run tests against those systems during build.
 
@@ -23,7 +23,7 @@ Both are based on code coming from [apache hadoop](http://hadoop.apache.org).
 
 # Building and Testing
 
-Building all jars is done with a simple `gradle build` (Gradle version 1.8 required). This produces "normal" jar files,
+Building all jars is done with a simple `gradle build`. This produces "normal" jar files,
 to be used within cascading applications as well as "fat" provider jars, that can be used within
 [lingual](http://docs.cascading.org/lingual/1.1/).
 
@@ -135,7 +135,7 @@ convenience during testing/development.
 
 Typical work loads write into a new table, which is afterwards made available to other parts of your system via a post
 process. You can achieve this by using the `onCompleted(Flow flow)` method in a class implementing the
-[`cascading.flow.FlowListener`](http://docs.cascading.org/cascading/2.6/javadoc/cascading/flow/FlowListener.html)
+[`cascading.flow.FlowListener`](http://docs.cascading.org/cascading/3.0/javadoc/cascading/flow/FlowListener.html)
 interface. In case something goes wrong during the execution of your Flow, you can clean up your database table in the
 `onThrowable(Flow flow)` method of your `FlowListener` implementation.
 
@@ -157,7 +157,7 @@ can be properly coerced before being written to the database.
 __NOTE__: The JDBC providers can only be used on the `hadoop` and `hadoop2-mr1` platforms. The `local` platform is not
 supported.
 
-This assumes, that you have followed the [lingual tutorial](http://docs.cascading.org/lingual/1.1/), esp. the part,
+This assumes, that you have followed the [lingual tutorial](http://docs.cascading.org/lingual/2.0/), esp. the part,
 where a provider is used to write directly into a memcached server. To accomplish the same, but with a
 [derby](http://db.apache.org/derby/) database, you can do the following:
 
@@ -166,7 +166,7 @@ Setup your lingual catalog with the derby provider:
     # only hadoop platform is supported
     > export LINGUAL_PLATFORM=hadoop
 
-    > lingual catalog --provider --add cascading:cascading-jdbc-derby:2.6.0:provider
+    > lingual catalog --provider --add cascading:cascading-jdbc-derby:3.0.0:provider
 
 This will register the provider `derby` for the `hadoop` platform. The provider supports one protocol (`jdbc`) and one
 format (`derby`). The provider is downloaded from [conjars](http://conjars.org).
@@ -231,7 +231,7 @@ Adding a new JDBC system is straight forward. Create a new sub-project and add i
 driver of your RDBMS in the `build.gradle` file of your sub-project and create a `TestCase` subclassing the
 `JDBCTestingBase` explained above. All you have to do, is setting the driver class and JDBC URL for your database. For
 an example see
-[MysqlTest](https://github.com/Cascading/cascading-jdbc/blob/wip-2.6/cascading-jdbc-mysql/src/test/java/cascading/jdbc/MysqlTest.java).
+[MysqlTest](https://github.com/Cascading/cascading-jdbc/blob/wip-3.0/cascading-jdbc-mysql/src/test/java/cascading/jdbc/MysqlTest.java).
 
 ## JDBC driver versions
 
@@ -250,43 +250,43 @@ If you want to use your driver as a provider within lingual, you have to include
 `src/main/resources/cascading/bind` directory of your project. The name of the provider should match your database, the
 protocol should be set to `jdbc` and the format to the type of database you are using.
 
-Below is an example from the `derby` subproject:
+Below is an example from the `h2` subproject:
 
     # default name of provider
-    cascading.bind.provider.names=derby
-    cascading.bind.provider.derby.platforms=hadoop,hadoop2-mr1
+    cascading.bind.provider.names=h2
+    cascading.bind.provider.h2.platforms=hadoop,hadoop2-mr1
 
-    cascading.bind.provider.derby.factory.classname=cascading.jdbc.JDBCFactory
+    cascading.bind.provider.h2.factory.classname=cascading.jdbc.JDBCFactory
 
     # define protocols differentiated by properties
-    cascading.bind.provider.derby.protocol.names=jdbc
-    cascading.bind.provider.derby.protocol.jdbc.schemes=derby
-    cascading.bind.provider.derby.protocol.jdbc.jdbcdriver=org.apache.derby.jdbc.ClientDriver
-    cascading.bind.provider.derby.protocol.jdbc.tabledescseparator=:
-    cascading.bind.provider.derby.protocol.jdbc.jdbcuser=
-    cascading.bind.provider.derby.protocol.jdbc.jdbcpassword=
-    cascading.bind.provider.derby.protocol.jdbc.tabledesc.tablename=
-    cascading.bind.provider.derby.protocol.jdbc.tabledesc.columnnames=
-    cascading.bind.provider.derby.protocol.jdbc.tabledesc.columndefs=
-    cascading.bind.provider.derby.protocol.jdbc.tabledesc.primarykeys=
-    cascading.bind.provider.derby.protocol.jdbc.sinkmode=
+    cascading.bind.provider.h2.protocol.names=jdbc
+    cascading.bind.provider.h2.protocol.jdbc.schemes=h2
+    cascading.bind.provider.h2.protocol.jdbc.jdbcdriver=org.h2.Driver
+    cascading.bind.provider.h2.protocol.jdbc.tabledescseparator=:
+    cascading.bind.provider.h2.protocol.jdbc.jdbcuser=
+    cascading.bind.provider.h2.protocol.jdbc.jdbcpassword=
+    cascading.bind.provider.h2.protocol.jdbc.tabledesc.tablename=
+    cascading.bind.provider.h2.protocol.jdbc.tabledesc.columnnames=
+    cascading.bind.provider.h2.protocol.jdbc.tabledesc.columndefs=
+    cascading.bind.provider.h2.protocol.jdbc.tabledesc.primarykeys=
+    cascading.bind.provider.h2.protocol.jdbc.sinkmode=
 
     # define formats differentiated by properties
-    cascading.bind.provider.derby.format.names=derby
-    cascading.bind.provider.derby.format.derby.protocols=jdbc
-    cascading.bind.provider.derby.format.derby.columnfields=
-    cascading.bind.provider.derby.format.derby.separator=:
-    cascading.bind.provider.derby.format.derby.columnnames=
-    cascading.bind.provider.derby.format.derby.orderBy=
-    cascading.bind.provider.derby.format.derby.conditions=
-    cascading.bind.provider.derby.format.derby.limit=
-    cascading.bind.provider.derby.format.derby.updateBy=
-    cascading.bind.provider.derby.format.derby.tableAlias=
-    cascading.bind.provider.derby.format.derby.selectquery=
-    cascading.bind.provider.derby.format.derby.countquery=
+    cascading.bind.provider.h2.format.names=h2
+    cascading.bind.provider.h2.format.h2.protocols=jdbc
+    cascading.bind.provider.h2.format.h2.columnfields=
+    cascading.bind.provider.h2.format.h2.separator=:
+    cascading.bind.provider.h2.format.h2.columnnames=
+    cascading.bind.provider.h2.format.h2.orh2=
+    cascading.bind.provider.h2.format.h2.conditions=
+    cascading.bind.provider.h2.format.h2.limit=
+    cascading.bind.provider.h2.format.h2.updateBy=
+    cascading.bind.provider.h2.format.h2.tableAlias=
+    cascading.bind.provider.h2.format.h2.selectquery=
+    cascading.bind.provider.h2.format.h2.countquery=
 
 For more information on the `provider.properties` file, see the [lingual
-documentation](http://docs.cascading.org/lingual/1.1/#_creating_a_data_provider).
+documentation](http://docs.cascading.org/lingual/2.0/#_creating_a_data_provider).
 
 # License
 
