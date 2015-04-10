@@ -34,8 +34,3 @@ test{
   systemProperty( "cascading.jdbcurl", System.getProperty( "cascading.jdbc.url.postgresql" ) )
 }
 
-fatJar {
-  classifier = 'provider'
-  exclude 'META-INF/*.DSA'
-  exclude 'META-INF/LICENSE*'
-}

@@ -24,21 +24,12 @@ buildscript {
   repositories {
     mavenLocal()
     mavenCentral()
-    maven { url 'http://repo.springsource.org/plugins-release' }
+    jcenter()
   }
   dependencies {
-    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.5'
-    classpath 'eu.appsatori:gradle-fatjar-plugin:0.2'
-
+    classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:2.2.1'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.1'
   }
-}
-
-// gives 'provided' scope for hadoop
-configure( allprojects ) {
-  apply plugin: 'propdeps'
-  apply plugin: 'propdeps-maven'
-  apply plugin: 'propdeps-idea'
-  apply plugin: 'propdeps-eclipse'
 }
 
 apply from: 'etc/version.gradle'
@@ -53,7 +44,6 @@ ext.cascadingVersion = '3.0.0-wip-+'
 ext.lingualVersion = '2.0.0-wip-+'
 
 ext.timestamp = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
-
 
 allprojects {
 
@@ -71,13 +61,15 @@ allprojects {
   apply plugin: 'idea'
   apply plugin: 'maven'
   apply plugin: 'eclipse'
-  apply plugin: 'fatjar'
+  apply plugin: 'provided-base'
+  apply plugin: 'com.github.johnrengelman.shadow'
+
 }
 
 subprojects{
 
   dependencies {
-    //provided group: 'cascading', name: 'cascading-hadoop2-mr1', version: cascadingVersion, changing: true
+  
     provided group: 'cascading', name: 'cascading-hadoop2-tez', version: cascadingVersion, changing: true
     provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
     provided group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
@@ -149,7 +141,7 @@ subprojects{
 
   artifacts {
     archives jar
-    archives fatJar
+    archives shadowJar
     archives sourcesJar
     archives javadocJar
     archives testsJar
@@ -157,6 +149,7 @@ subprojects{
     testArtifacts testsJar
     testArtifacts testSourcesJar
   }
+
   uploadArchives {
 
     def deployer = repositories.mavenDeployer {
@@ -194,6 +187,19 @@ subprojects{
     }
   }
 
+  shadowJar {
+    classifier = "provider"
+    configurations = []
+    from {
+      project.configurations.runtime.minus( [ project.configurations.provided ] )
+    }
+    mergeServiceFiles()
+
+    exclude 'LICENSE'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/LICENSE*'
+  }
+
   task createFrameworkProperties( dependsOn: processResources ) << {
     if ( project.name != "cascading-jdbc-core" ) {
       file( "${sourceSets.main.output.resourcesDir}/cascading" ).mkdirs()
@@ -202,7 +208,7 @@ subprojects{
   }
 
   jar.dependsOn( createFrameworkProperties )
-  fatJar.dependsOn( createFrameworkProperties )
+  shadowJar.dependsOn( createFrameworkProperties )
 
 }
 

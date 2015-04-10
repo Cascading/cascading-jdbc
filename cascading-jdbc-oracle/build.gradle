@@ -32,8 +32,3 @@ test{
   systemProperty( "cascading.jdbcurl", System.getProperty( "cascading.jdbc.url.oracle" ) )
 }
 
-fatJar {
-  classifier = 'provider'
-  exclude 'META-INF/*.DSA'
-  exclude 'META-INF/LICENSE*'
-}

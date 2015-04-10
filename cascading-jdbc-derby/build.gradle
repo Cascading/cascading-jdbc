@@ -32,8 +32,24 @@ dependencies{
   testCompile project( ':cascading-jdbc-core' ).sourceSets.test.runtimeClasspath
 }
 
-fatJar {
-  classifier = 'provider'
-  exclude 'META-INF/*.DSA'
-  exclude 'META-INF/LICENSE*'
+task configInfo() << {
+  ( configurations.compile.minus([configurations.provided])).each{ entry ->
+    println entry
+  }
+}
+
+
+task myJar( type: Jar ) {
+    classifier = 'provider'
+    dependsOn configurations.runtime
+    from {
+      ( configurations.compile.minus([configurations.provided])).collect{
+            it.isDirectory() ? it : zipTree(it)
+        }
+    } {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+
 }

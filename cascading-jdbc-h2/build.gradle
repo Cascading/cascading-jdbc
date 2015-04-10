@@ -28,8 +28,3 @@ dependencies{
   testCompile project( ':cascading-jdbc-core' ).sourceSets.test.runtimeClasspath
 }
 
-fatJar {
-  classifier = 'provider'
-  exclude 'META-INF/*.DSA'
-  exclude 'META-INF/LICENSE*'
-}
