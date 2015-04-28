@@ -35,6 +35,7 @@ import cascading.property.AppProps;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.TapException;
+import cascading.tap.hadoop.io.HadoopTupleEntrySchemeCollector;
 import cascading.tap.hadoop.io.HadoopTupleEntrySchemeIterator;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
@@ -363,7 +364,6 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     return true;
     }
 
-
   @Override
   public TupleEntryIterator openForRead( FlowProcess<JobConf> flowProcess, RecordReader input ) throws IOException
     {
@@ -378,12 +378,8 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
     if( !isSink() )
       throw new TapException( "this tap may not be used as a sink, no TableDesc defined" );
 
-    LOG.info( "Creating JDBCTapCollector output instance" );
-    JDBCTapCollector jdbcCollector = new JDBCTapCollector( flowProcess, this );
+    return new HadoopTupleEntrySchemeCollector( flowProcess, this, output );
 
-    jdbcCollector.prepare();
-
-    return jdbcCollector;
     }
 
   @Override
@@ -595,6 +591,15 @@ public class JDBCTap extends Tap<JobConf, RecordReader, OutputCollector>
       results.add( row );
       }
     return results;
+    }
+
+  @Override
+  public boolean prepareResourceForWrite( JobConf conf ) throws IOException
+    {
+    if( isReplace() && resourceExists( conf ) )
+      deleteResource( conf );
+
+    return createResource( conf );
     }
 
   @Override
