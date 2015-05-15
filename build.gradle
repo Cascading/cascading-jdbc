@@ -48,7 +48,7 @@ version = releaseVersion
 // the version of hadoop used for compiling and testing
 ext.hadoopVersion = "1.2.1"
 
-ext.cascadingVersion = '2.7.0-wip-+'
+ext.cascadingVersion = '2.7.0'
 ext.lingualVersion = '1.2.0'
 
 ext.timestamp = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
