@@ -15,14 +15,10 @@ package cascading.jdbc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.Driver;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
@@ -39,7 +35,6 @@ import cascading.tap.hadoop.io.HadoopTupleEntrySchemeCollector;
 import cascading.tap.hadoop.io.HadoopTupleEntrySchemeIterator;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
-import cascading.tuple.TupleEntrySchemeCollector;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -352,7 +347,6 @@ public class JDBCTap extends Tap<Configuration, RecordReader, OutputCollector>
     return true;
     }
 
-
   @Override
   public TupleEntryIterator openForRead( FlowProcess<? extends Configuration> flowProcess, RecordReader input ) throws IOException
     {
@@ -366,17 +360,6 @@ public class JDBCTap extends Tap<Configuration, RecordReader, OutputCollector>
     {
     if( !isSink() )
       throw new TapException( "this tap may not be used as a sink, no TableDesc defined" );
-
-    Connection connection = null;
-    try
-      {
-      connection = createConnection();
-      JDBCUtil.createTableIfNotExists( connection, tableDesc );
-      }
-    finally
-      {
-      JDBCUtil.closeConnection( connection );
-      }
 
     return new HadoopTupleEntrySchemeCollector( flowProcess, this, output );
     }
@@ -492,6 +475,15 @@ public class JDBCTap extends Tap<Configuration, RecordReader, OutputCollector>
       throw new IOException( exception );
       }
 
+    }
+
+  @Override
+  public boolean prepareResourceForWrite( Configuration conf ) throws IOException
+    {
+    if( isReplace() && resourceExists( conf ) )
+      deleteResource( conf );
+
+    return createResource( conf );
     }
 
   @Override
