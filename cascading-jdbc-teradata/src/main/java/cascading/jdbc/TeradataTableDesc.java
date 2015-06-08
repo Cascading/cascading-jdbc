@@ -14,11 +14,11 @@ package cascading.jdbc;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 
 import cascading.tuple.Fields;
-import com.google.common.collect.Lists;
 
 /**
  * Class TeradataTableDesc extends TableDesc  which describes a SQL based table,
@@ -33,7 +33,6 @@ import com.google.common.collect.Lists;
  */
 public class TeradataTableDesc extends TableDesc implements Serializable
   {
-
   private static final long serialVersionUID = 5009899098019404131L;
 
   /**
@@ -68,8 +67,8 @@ public class TeradataTableDesc extends TableDesc implements Serializable
     {
     if( !hasRequiredTableInformation() )
       {
-      List<String> names = Lists.newArrayList();
-      List<String> defs = Lists.newArrayList();
+      List<String> names = new ArrayList<String>();
+      List<String> defs = new ArrayList<String>();
 
       for( int i = 0; i < fields.size(); i++ )
         {

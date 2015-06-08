@@ -21,7 +21,6 @@
 package cascading.jdbc;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,8 +30,6 @@ import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
 import cascading.tuple.TupleEntryCollector;
-import com.google.common.collect.Maps;
-import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.slf4j.Logger;
@@ -44,7 +41,6 @@ import org.slf4j.LoggerFactory;
  * pairing of an HFS {@link Tap} (for writing) and a JDBC {@link Tap} for reading behind one {@link cascading.scheme.Scheme}
  * object.
  */
-
 public class RedshiftTap extends JDBCTap
   {
 
