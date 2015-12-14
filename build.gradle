@@ -97,6 +97,10 @@ subprojects{
     }
   }
 
+  javadoc {
+    failOnError = false
+  }
+
   task sourcesJar( type: Jar, dependsOn: classes ) {
     from sourceSets.main.allSource
     classifier = 'sources'
