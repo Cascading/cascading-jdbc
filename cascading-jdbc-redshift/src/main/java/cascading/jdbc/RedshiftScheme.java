@@ -20,7 +20,6 @@
 
 package cascading.jdbc;
 
-import java.lang.String;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +30,6 @@ import cascading.scheme.hadoop.TextDelimited;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 import org.slf4j.Logger;
@@ -91,7 +89,7 @@ public class RedshiftScheme extends JDBCScheme
    */
   public RedshiftScheme( Fields fields, RedshiftTableDesc redshiftTableDesc, String delimiter, String quoteCharacter, Map<RedshiftFactory.CopyOption, String> copyOptions, Boolean tableAlias )
     {
-    this(fields, redshiftTableDesc, delimiter, quoteCharacter, copyOptions, null, tableAlias);
+    this( fields, redshiftTableDesc, delimiter, quoteCharacter, copyOptions, null, tableAlias );
     }
 
   public RedshiftScheme( Fields fields, RedshiftTableDesc redshiftTableDesc, String delimiter, String quoteCharacter, Map<RedshiftFactory.CopyOption, String> copyOptions, String conditions, Boolean tableAlias )
@@ -117,6 +115,16 @@ public class RedshiftScheme extends JDBCScheme
   public RedshiftScheme( String[] columns, String[] orderBy, String[] updateBy )
     {
     super( columns, orderBy, updateBy );
+    }
+
+  public RedshiftScheme( Fields columnFields, String[] columns, String[] orderBy, Fields updateByFields, String[] updateBy )
+    {
+    super( columnFields, columns, orderBy, updateByFields, updateBy );
+    }
+
+  public RedshiftScheme( Fields columnFields, String[] columns, String[] orderBy, String[] updateBy )
+    {
+    this( columnFields, columns, orderBy, updateBy != null ? new Fields( updateBy ) : null, updateBy );
     }
 
   public RedshiftScheme( Class<? extends DBInputFormat> inputFormat, Fields fields, String[] columns )
