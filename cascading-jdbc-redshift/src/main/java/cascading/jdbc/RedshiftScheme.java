@@ -119,6 +119,16 @@ public class RedshiftScheme extends JDBCScheme
     super( columns, orderBy, updateBy );
     }
 
+  public RedshiftScheme(Fields columnFields, String[] columns, String[] orderBy, Fields updateByFields, String[] updateBy )
+    {
+    super(columnFields, columns, orderBy,  updateByFields, updateBy );
+    }
+  
+  public RedshiftScheme( Fields columnFields, String[] columns,String[] orderBy, String[] updateBy )
+    {
+    this(columnFields, columns, orderBy, updateBy != null ? new Fields(updateBy ) : null, updateBy );
+    } 
+   
   public RedshiftScheme( Class<? extends DBInputFormat> inputFormat, Fields fields, String[] columns )
     {
     super( inputFormat, fields, columns );
